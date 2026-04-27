@@ -1,0 +1,456 @@
+{
+  "meta": {
+    "version": "1.0",
+    "source": "Simplified ESI v4 + Manchester Triage System — adapted for Vietnamese outpatient chatbot context",
+    "disclaimer": "Đây là công cụ pre-triage hỗ trợ sàng lọc ban đầu qua ngôn ngữ tự nhiên. KHÔNG thay thế đánh giá lâm sàng của nhân viên y tế. Mọi quyết định cuối cùng thuộc về bác sĩ/y tá triage.",
+    "levels": {
+      "EMERGENCY": "Đe dọa tính mạng — cần cấp cứu ngay lập tức (ESI 1-2)",
+      "URGENT":    "Có thể diễn tiến nặng — cần khám trong ngày hôm nay (ESI 3)",
+      "SEMI_URGENT": "Cần khám trong 2–3 ngày (ESI 4)",
+      "ROUTINE":   "Có thể đặt lịch bình thường (ESI 5)"
+    }
+  },
+
+  "single_red_flags": [
+    {
+      "id": "SRF-01",
+      "keywords": ["bất tỉnh", "mất ý thức", "ngất xỉu", "không tỉnh dậy"],
+      "level": "EMERGENCY",
+      "note": "Mất ý thức bất kỳ nguyên nhân",
+      "action": "escalate_er",
+      "message": "Triệu chứng mất ý thức cần cấp cứu ngay. Gọi 115 hoặc đưa bệnh nhân đến Khoa Cấp cứu ngay lập tức."
+    },
+    {
+      "id": "SRF-02",
+      "keywords": ["co giật", "động kinh", "giật toàn thân", "co cứng người"],
+      "level": "EMERGENCY",
+      "note": "Seizure đang xảy ra hoặc vừa xảy ra",
+      "action": "escalate_er",
+      "message": "Co giật là tình huống cấp cứu. Gọi 115 ngay."
+    },
+    {
+      "id": "SRF-03",
+      "keywords": ["khó thở nặng", "không thở được", "ngạt thở", "thở không ra hơi", "tím tái"],
+      "level": "EMERGENCY",
+      "note": "Suy hô hấp cấp",
+      "action": "escalate_er",
+      "message": "Khó thở nặng là dấu hiệu nguy hiểm. Gọi 115 ngay."
+    },
+    {
+      "id": "SRF-04",
+      "keywords": ["chảy máu nhiều", "xuất huyết nhiều", "máu không cầm", "chảy máu không ngừng"],
+      "level": "EMERGENCY",
+      "note": "Xuất huyết không kiểm soát",
+      "action": "escalate_er",
+      "message": "Chảy máu nhiều cần xử lý khẩn cấp. Gọi 115 ngay."
+    },
+    {
+      "id": "SRF-05",
+      "keywords": ["sốc phản vệ", "dị ứng nặng", "sưng họng", "khó nuốt đột ngột", "phù mạch"],
+      "level": "EMERGENCY",
+      "note": "Anaphylaxis / phản ứng dị ứng nghiêm trọng",
+      "action": "escalate_er",
+      "message": "Phản ứng dị ứng nặng cần cấp cứu ngay. Gọi 115."
+    },
+    {
+      "id": "SRF-06",
+      "keywords": ["tai nạn nặng", "chấn thương nặng", "gãy xương hở", "đầu đập mạnh"],
+      "level": "EMERGENCY",
+      "note": "Chấn thương đa cơ quan hoặc đầu",
+      "action": "escalate_er",
+      "message": "Chấn thương nặng cần cấp cứu. Gọi 115 ngay."
+    },
+    {
+      "id": "SRF-07",
+      "keywords": ["ngộ độc", "uống nhầm thuốc", "uống hóa chất", "tự tử bằng thuốc"],
+      "level": "EMERGENCY",
+      "note": "Ngộ độc cấp",
+      "action": "escalate_er",
+      "message": "Ngộ độc cần xử lý khẩn cấp. Gọi 115 và Trung tâm Chống độc: 1800 599 920."
+    },
+    {
+      "id": "SRF-08",
+      "keywords": ["đau đầu dữ dội đột ngột", "đau đầu như sét đánh", "đau đầu tệ nhất trong đời"],
+      "level": "EMERGENCY",
+      "note": "Thunderclap headache — nghi ngờ xuất huyết dưới nhện (ESI 2)",
+      "action": "escalate_er",
+      "message": "Đau đầu khởi phát đột ngột dữ dội có thể là dấu hiệu xuất huyết não. Cần cấp cứu ngay."
+    }
+  ],
+
+  "red_flag_combos": [
+    {
+      "id": "RFC-01",
+      "name": "Nghi ngờ Nhồi máu cơ tim (ACS)",
+      "source": "ACC/AHA ACS Guidelines",
+      "symptoms_required": ["đau ngực"],
+      "symptoms_any": ["khó thở", "toát mồ hôi", "buồn nôn", "đau lan vai trái", "đau lan hàm", "tức ngực"],
+      "min_additional": 1,
+      "level": "EMERGENCY",
+      "action": "escalate_er",
+      "message": "Đau ngực kèm theo các triệu chứng này có thể là nhồi máu cơ tim. Gọi 115 ngay, không tự lái xe."
+    },
+    {
+      "id": "RFC-02",
+      "name": "Nghi ngờ Đột quỵ (FAST protocol)",
+      "source": "AHA/ASA Stroke Guidelines — FAST",
+      "symptoms_any": ["liệt mặt", "méo miệng", "tê liệt tay", "tay yếu đột ngột", "nói ngọng", "nói không được", "mất thăng bằng đột ngột", "mù đột ngột"],
+      "min_additional": 1,
+      "onset": "sudden",
+      "level": "EMERGENCY",
+      "action": "escalate_er",
+      "message": "Các triệu chứng này có thể là đột quỵ (F-A-S-T). Cửa sổ điều trị chỉ 4.5 giờ — gọi 115 ngay."
+    },
+    {
+      "id": "RFC-03",
+      "name": "Nghi ngờ Thuyên tắc phổi (PE)",
+      "source": "Wells PE Score",
+      "symptoms_required": ["khó thở đột ngột"],
+      "symptoms_any": ["đau ngực khi thở", "ho ra máu", "chân sưng một bên", "nhịp tim nhanh"],
+      "min_additional": 1,
+      "level": "EMERGENCY",
+      "action": "escalate_er",
+      "message": "Khó thở đột ngột kèm các triệu chứng này có thể là thuyên tắc phổi. Cần cấp cứu ngay."
+    },
+    {
+      "id": "RFC-04",
+      "name": "Nghi ngờ Sepsis",
+      "source": "Sepsis-3 Criteria",
+      "symptoms_required": ["sốt cao"],
+      "symptoms_any": ["lú lẫn", "lơ mơ", "huyết áp thấp", "thở nhanh", "ớn lạnh run rẩy toàn thân"],
+      "min_additional": 1,
+      "level": "EMERGENCY",
+      "action": "escalate_er",
+      "message": "Sốt cao kèm rối loạn ý thức hoặc huyết áp thấp có thể là nhiễm khuẩn huyết. Cần cấp cứu ngay."
+    },
+    {
+      "id": "RFC-05",
+      "name": "Nghi ngờ Viêm ruột thừa / Bụng ngoại khoa",
+      "source": "Alvarado Score / Manchester GI flow",
+      "symptoms_required": ["đau bụng"],
+      "symptoms_any": ["sốt", "nôn mửa", "đau tăng dần", "đau khi đi lại", "bụng cứng", "đau quanh rốn lan hố chậu phải"],
+      "min_additional": 2,
+      "level": "URGENT",
+      "action": "book_today",
+      "department": "SURGERY",
+      "message": "Đau bụng kèm các triệu chứng này cần được khám Ngoại khoa trong ngày."
+    },
+    {
+      "id": "RFC-06",
+      "name": "Cơn hen phế quản nặng",
+      "source": "GINA Asthma Guidelines",
+      "symptoms_required": ["khó thở"],
+      "symptoms_any": ["thở khò khè", "tức ngực", "không nói được câu dài", "không đáp ứng thuốc xịt"],
+      "min_additional": 1,
+      "risk_condition": "asthma",
+      "level": "URGENT",
+      "action": "escalate_er",
+      "message": "Cơn hen nặng cần xử lý khẩn cấp tại cơ sở y tế."
+    },
+    {
+      "id": "RFC-07",
+      "name": "Tăng huyết áp khẩn cấp",
+      "source": "JNC-8 / ACC/AHA Hypertension Guidelines",
+      "symptoms_required": ["đau đầu dữ dội"],
+      "symptoms_any": ["nhìn mờ", "buồn nôn", "chóng mặt", "tê tay chân", "huyết áp rất cao"],
+      "min_additional": 1,
+      "risk_condition": "hypertension",
+      "level": "URGENT",
+      "action": "book_today",
+      "department": "CARDIO",
+      "message": "Đau đầu dữ dội ở bệnh nhân tăng huyết áp cần được khám tim mạch trong ngày."
+    },
+    {
+      "id": "RFC-08",
+      "name": "Hạ đường huyết nặng",
+      "source": "ADA Diabetes Guidelines",
+      "symptoms_required": ["chóng mặt", "run tay"],
+      "symptoms_any": ["vã mồ hôi", "tim đập nhanh", "lú lẫn", "nhìn mờ", "đói cồn cào"],
+      "min_additional": 1,
+      "risk_condition": "diabetes",
+      "level": "EMERGENCY",
+      "action": "escalate_er",
+      "message": "Các triệu chứng này ở bệnh nhân tiểu đường có thể là hạ đường huyết nặng. Cần xử lý ngay."
+    },
+    {
+      "id": "RFC-09",
+      "name": "Viêm màng não",
+      "source": "Manchester Triage — Headache flowchart",
+      "symptoms_required": ["đau đầu"],
+      "symptoms_any": ["cứng cổ", "sợ ánh sáng", "sốt cao", "nôn vọt", "ban xuất huyết da"],
+      "min_additional": 2,
+      "level": "EMERGENCY",
+      "action": "escalate_er",
+      "message": "Đau đầu kèm cứng cổ và sốt có thể là viêm màng não. Cần cấp cứu ngay."
+    },
+    {
+      "id": "RFC-10",
+      "name": "Suy tim cấp mất bù",
+      "source": "ESC Heart Failure Guidelines",
+      "symptoms_required": ["khó thở khi nằm"],
+      "symptoms_any": ["phù chân", "ho về đêm", "mệt nhiều khi gắng sức", "tim đập nhanh"],
+      "min_additional": 1,
+      "risk_condition": "heart_failure",
+      "level": "URGENT",
+      "action": "book_today",
+      "department": "CARDIO",
+      "message": "Các triệu chứng này ở bệnh nhân suy tim cần được khám tim mạch trong ngày."
+    },
+    {
+      "id": "RFC-11",
+      "name": "Nhiễm khuẩn tiết niệu có biến chứng (Viêm thận bể thận)",
+      "source": "IDSA UTI Guidelines",
+      "symptoms_required": ["tiểu buốt", "tiểu rắt"],
+      "symptoms_any": ["sốt cao", "đau lưng", "đau hông", "ớn lạnh", "buồn nôn"],
+      "min_additional": 1,
+      "level": "URGENT",
+      "action": "book_today",
+      "department": "UROLOGY",
+      "message": "Nhiễm khuẩn tiết niệu kèm sốt có thể đã lan lên thận. Cần khám trong ngày."
+    },
+    {
+      "id": "RFC-12",
+      "name": "Cơn gout cấp / Viêm khớp nhiễm khuẩn",
+      "source": "ACR Gout Guidelines",
+      "symptoms_required": ["đau khớp đột ngột"],
+      "symptoms_any": ["sưng đỏ khớp", "nóng khớp", "sốt", "không đi được"],
+      "min_additional": 2,
+      "level": "URGENT",
+      "action": "book_today",
+      "department": "RHEUMA",
+      "message": "Viêm khớp cấp kèm sốt cần loại trừ nhiễm khuẩn khớp, cần khám trong ngày."
+    }
+  ],
+
+  "urgency_map": [
+    {
+      "symptom_keywords": ["đau ngực", "tức ngực"],
+      "default_level": "URGENT",
+      "note": "Luôn ưu tiên cao — cần hỏi thêm để loại trừ ACS",
+      "department": "CARDIO",
+      "ask_more": ["Đau có lan ra vai/tay trái/hàm không?", "Có khó thở hoặc toát mồ hôi không?"]
+    },
+    {
+      "symptom_keywords": ["khó thở", "thở khó"],
+      "default_level": "URGENT",
+      "note": "Phân loại theo mức độ và tốc độ khởi phát",
+      "department": "PULMO",
+      "ask_more": ["Khó thở đột ngột hay từ từ?", "Có đau ngực kèm theo không?"]
+    },
+    {
+      "symptom_keywords": ["đau đầu"],
+      "default_level": "SEMI_URGENT",
+      "note": "Upgrade EMERGENCY nếu thunderclap / kèm cứng cổ",
+      "department": "NEURO",
+      "ask_more": ["Đau đầu xuất hiện đột ngột hay từ từ?", "Có cứng cổ hoặc sợ ánh sáng không?"]
+    },
+    {
+      "symptom_keywords": ["đau bụng"],
+      "default_level": "SEMI_URGENT",
+      "note": "Upgrade URGENT nếu kèm sốt / đau tăng dần",
+      "department": "GASTRO",
+      "ask_more": ["Đau ở vị trí nào? Có sốt không?", "Đau liên tục hay từng cơn?"]
+    },
+    {
+      "symptom_keywords": ["sốt", "sốt cao", "nóng người"],
+      "default_level": "SEMI_URGENT",
+      "note": "Upgrade nếu kèm rét run / lú lẫn / bệnh nền nguy hiểm",
+      "department": "GENERAL",
+      "ask_more": ["Sốt bao nhiêu độ? Từ bao giờ?", "Có ớn lạnh run rẩy không?"]
+    },
+    {
+      "symptom_keywords": ["chóng mặt", "hoa mắt", "xây xẩm"],
+      "default_level": "SEMI_URGENT",
+      "note": "Upgrade nếu đột ngột + kèm yếu liệt",
+      "department": "NEURO",
+      "ask_more": ["Chóng mặt khi đứng lên hay liên tục?", "Có buồn nôn hoặc ù tai không?"]
+    },
+    {
+      "symptom_keywords": ["đau lưng", "đau cột sống"],
+      "default_level": "ROUTINE",
+      "note": "Upgrade nếu kèm tê yếu chi / mất kiểm soát tiểu tiện",
+      "department": "ORTHO",
+      "ask_more": ["Có tê hoặc yếu chân không?", "Đau sau chấn thương hay tự nhiên?"]
+    },
+    {
+      "symptom_keywords": ["ho", "ho nhiều", "ho lâu ngày"],
+      "default_level": "ROUTINE",
+      "note": "Upgrade nếu ho ra máu hoặc kèm khó thở",
+      "department": "PULMO",
+      "ask_more": ["Ho từ bao lâu? Có ho ra máu không?"]
+    },
+    {
+      "symptom_keywords": ["buồn nôn", "nôn mửa", "ói"],
+      "default_level": "ROUTINE",
+      "note": "Upgrade nếu kèm đau bụng dữ dội hoặc mất nước nặng",
+      "department": "GASTRO",
+      "ask_more": ["Nôn từ bao giờ? Có đau bụng kèm không?"]
+    },
+    {
+      "symptom_keywords": ["tiêu chảy", "đi ngoài nhiều lần"],
+      "default_level": "ROUTINE",
+      "note": "Upgrade nếu có máu hoặc mất nước nặng (trẻ em / người già)",
+      "department": "GASTRO",
+      "ask_more": ["Tiêu chảy bao nhiêu lần/ngày? Có máu trong phân không?"]
+    },
+    {
+      "symptom_keywords": ["đau khớp", "sưng khớp"],
+      "default_level": "ROUTINE",
+      "note": "Upgrade nếu đột ngột + sốt",
+      "department": "RHEUMA",
+      "ask_more": ["Sưng đỏ nóng không? Có sốt không?"]
+    },
+    {
+      "symptom_keywords": ["phát ban", "nổi mề đay", "ngứa toàn thân"],
+      "default_level": "SEMI_URGENT",
+      "note": "Upgrade EMERGENCY nếu kèm khó thở / sưng môi họng",
+      "department": "DERMA",
+      "ask_more": ["Có khó thở hoặc sưng môi/họng không?", "Gần đây có dùng thuốc/ăn thức ăn lạ không?"]
+    },
+    {
+      "symptom_keywords": ["đau mắt", "mờ mắt đột ngột", "nhìn đôi"],
+      "default_level": "URGENT",
+      "note": "Mờ mắt đột ngột — nguy cơ bong võng mạc hoặc glaucoma cấp",
+      "department": "OPHTHAL",
+      "ask_more": ["Mờ mắt đột ngột hay từ từ? Có đau mắt không?"]
+    },
+    {
+      "symptom_keywords": ["đau ngực khi thở", "đau khi hít thở sâu"],
+      "default_level": "URGENT",
+      "note": "Viêm màng phổi hoặc PE",
+      "department": "PULMO",
+      "ask_more": ["Có khó thở kèm không? Chân có sưng không?"]
+    },
+    {
+      "symptom_keywords": ["tim đập nhanh", "hồi hộp", "loạn nhịp", "tim đập không đều"],
+      "default_level": "URGENT",
+      "note": "Rối loạn nhịp cần đánh giá ECG",
+      "department": "CARDIO",
+      "ask_more": ["Hồi hộp liên tục hay từng cơn? Có chóng mặt hoặc ngất không?"]
+    }
+  ],
+
+  "risk_boosters": [
+    {
+      "id": "RB-01",
+      "condition_keywords": ["tiểu đường", "đái tháo đường", "diabetes"],
+      "symptom_triggers": ["sốt", "nhiễm trùng", "vết thương không lành", "tiểu buốt"],
+      "upgrade": "SEMI_URGENT → URGENT",
+      "reason": "Tiểu đường làm tăng nguy cơ nhiễm khuẩn huyết và biến chứng",
+      "note": "ADA: Diabetic patients with infection need prompt evaluation"
+    },
+    {
+      "id": "RB-02",
+      "condition_keywords": ["tim mạch", "bệnh tim", "suy tim", "nhồi máu cơ tim cũ"],
+      "symptom_triggers": ["khó thở", "đau ngực", "mệt mỏi tăng", "phù chân"],
+      "upgrade": "ROUTINE → URGENT",
+      "reason": "Bệnh tim nền làm tăng nguy cơ suy tim cấp mất bù",
+      "note": "ACC/AHA: New or worsening symptoms in cardiac patients require same-day evaluation"
+    },
+    {
+      "id": "RB-03",
+      "condition_keywords": ["tăng huyết áp", "cao huyết áp", "hypertension"],
+      "symptom_triggers": ["đau đầu dữ dội", "nhìn mờ", "tê yếu"],
+      "upgrade": "SEMI_URGENT → URGENT",
+      "reason": "Nguy cơ tăng huyết áp khẩn cấp hoặc đột quỵ",
+      "note": "JNC-8: Symptomatic hypertension with end-organ involvement"
+    },
+    {
+      "id": "RB-04",
+      "condition_keywords": ["COPD", "hen suyễn", "khí phế thũng", "bệnh phổi mãn"],
+      "symptom_triggers": ["khó thở", "ho nhiều hơn thường", "đờm nhiều thay đổi màu"],
+      "upgrade": "ROUTINE → URGENT",
+      "reason": "Đợt cấp COPD/hen có thể tiến triển nhanh",
+      "note": "GOLD Guidelines: COPD exacerbation requires prompt treatment"
+    },
+    {
+      "id": "RB-05",
+      "condition_keywords": ["ung thư", "hóa trị", "xạ trị", "suy giảm miễn dịch", "HIV"],
+      "symptom_triggers": ["sốt", "ớn lạnh", "nhiễm trùng"],
+      "upgrade": "SEMI_URGENT → EMERGENCY",
+      "reason": "Sốt ở bệnh nhân suy giảm miễn dịch = cấp cứu ung thư (febrile neutropenia)",
+      "note": "ASCO: Fever in immunocompromised patients — medical emergency"
+    },
+    {
+      "id": "RB-06",
+      "condition_keywords": ["thai kỳ", "mang thai", "bầu"],
+      "symptom_triggers": ["đau bụng", "chảy máu âm đạo", "đau đầu dữ dội", "phù mặt tay chân"],
+      "upgrade": "SEMI_URGENT → URGENT",
+      "reason": "Các triệu chứng này trong thai kỳ có thể là tiền sản giật hoặc nhau bong non",
+      "note": "ACOG: Abdominal pain/bleeding in pregnancy requires urgent evaluation"
+    },
+    {
+      "id": "RB-07",
+      "condition_keywords": ["uống thuốc chống đông", "warfarin", "xarelto", "eliquis"],
+      "symptom_triggers": ["đau đầu", "chảy máu", "bầm tím bất thường", "máu trong nước tiểu"],
+      "upgrade": "SEMI_URGENT → URGENT",
+      "reason": "Thuốc chống đông làm tăng nguy cơ xuất huyết nội sọ",
+      "note": "Monitor for bleeding complications in anticoagulated patients"
+    },
+    {
+      "id": "RB-08",
+      "condition_keywords": ["người cao tuổi", "lớn tuổi", "già"],
+      "symptom_triggers": ["ngã", "lú lẫn", "mê sảng", "không ăn được"],
+      "upgrade": "ROUTINE → SEMI_URGENT",
+      "reason": "Người cao tuổi có nguy cơ biến chứng cao hơn từ các triệu chứng tưởng nhẹ",
+      "note": "Geriatric assessment: atypical presentations common in elderly"
+    },
+    {
+      "id": "RB-09",
+      "condition_keywords": ["trẻ nhỏ", "trẻ sơ sinh", "trẻ dưới 3 tuổi"],
+      "symptom_triggers": ["sốt cao", "bỏ bú", "quấy khóc không dứt", "thở nhanh"],
+      "upgrade": "ROUTINE → URGENT",
+      "reason": "Trẻ nhỏ có thể diễn tiến nặng rất nhanh",
+      "note": "Pediatric fever protocol: infants under 3 months with fever = emergency"
+    },
+    {
+      "id": "RB-10",
+      "condition_keywords": ["suy thận", "chạy thận", "lọc máu"],
+      "symptom_triggers": ["khó thở", "phù tăng nhanh", "tiểu ít", "không tiểu"],
+      "upgrade": "SEMI_URGENT → URGENT",
+      "reason": "Bệnh nhân suy thận có nguy cơ phù phổi cấp và rối loạn điện giải",
+      "note": "CKD patients with fluid overload require urgent nephrology evaluation"
+    }
+  ],
+
+  "triage_questions": {
+    "initial": [
+      "Bạn đang có triệu chứng gì khiến bạn muốn đi khám?",
+      "Triệu chứng này xuất hiện từ bao giờ — hôm nay, vài ngày, hay đã lâu?"
+    ],
+    "severity": [
+      "Mức độ khó chịu như thế nào: nhẹ (vẫn sinh hoạt bình thường) / vừa (ảnh hưởng sinh hoạt) / nặng (không thể làm gì)?",
+      "Triệu chứng có xuất hiện đột ngột không?"
+    ],
+    "history": [
+      "Bạn có bệnh nền gì không? (tim mạch, tiểu đường, huyết áp, phổi...)",
+      "Bạn đang uống thuốc gì không?"
+    ],
+    "max_questions": 3,
+    "note": "Không hỏi quá 3 lượt — nếu chưa đủ thông tin thì default SEMI_URGENT + GENERAL"
+  },
+
+  "actions": {
+    "escalate_er": {
+      "book_appointment": false,
+      "message_template": "Triệu chứng của bạn cần được xử lý khẩn cấp. Gọi 115 hoặc đến thẳng Khoa Cấp cứu. KHÔNG tự lái xe.",
+      "notify_staff": true
+    },
+    "book_today": {
+      "book_appointment": true,
+      "slot_preference": "earliest_today",
+      "fallback": "earliest_available",
+      "message_template": "Triệu chứng của bạn cần được khám trong ngày hôm nay. Tôi sẽ đặt lịch sớm nhất có thể."
+    },
+    "book_next_available": {
+      "book_appointment": true,
+      "slot_preference": "next_2_3_days",
+      "message_template": "Tôi sẽ đặt lịch cho bạn trong vòng 2–3 ngày tới."
+    },
+    "book_normal": {
+      "book_appointment": true,
+      "slot_preference": "user_choice",
+      "message_template": "Triệu chứng của bạn có thể đặt lịch bình thường. Bạn muốn khám vào ngày nào?"
+    }
+  }
+}

@@ -1,0 +1,309 @@
+[
+  {
+    "code": "EMERG",
+    "department": "Khoa Cấp cứu",
+    "description": "Khoa Cấp cứu – Xử lý các tình huống nguy hiểm tính mạng cần can thiệp ngay.",
+    "symptoms": [
+      "đau ngực dữ dội, đau ngực đột ngột",
+      "khó thở nặng, không thở được",
+      "mất ý thức, bất tỉnh",
+      "chấn thương nặng do tai nạn",
+      "chảy máu nhiều, xuất huyết không cầm",
+      "co giật liên tục",
+      "ngộ độc thức ăn, ngộ độc thuốc",
+      "đột quỵ, tai biến mạch máu não",
+      "bỏng nặng, điện giật",
+      "phản ứng dị ứng nặng, sốc phản vệ"
+    ],
+    "keywords": ["cấp cứu", "đau ngực dữ dội", "khó thở nặng", "mất ý thức", "bất tỉnh", "xuất huyết", "co giật", "ngộ độc", "đột quỵ", "tai biến", "sốc phản vệ"]
+  },
+  {
+    "code": "CARDIO",
+    "department": "Khoa Tim Mạch",
+    "description": "Khoa Tim Mạch – Khám và điều trị bệnh tim và mạch máu.",
+    "symptoms": [
+      "đau ngực, tức ngực khi nghỉ hoặc gắng sức",
+      "khó thở khi gắng sức, leo cầu thang",
+      "tim đập nhanh, hồi hộp, đánh trống ngực",
+      "tim đập không đều, loạn nhịp tim",
+      "phù chân kèm khó thở",
+      "huyết áp cao, tăng huyết áp",
+      "ngất xỉu, choáng váng đột ngột",
+      "đau ngực lan ra tay trái, vai trái",
+      "tím tái môi và đầu ngón tay",
+      "suy tim, mệt khi gắng sức nhẹ"
+    ],
+    "keywords": ["tim", "ngực", "tức ngực", "hồi hộp", "loạn nhịp", "ngất", "tím tái", "đau ngực", "huyết áp", "suy tim", "nhồi máu"]
+  },
+  {
+    "code": "ENDO",
+    "department": "Khoa Nội Tiết",
+    "description": "Khoa Nội Tiết – Khám và điều trị các bệnh nội tiết, chuyển hóa.",
+    "symptoms": [
+      "tiểu đường, đường huyết cao",
+      "khát nước nhiều, uống nước nhiều",
+      "tiểu nhiều, tiểu đêm",
+      "tuyến giáp to, cổ to",
+      "cường giáp, suy giáp",
+      "HbA1c cao, xét nghiệm đường huyết bất thường",
+      "béo phì, tăng cân bất thường",
+      "giảm cân không rõ nguyên nhân kèm run tay",
+      "rối loạn nội tiết, kinh nguyệt bất thường do nội tiết",
+      "loãng xương liên quan nội tiết"
+    ],
+    "keywords": ["tiểu đường", "đường huyết", "tuyến giáp", "nội tiết", "HbA1c", "cường giáp", "suy giáp", "béo phì", "khát nước", "tiểu nhiều"]
+  },
+  {
+    "code": "NEURO",
+    "department": "Khoa Thần Kinh",
+    "description": "Khoa Thần Kinh – Khám và điều trị bệnh thần kinh, não bộ.",
+    "symptoms": [
+      "đau đầu dữ dội, đau nửa đầu (migraine)",
+      "chóng mặt, mất thăng bằng",
+      "tê bì tay chân, mất cảm giác",
+      "mất ngủ kéo dài, rối loạn giấc ngủ",
+      "co giật, động kinh",
+      "run tay, yếu cơ tay chân",
+      "mất trí nhớ, hay quên, sa sút trí tuệ",
+      "đau dây thần kinh, viêm dây thần kinh",
+      "liệt mặt, méo miệng đột ngột",
+      "đột quỵ, yếu liệt nửa người"
+    ],
+    "keywords": ["đau đầu", "chóng mặt", "tê bì", "mất ngủ", "co giật", "run tay", "trí nhớ", "thần kinh", "liệt", "đột quỵ", "tai biến", "migraine"]
+  },
+  {
+    "code": "GASTRO",
+    "department": "Khoa Tiêu Hóa",
+    "description": "Khoa Tiêu Hóa – Khám và điều trị bệnh đường tiêu hóa.",
+    "symptoms": [
+      "đau bụng vùng thượng vị, đau dạ dày",
+      "ợ nóng, ợ chua, trào ngược dạ dày",
+      "buồn nôn, nôn ói kéo dài",
+      "tiêu chảy kéo dài, phân lỏng",
+      "táo bón mãn tính",
+      "đau bụng sau khi ăn",
+      "phân có máu, phân đen",
+      "viêm loét dạ dày tá tràng",
+      "sỏi mật, đau hạ sườn phải",
+      "viêm đại tràng, hội chứng ruột kích thích",
+      "vàng da, vàng mắt"
+    ],
+    "keywords": ["bụng", "dạ dày", "tiêu chảy", "táo bón", "ợ nóng", "trào ngược", "nôn", "phân", "đại tràng", "ruột", "gan", "mật", "vàng da"]
+  },
+  {
+    "code": "RHEUMA",
+    "department": "Khoa Cơ Xương Khớp",
+    "description": "Khoa Cơ Xương Khớp – Khám và điều trị bệnh cơ xương khớp.",
+    "symptoms": [
+      "đau khớp gối, khớp tay, khớp vai",
+      "đau lưng, đau cột sống thắt lưng",
+      "viêm khớp, cứng khớp buổi sáng",
+      "thoái hóa khớp",
+      "thoát vị đĩa đệm, chèn ép thần kinh",
+      "đau vai gáy, cứng cổ",
+      "gout, đau ngón chân cái sưng đỏ",
+      "loãng xương, gãy xương dễ dàng",
+      "bong gân, trật khớp",
+      "viêm gân, viêm bao hoạt dịch"
+    ],
+    "keywords": ["khớp", "xương", "lưng", "cột sống", "thoái hóa", "đĩa đệm", "vai gáy", "gout", "loãng xương", "bong gân", "viêm khớp", "sưng khớp"]
+  },
+  {
+    "code": "DERMA",
+    "department": "Khoa Da Liễu",
+    "description": "Khoa Da Liễu – Khám và điều trị các bệnh ngoài da.",
+    "symptoms": [
+      "nổi mẩn đỏ, phát ban toàn thân",
+      "ngứa da, dị ứng da",
+      "mụn trứng cá, mụn viêm nhiễm",
+      "nấm da, nấm móng chân",
+      "vảy nến, chàm (eczema)",
+      "mề đay, nổi mề đay",
+      "zona thần kinh, giời leo",
+      "rụng tóc bất thường, hói đầu",
+      "nốt ruồi thay đổi kích thước màu sắc",
+      "viêm da cơ địa, da khô bong tróc"
+    ],
+    "keywords": ["da", "ngứa", "mẩn", "mụn", "nấm", "vảy nến", "chàm", "mề đay", "zona", "rụng tóc", "dị ứng", "phát ban"]
+  },
+  {
+    "code": "OBGYN",
+    "department": "Khoa Sản Phụ Khoa",
+    "description": "Khoa Sản Phụ Khoa – Khám thai, sinh đẻ và các bệnh phụ khoa.",
+    "symptoms": [
+      "khám thai định kỳ, siêu âm thai",
+      "đau bụng dưới khi mang thai",
+      "ra huyết khi mang thai",
+      "đau bụng kinh dữ dội",
+      "rối loạn kinh nguyệt, kinh không đều",
+      "khí hư bất thường, ra dịch âm đạo",
+      "u xơ tử cung, u nang buồng trứng",
+      "viêm phụ khoa, ngứa vùng kín",
+      "mang thai cần theo dõi, thai kỳ nguy cơ cao",
+      "sinh đẻ, chuyển dạ"
+    ],
+    "keywords": ["thai", "mang thai", "kinh nguyệt", "phụ khoa", "tử cung", "sinh", "đẻ", "sản", "bầu", "khí hư", "buồng trứng", "âm đạo"]
+  },
+  {
+    "code": "PEDIAT",
+    "department": "Khoa Nhi",
+    "description": "Khoa Nhi – Khám và điều trị bệnh cho trẻ em dưới 16 tuổi.",
+    "symptoms": [
+      "trẻ em sốt cao, sốt không hạ",
+      "trẻ bị ho, sổ mũi kéo dài",
+      "trẻ bị tiêu chảy, nôn ói",
+      "trẻ biếng ăn, chậm lớn, chậm phát triển",
+      "trẻ bị phát ban, nổi mẩn đỏ",
+      "trẻ bị co giật khi sốt cao",
+      "trẻ sơ sinh vàng da",
+      "trẻ bị viêm phổi, khó thở",
+      "khám sức khỏe định kỳ cho trẻ",
+      "tiêm chủng cho trẻ, vaccine"
+    ],
+    "keywords": ["trẻ em", "trẻ", "bé", "con", "nhi", "sơ sinh", "em bé", "cháu", "con nhỏ", "trẻ nhỏ", "tiêm chủng"]
+  },
+  {
+    "code": "OPHTHAL",
+    "department": "Khoa Mắt",
+    "description": "Khoa Mắt – Khám và điều trị các bệnh về mắt.",
+    "symptoms": [
+      "mắt mờ, nhìn không rõ, giảm thị lực",
+      "đau mắt, nhức mắt",
+      "mắt đỏ, viêm kết mạc, đau mắt đỏ",
+      "cận thị, viễn thị, loạn thị cần kiểm tra",
+      "chảy nước mắt liên tục",
+      "mắt bị lẹo, chắp mắt",
+      "đục thủy tinh thể, nhìn mờ dần",
+      "tăng nhãn áp, glaucoma",
+      "nhìn đôi, nhìn mờ đột ngột",
+      "mắt khô, cộm mắt"
+    ],
+    "keywords": ["mắt", "nhìn", "thị lực", "cận thị", "viễn thị", "lẹo", "thủy tinh thể", "nhãn áp", "kết mạc", "mờ mắt", "đau mắt"]
+  },
+  {
+    "code": "ENT",
+    "department": "Khoa Tai Mũi Họng",
+    "description": "Khoa Tai Mũi Họng – Khám và điều trị bệnh tai, mũi, họng.",
+    "symptoms": [
+      "đau họng, viêm họng, nuốt đau",
+      "viêm amidan, sưng amidan",
+      "nghẹt mũi, sổ mũi kéo dài",
+      "viêm xoang, đau đầu vùng trán mũi",
+      "đau tai, viêm tai giữa",
+      "ù tai, nghe kém, điếc",
+      "khàn tiếng, mất tiếng",
+      "chảy máu mũi, chảy mũi máu",
+      "nuốt vướng, vướng cổ họng",
+      "viêm thanh quản, khó nói"
+    ],
+    "keywords": ["họng", "tai", "mũi", "amidan", "xoang", "ù tai", "khàn tiếng", "nuốt đau", "thanh quản", "viêm họng", "nghẹt mũi"]
+  },
+  {
+    "code": "UROLOGY",
+    "department": "Khoa Thận Tiết Niệu",
+    "description": "Khoa Thận Tiết Niệu – Khám và điều trị bệnh đường tiết niệu, thận.",
+    "symptoms": [
+      "tiểu buốt, tiểu rắt, tiểu khó",
+      "tiểu ra máu",
+      "đau vùng thắt lưng nghi sỏi thận",
+      "sỏi thận, sỏi niệu quản, sỏi bàng quang",
+      "tiểu không tự chủ, són tiểu",
+      "nhiễm trùng đường tiết niệu",
+      "tiểu đêm nhiều lần",
+      "phì đại tuyến tiền liệt",
+      "đau vùng bàng quang, bụng dưới",
+      "suy thận, creatinine cao"
+    ],
+    "keywords": ["tiểu buốt", "tiểu rắt", "thận", "sỏi thận", "bàng quang", "tiết niệu", "tiền liệt tuyến", "tiểu máu", "suy thận"]
+  },
+  {
+    "code": "GENERAL",
+    "department": "Khoa Nội Tổng Quát",
+    "description": "Khoa Nội Tổng Quát – Khám và điều trị các bệnh nội khoa, bệnh mãn tính không chuyên sâu.",
+    "symptoms": [
+      "sốt kéo dài không rõ nguyên nhân",
+      "mệt mỏi kéo dài, suy nhược cơ thể",
+      "sốt, cảm cúm thông thường",
+      "chóng mặt, hoa mắt không rõ nguyên nhân",
+      "thiếu máu, xanh xao, da vàng nhẹ",
+      "sụt cân không rõ nguyên nhân",
+      "phù chân, phù tay nhẹ",
+      "kiểm tra sức khỏe định kỳ người lớn",
+      "khám tổng quát ban đầu không biết khoa nào",
+      "bệnh mãn tính cần theo dõi định kỳ"
+    ],
+    "keywords": ["sốt", "mệt mỏi", "cảm cúm", "thiếu máu", "sụt cân", "phù", "khám tổng quát", "sức khỏe định kỳ", "mãn tính"]
+  },
+  {
+    "code": "SURGERY",
+    "department": "Khoa Ngoại",
+    "description": "Khoa Ngoại Tổng Quát – Phẫu thuật và điều trị các bệnh lý cần can thiệp ngoại khoa.",
+    "symptoms": [
+      "chấn thương do tai nạn cần phẫu thuật",
+      "vết thương hở, vết cắt sâu",
+      "khối u, bướu cần sinh thiết hoặc cắt bỏ",
+      "thoát vị bẹn, thoát vị rốn",
+      "viêm ruột thừa cấp",
+      "áp xe, nhiễm trùng cần dẫn lưu",
+      "bỏng nặng cần ghép da",
+      "sỏi mật cần phẫu thuật",
+      "trĩ, rò hậu môn",
+      "ung thư cần phẫu thuật"
+    ],
+    "keywords": ["phẫu thuật", "mổ", "khối u", "bướu", "thoát vị", "ruột thừa", "áp xe", "bỏng", "sỏi mật", "trĩ", "ung thư", "vết thương hở"]
+  },
+  {
+    "code": "DENTAL",
+    "department": "Khoa Răng Hàm Mặt",
+    "description": "Khoa Răng Hàm Mặt – Khám và điều trị bệnh răng miệng, hàm mặt.",
+    "symptoms": [
+      "đau răng, nhức răng",
+      "sâu răng, lỗ răng",
+      "viêm nướu, chảy máu nướu răng",
+      "lung lay răng",
+      "sưng má, sưng mặt do răng",
+      "răng khôn mọc lệch gây đau",
+      "hôi miệng kéo dài",
+      "lở miệng, nhiệt miệng",
+      "gãy răng do chấn thương",
+      "cần nhổ răng, trám răng, bọc răng sứ"
+    ],
+    "keywords": ["răng", "nướu", "miệng", "hàm", "sâu răng", "răng khôn", "hôi miệng", "đau răng", "nhổ răng", "trám răng"]
+  },
+  {
+    "code": "PULMO",
+    "department": "Khoa Hô Hấp",
+    "description": "Khoa Hô Hấp – Khám và điều trị bệnh phổi, đường hô hấp.",
+    "symptoms": [
+      "ho kéo dài trên 2 tuần",
+      "ho ra đờm vàng xanh, ho ra máu",
+      "khó thở, thở khò khè",
+      "hen suyễn, cơn hen",
+      "viêm phổi, viêm phế quản",
+      "đau ngực khi hít sâu hoặc thở",
+      "ngủ ngáy nặng, ngưng thở khi ngủ",
+      "lao phổi, nghi lao, ho kéo dài kèm sụt cân",
+      "tràn dịch màng phổi",
+      "khó thở mãn tính COPD"
+    ],
+    "keywords": ["ho", "phổi", "thở", "hen suyễn", "phế quản", "đờm", "ngáy", "lao phổi", "COPD", "khó thở mãn tính", "tức ngực khi thở"]
+  },
+  {
+    "code": "ORTHO",
+    "department": "Khoa Chấn Thương Chỉnh Hình",
+    "description": "Khoa Chấn Thương Chỉnh Hình – Điều trị gãy xương, chấn thương vận động.",
+    "symptoms": [
+      "gãy xương do chấn thương",
+      "trật khớp vai, khớp gối",
+      "đau cột sống cổ, đau vai gáy",
+      "thoát vị đĩa đệm cổ hoặc thắt lưng",
+      "chấn thương thể thao: rách dây chằng, đứt gân",
+      "đau gót chân, viêm cân gan chân",
+      "bàn chân bẹt, biến dạng bàn chân",
+      "cứng khớp sau chấn thương",
+      "đau sau phẫu thuật xương khớp",
+      "viêm xương tủy xương"
+    ],
+    "keywords": ["gãy xương", "trật khớp", "chấn thương thể thao", "dây chằng", "gân", "đĩa đệm cổ", "vai gáy", "gót chân", "chỉnh hình", "cột sống cổ"]
+  }
+]
