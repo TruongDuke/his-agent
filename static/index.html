@@ -1,0 +1,1345 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#005d5d">
+  <title>HIS Agent — Bệnh viện Đa khoa Hà Nội</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <style>
+    /* ── Design tokens (OpenMRS / Carbon) ── */
+    :root {
+      --brand-01: #005d5d;
+      --brand-02: #004144;
+      --brand-03: #007d79;
+      --ui-01:    #f4f4f4;
+      --ui-02:    #ffffff;
+      --ui-03:    #e0e0e0;
+      --ui-04:    #8d8d8d;
+      --ui-05:    #161616;
+      --text-01:  #161616;
+      --text-02:  #525252;
+      --text-03:  #a8a8a8;
+      --danger:   #da1e28;
+      --success:  #198038;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'IBM Plex Sans', system-ui, sans-serif;
+      background: var(--ui-01);
+      color: var(--text-01);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      font-size: 14px;
+    }
+
+    /* ════════════════════════════════
+       MÀNG 1 — LOGIN
+    ════════════════════════════════ */
+    #screen-login {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: var(--ui-01);
+      padding: 24px;
+    }
+    .login-brand {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 40px;
+    }
+    .login-brand-icon {
+      width: 48px; height: 48px;
+      background: var(--brand-01);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px;
+    }
+    .login-brand h1 { font-size: 20px; font-weight: 600; color: var(--text-01); }
+    .login-brand p  { font-size: 13px; color: var(--text-02); margin-top: 2px; }
+
+    .login-prompt {
+      font-size: 15px; font-weight: 500;
+      color: var(--text-02);
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .role-cards {
+      display: flex; gap: 20px;
+      flex-wrap: wrap; justify-content: center;
+    }
+    .role-card {
+      width: 220px;
+      background: var(--ui-02);
+      border: 1px solid var(--ui-03);
+      border-bottom: 3px solid var(--ui-03);
+      padding: 28px 20px 24px;
+      cursor: pointer;
+      text-align: center;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .role-card:hover {
+      border-color: var(--brand-03);
+      border-bottom-color: var(--brand-01);
+      box-shadow: 0 2px 8px rgba(0,93,93,.12);
+    }
+    .role-card .role-icon {
+      font-size: 40px;
+      margin-bottom: 14px;
+      display: block;
+    }
+    .role-card h2 { font-size: 16px; font-weight: 600; margin-bottom: 6px; color: var(--text-01); }
+    .role-card p  { font-size: 12px; color: var(--text-02); line-height: 1.5; }
+    .role-card .role-btn {
+      margin-top: 18px;
+      display: block;
+      background: var(--brand-01);
+      color: #fff;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 500;
+      border: none;
+      padding: 9px 0;
+      width: 100%;
+      cursor: pointer;
+      transition: background .1s;
+    }
+    .role-card .role-btn:hover { background: var(--brand-02); }
+
+    /* ════════════════════════════════
+       HEADER CHUNG
+    ════════════════════════════════ */
+    .app-header {
+      background: var(--brand-01);
+      height: 48px;
+      display: flex; align-items: center;
+      padding: 0 16px;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+    .app-header .h-logo {
+      display: flex; align-items: center; gap: 10px;
+      flex: 1;
+    }
+    .app-header .h-logo-icon {
+      width: 28px; height: 28px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 3px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px;
+    }
+    .app-header .h-logo-text h1  { font-size: 14px; font-weight: 600; color: #fff; }
+    .app-header .h-logo-text p   { font-size: 11px; color: rgba(255,255,255,.6); margin-top: 1px; }
+    .h-icon-btn {
+      width: 40px; height: 48px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: rgba(255,255,255,.85);
+      font-size: 16px;
+      transition: background .1s;
+    }
+    .h-icon-btn:hover { background: var(--brand-02); }
+    .h-logout {
+      padding: 0 14px;
+      height: 32px;
+      background: transparent;
+      border: 1px solid rgba(255,255,255,.3);
+      color: #fff;
+      font-family: inherit;
+      font-size: 12px;
+      cursor: pointer;
+      transition: background .1s;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .h-logout:hover { background: var(--brand-02); }
+
+    /* ════════════════════════════════
+       MÀNG 2 — PATIENT CHAT
+    ════════════════════════════════ */
+    #screen-patient {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    /* layout dưới header */
+    .patient-layout {
+      display: flex; flex: 1; overflow: hidden;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 200px;
+      background: var(--ui-02);
+      border-right: 1px solid var(--ui-03);
+      display: flex;
+      flex-direction: column;
+      padding: 16px 0;
+      flex-shrink: 0;
+    }
+    .sidebar-label {
+      font-size: 11px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: .08em;
+      color: var(--text-03);
+      padding: 0 16px; margin-bottom: 8px;
+    }
+    .quick-btn {
+      padding: 10px 16px;
+      background: transparent;
+      border: none;
+      border-left: 3px solid transparent;
+      color: var(--text-02);
+      font-family: inherit;
+      font-size: 13px;
+      text-align: left;
+      cursor: pointer;
+      transition: all .1s;
+      display: flex; align-items: center; gap: 10px;
+      width: 100%;
+    }
+    .quick-btn:hover {
+      background: var(--ui-01);
+      border-left-color: var(--brand-03);
+      color: var(--text-01);
+    }
+    .quick-btn .icon { font-size: 14px; flex-shrink: 0; }
+    .sidebar-divider { height: 1px; background: var(--ui-03); margin: 6px 0; }
+
+    /* Chat area */
+    .chat-area {
+      flex: 1; display: flex; flex-direction: column; overflow: hidden;
+      background: var(--ui-01);
+    }
+    .messages {
+      flex: 1; overflow-y: auto;
+      padding: 24px; display: flex;
+      flex-direction: column; gap: 12px;
+      scroll-behavior: smooth;
+    }
+    .messages::-webkit-scrollbar { width: 4px; }
+    .messages::-webkit-scrollbar-thumb { background: var(--ui-03); }
+
+    /* Message bubbles */
+    .msg-row { display: flex; gap: 8px; max-width: 800px; align-items: flex-start; }
+    .msg-row.user { flex-direction: row-reverse; margin-left: auto; }
+
+    .avatar {
+      width: 28px; height: 28px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 600;
+      flex-shrink: 0; margin-top: 2px;
+    }
+    .avatar.bot  { background: var(--brand-01); color: #fff; }
+    .avatar.user { background: var(--ui-03); color: var(--text-02); }
+
+    .bubble {
+      padding: 10px 14px; font-size: 14px; line-height: 1.6;
+      max-width: calc(100% - 40px);
+    }
+    .msg-row.bot .bubble {
+      background: var(--ui-02); border: 1px solid var(--ui-03);
+      border-radius: 0 8px 8px 8px; color: var(--text-01);
+    }
+    .msg-row.user .bubble {
+      background: var(--brand-01); border-radius: 8px 0 8px 8px; color: #fff;
+    }
+
+    /* markdown */
+    .bubble p   { margin-bottom: 6px; }
+    .bubble p:last-child { margin-bottom: 0; }
+    .bubble ul, .bubble ol { padding-left: 18px; margin-bottom: 6px; }
+    .bubble li  { margin-bottom: 3px; }
+    .bubble strong { font-weight: 600; }
+    .msg-row.bot .bubble strong { color: var(--brand-01); }
+    .bubble hr { border: none; border-top: 1px solid var(--ui-03); margin: 8px 0; }
+
+    /* typing dots */
+    .typing-dots span {
+      display: inline-block; width: 5px; height: 5px;
+      background: var(--ui-04); border-radius: 50%; margin: 0 2px;
+      animation: bounce 1.2s infinite;
+    }
+    .typing-dots span:nth-child(2) { animation-delay: .2s; }
+    .typing-dots span:nth-child(3) { animation-delay: .4s; }
+    @keyframes bounce {
+      0%,80%,100% { transform: translateY(0); }
+      40%          { transform: translateY(-5px); }
+    }
+
+    /* status & tool badges */
+    .status-line { font-size: 12px; color: var(--text-03); font-style: italic; margin-bottom: 4px; }
+    .tool-badges { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px; }
+    .tool-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: #e6f4f4; border: 1px solid #a3d4d2;
+      border-radius: 2px; padding: 2px 8px;
+      font-size: 11px; color: var(--brand-01); font-weight: 500;
+    }
+    .tool-badge::before { content: "⚙ "; }
+
+    /* Input bar */
+    .input-bar {
+      padding: 14px 20px;
+      border-top: 1px solid var(--ui-03);
+      background: var(--ui-02);
+      flex-shrink: 0;
+    }
+    .input-wrap {
+      display: flex; align-items: flex-end; gap: 8px;
+      background: var(--ui-01);
+      border: 1px solid var(--ui-03);
+      border-bottom: 2px solid var(--ui-04);
+      padding: 8px 12px;
+      transition: border-color .1s;
+    }
+    .input-wrap:focus-within { border-bottom-color: var(--brand-01); }
+    .chat-input {
+      flex: 1; background: transparent; border: none; outline: none;
+      color: var(--text-01); font-size: 14px;
+      resize: none; max-height: 120px; line-height: 1.5;
+      font-family: inherit;
+    }
+    .chat-input::placeholder { color: var(--text-03); }
+    .send-btn {
+      width: 32px; height: 32px;
+      background: var(--brand-01); border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; transition: background .1s;
+    }
+    .send-btn:hover { background: var(--brand-02); }
+    .send-btn:disabled { background: var(--ui-03); cursor: not-allowed; }
+    .send-btn svg { width: 16px; height: 16px; fill: white; }
+    .input-hint { font-size: 11px; color: var(--text-03); text-align: right; margin-top: 4px; }
+
+    /* Welcome screen */
+    .welcome {
+      margin: auto; text-align: center;
+      padding: 48px 24px; max-width: 460px;
+    }
+    .welcome-icon {
+      width: 60px; height: 60px; background: var(--brand-01); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px; margin: 0 auto 18px;
+    }
+    .welcome h2 { font-size: 18px; font-weight: 600; color: var(--text-01); margin-bottom: 8px; }
+    .welcome p  { font-size: 13px; color: var(--text-02); margin-bottom: 24px; line-height: 1.6; }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+    .chip {
+      padding: 7px 14px;
+      background: var(--ui-02); border: 1px solid var(--ui-03);
+      border-radius: 16px; font-family: inherit;
+      font-size: 13px; color: var(--brand-01); cursor: pointer;
+      transition: all .1s;
+    }
+    .chip:hover { background: #e6f4f4; border-color: var(--brand-03); }
+
+    /* ════════════════════════════════
+       MÀNG 3 — DOCTOR DASHBOARD
+    ════════════════════════════════ */
+    #screen-doctor {
+      flex: 1; display: flex; flex-direction: column; overflow: hidden;
+    }
+    .doctor-body {
+      flex: 1; display: flex; overflow: hidden;
+    }
+
+    /* Doctor sidebar */
+    .doc-sidebar {
+      width: 200px;
+      background: var(--ui-02);
+      border-right: 1px solid var(--ui-03);
+      flex-shrink: 0;
+      display: flex; flex-direction: column;
+      padding: 8px 0;
+      overflow-y: auto;
+    }
+    .doc-nav-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 11px 16px;
+      background: transparent;
+      border: none;
+      border-left: 3px solid transparent;
+      color: var(--text-02);
+      font-family: inherit; font-size: 13px;
+      text-align: left; cursor: pointer;
+      transition: all .1s; width: 100%;
+    }
+    .doc-nav-item:hover {
+      background: var(--ui-01); color: var(--text-01);
+      border-left-color: var(--brand-03);
+    }
+    .doc-nav-item.active {
+      background: var(--ui-03); color: var(--text-01); font-weight: 500;
+      border-left-color: var(--brand-01);
+    }
+    .doc-nav-item .nav-icon { font-size: 15px; flex-shrink: 0; }
+    .doc-nav-sep { height: 1px; background: var(--ui-03); margin: 6px 0; }
+
+    /* Doctor main content */
+    .doc-main {
+      flex: 1; display: flex; flex-direction: column; overflow: hidden;
+      background: var(--ui-01);
+    }
+
+    /* Page header bar */
+    .doc-page-header {
+      background: var(--ui-02);
+      border-bottom: 1px solid var(--ui-03);
+      padding: 16px 24px 0;
+      flex-shrink: 0;
+    }
+    .doc-page-header .page-label {
+      font-size: 11px; color: var(--text-03); text-transform: uppercase;
+      letter-spacing: .06em; margin-bottom: 2px;
+    }
+    .doc-page-header h2 {
+      font-size: 20px; font-weight: 600; color: var(--text-01);
+      padding-bottom: 12px;
+      border-bottom: 3px solid var(--brand-03);
+      display: inline-block;
+    }
+
+    /* Stat cards row */
+    .stat-cards {
+      display: flex; gap: 1px;
+      background: var(--ui-03);
+      border: 1px solid var(--ui-03);
+      margin: 20px 24px 0;
+      flex-shrink: 0;
+    }
+    .stat-card {
+      flex: 1; background: var(--ui-02);
+      padding: 16px 20px 20px;
+    }
+    .stat-card .s-label {
+      font-size: 13px; color: var(--text-02);
+      margin-bottom: 12px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .stat-card .s-value {
+      font-size: 32px; font-weight: 400;
+      color: var(--text-01); line-height: 1;
+    }
+    .stat-card .s-sub {
+      font-size: 12px; color: var(--text-03); margin-top: 6px;
+    }
+
+    /* AI Chat section */
+    .doc-chat-section {
+      flex: 1; display: flex; flex-direction: column; overflow: hidden;
+      margin: 16px 24px 0;
+      background: var(--ui-02);
+      border: 1px solid var(--ui-03);
+    }
+    .doc-chat-header {
+      padding: 12px 16px 10px;
+      border-bottom: 1px solid var(--ui-03);
+      display: flex; align-items: center; gap: 8px;
+      flex-shrink: 0;
+    }
+    .doc-chat-header h3 {
+      font-size: 14px; font-weight: 600; color: var(--text-01);
+      flex: 1;
+    }
+    .doc-chat-header h3::after {
+      content: '';
+      display: block;
+      width: 32px;
+      margin-top: 3px;
+      border-bottom: 3px solid var(--brand-03);
+    }
+    .doc-chat-header .clear-btn {
+      font-size: 12px; color: var(--text-03);
+      background: none; border: none; cursor: pointer;
+      font-family: inherit;
+      padding: 4px 8px;
+    }
+    .doc-chat-header .clear-btn:hover { color: var(--brand-01); }
+
+    /* Doctor messages area (reuses .messages base styles) */
+    .doc-messages {
+      flex: 1; overflow-y: auto;
+      padding: 16px; display: flex;
+      flex-direction: column; gap: 10px;
+      scroll-behavior: smooth;
+      background: var(--ui-01);
+    }
+    .doc-messages::-webkit-scrollbar { width: 4px; }
+    .doc-messages::-webkit-scrollbar-thumb { background: var(--ui-03); }
+
+    /* Doctor input bar */
+    .doc-input-bar {
+      padding: 12px 16px;
+      border-top: 1px solid var(--ui-03);
+      background: var(--ui-02);
+      flex-shrink: 0;
+    }
+
+    /* ── Doctor page content area ── */
+    .doc-content {
+      flex-shrink: 0;
+      padding: 20px 24px 0;
+      max-height: 280px;
+      overflow-y: auto;
+    }
+    .doc-content:empty { display: none; }
+
+    /* Stat cards */
+    .stat-cards {
+      display: flex; gap: 1px;
+      background: var(--ui-03);
+      border: 1px solid var(--ui-03);
+    }
+    .stat-card {
+      flex: 1; background: var(--ui-02);
+      padding: 16px 20px 20px;
+    }
+    .stat-card .s-label { font-size: 13px; color: var(--text-02); margin-bottom: 12px; }
+    .stat-card .s-value { font-size: 32px; font-weight: 400; color: var(--text-01); line-height: 1; }
+    .stat-card .s-sub   { font-size: 12px; color: var(--text-03); margin-top: 6px; }
+
+    /* Toolbar row */
+    .page-toolbar {
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 12px;
+    }
+    .page-toolbar .tb-search {
+      flex: 1; max-width: 280px;
+      background: var(--ui-02);
+      border: 1px solid var(--ui-03);
+      border-bottom: 2px solid var(--ui-04);
+      padding: 6px 10px;
+      font-family: inherit; font-size: 13px; color: var(--text-01);
+      outline: none;
+    }
+    .page-toolbar .tb-search:focus { border-bottom-color: var(--brand-01); }
+    .page-toolbar .tb-select {
+      background: var(--ui-02); border: 1px solid var(--ui-03);
+      border-bottom: 2px solid var(--ui-04);
+      padding: 6px 10px;
+      font-family: inherit; font-size: 13px; color: var(--text-01);
+      outline: none; cursor: pointer;
+    }
+    .page-toolbar .tb-btn {
+      background: var(--brand-01); color: #fff;
+      border: none; padding: 7px 14px;
+      font-family: inherit; font-size: 13px;
+      cursor: pointer; transition: background .1s;
+    }
+    .page-toolbar .tb-btn:hover { background: var(--brand-02); }
+
+    /* Data table */
+    .data-table-wrap {
+      background: var(--ui-02);
+      border: 1px solid var(--ui-03);
+      overflow-x: auto;
+    }
+    .data-table {
+      width: 100%; border-collapse: collapse;
+      font-size: 13px;
+    }
+    .data-table thead { background: var(--ui-01); }
+    .data-table th {
+      padding: 10px 14px; text-align: left;
+      color: var(--text-02); font-weight: 600;
+      border-bottom: 1px solid var(--ui-03);
+      white-space: nowrap;
+    }
+    .data-table td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--ui-03);
+      color: var(--text-01); vertical-align: middle;
+    }
+    .data-table tbody tr:hover { background: var(--ui-01); }
+    .data-table tbody tr:last-child td { border-bottom: none; }
+
+    /* Status badges */
+    .badge {
+      display: inline-block; padding: 2px 8px;
+      border-radius: 2px; font-size: 11px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: .04em;
+    }
+    .badge-green  { background: #defbe6; color: #198038; }
+    .badge-yellow { background: #fdf6dd; color: #b28600; }
+    .badge-red    { background: #fff1f1; color: #da1e28; }
+    .badge-gray   { background: var(--ui-01); color: var(--text-02); border: 1px solid var(--ui-03); }
+
+    /* Empty state */
+    .empty-state {
+      padding: 32px 16px; text-align: center;
+      background: var(--ui-02); border: 1px solid var(--ui-03);
+    }
+    .empty-state p { font-size: 14px; color: var(--text-02); margin-bottom: 4px; }
+    .empty-state small { font-size: 12px; color: var(--text-03); }
+
+    /* Search page */
+    .search-hero {
+      background: var(--ui-02); border: 1px solid var(--ui-03);
+      padding: 20px;
+    }
+    .search-hero label { font-size: 13px; color: var(--text-02); display: block; margin-bottom: 6px; }
+    .search-hero-row { display: flex; gap: 8px; }
+    .search-hero-row input {
+      flex: 1;
+      background: var(--ui-01); border: 1px solid var(--ui-03);
+      border-bottom: 2px solid var(--ui-04);
+      padding: 8px 12px;
+      font-family: inherit; font-size: 14px; color: var(--text-01);
+      outline: none;
+    }
+    .search-hero-row input:focus { border-bottom-color: var(--brand-01); }
+    .search-hero-hint { font-size: 11px; color: var(--text-03); margin-top: 6px; }
+
+    @keyframes pulse {
+      0%,100% { opacity: 1; } 50% { opacity: .4; }
+    }
+
+    /* ════════════════════════════════
+       MÀNG 1b — CHỌN BÁC SĨ
+    ════════════════════════════════ */
+    #screen-select-doctor {
+      flex: 1; display: flex; flex-direction: column; overflow: hidden;
+    }
+    .select-doc-header {
+      background: var(--brand-01);
+      padding: 20px 24px;
+      flex-shrink: 0;
+    }
+    .select-doc-header h2 { font-size: 18px; font-weight: 600; color: #fff; margin-bottom: 4px; }
+    .select-doc-header p  { font-size: 13px; color: rgba(255,255,255,.7); }
+    .select-doc-body {
+      flex: 1; overflow-y: auto;
+      padding: 28px 24px;
+      background: var(--ui-01);
+    }
+    .select-doc-title {
+      font-size: 14px; font-weight: 600;
+      color: var(--text-02); margin-bottom: 16px;
+      text-transform: uppercase; letter-spacing: .06em;
+    }
+    .pract-grid { display: flex; flex-wrap: wrap; gap: 16px; }
+    .pract-card {
+      width: 200px;
+      background: var(--ui-02);
+      border: 1px solid var(--ui-03);
+      border-bottom: 3px solid var(--ui-03);
+      padding: 20px 16px 16px;
+      cursor: pointer;
+      transition: border-color .1s, box-shadow .1s;
+    }
+    .pract-card:hover {
+      border-color: var(--brand-03);
+      border-bottom-color: var(--brand-01);
+      box-shadow: 0 2px 8px rgba(0,93,93,.1);
+    }
+    .pract-card .p-icon  { font-size: 28px; margin-bottom: 10px; display: block; }
+    .pract-card .p-name  { font-size: 14px; font-weight: 600; color: var(--text-01); margin-bottom: 4px; }
+    .pract-card .p-spec  { font-size: 12px; color: var(--text-02); margin-bottom: 14px; min-height: 16px; }
+    .pract-card .p-btn   {
+      width: 100%; background: var(--brand-01); color: #fff; border: none;
+      font-family: inherit; font-size: 12px; padding: 7px; cursor: pointer;
+      transition: background .1s;
+    }
+    .pract-card .p-btn:hover { background: var(--brand-02); }
+    .select-doc-back {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: transparent; border: 1px solid rgba(255,255,255,.4);
+      color: #fff; font-family: inherit; font-size: 12px;
+      padding: 6px 14px; cursor: pointer; margin-top: 12px;
+      transition: background .1s;
+    }
+    .select-doc-back:hover { background: var(--brand-02); }
+
+    /* Hidden util */
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+<!-- ════ MÀNG 1: LOGIN ════ -->
+<div id="screen-login">
+  <div class="login-brand">
+    <div class="login-brand-icon">🏥</div>
+    <div>
+      <h1>HIS Agent</h1>
+      <p>Bệnh viện Đa khoa Hà Nội</p>
+    </div>
+  </div>
+
+  <p class="login-prompt">Bạn đang đăng nhập với tư cách:</p>
+
+  <div class="role-cards">
+    <div class="role-card" onclick="enterRole('patient')">
+      <span class="role-icon">🧑‍💼</span>
+      <h2>Bệnh nhân</h2>
+      <p>Đặt lịch khám, tư vấn triệu chứng, tra cứu thông tin</p>
+      <button class="role-btn">Tiếp tục →</button>
+    </div>
+    <div class="role-card" onclick="enterRole('doctor')">
+      <span class="role-icon">👨‍⚕️</span>
+      <h2>Bác sĩ / Nhân viên</h2>
+      <p>Xem lịch hẹn, tra cứu hồ sơ, quản lý bệnh nhân</p>
+      <button class="role-btn">Tiếp tục →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ MÀNG 1b: CHỌN BÁC SĨ ════ -->
+<div id="screen-select-doctor" class="hidden">
+  <div class="select-doc-header">
+    <h2>Chọn bác sĩ / Nhân viên</h2>
+    <p>Vui lòng chọn tài khoản của bạn để tiếp tục</p>
+    <button class="select-doc-back" onclick="show('screen-login')">← Quay lại</button>
+  </div>
+  <div class="select-doc-body">
+    <div class="select-doc-title">Danh sách bác sĩ</div>
+    <div class="pract-grid" id="pract-grid"></div>
+  </div>
+</div>
+
+<!-- ════ MÀNG 2: PATIENT ════ -->
+<div id="screen-patient" class="hidden">
+  <header class="app-header">
+    <div class="h-logo">
+      <div class="h-logo-icon">🏥</div>
+      <div class="h-logo-text">
+        <h1>HIS Agent</h1>
+        <p>Bệnh viện Đa khoa Hà Nội</p>
+      </div>
+    </div>
+    <button class="h-logout" onclick="logout()">← Đăng xuất</button>
+  </header>
+
+  <div class="patient-layout">
+    <nav class="sidebar">
+      <div class="sidebar-label">Gợi ý nhanh</div>
+      <button class="quick-btn" onclick="fillP('Tôi muốn đặt lịch khám')">
+        <span class="icon">📅</span> Đặt lịch khám
+      </button>
+      <button class="quick-btn" onclick="fillP('Tra cứu hồ sơ bệnh nhân')">
+        <span class="icon">🔍</span> Tra cứu hồ sơ
+      </button>
+      <button class="quick-btn" onclick="fillP('Tôi bị đau đầu và sốt cao')">
+        <span class="icon">🩺</span> Tư vấn triệu chứng
+      </button>
+      <button class="quick-btn" onclick="fillP('Danh sách khoa khám bệnh')">
+        <span class="icon">🏨</span> Danh sách khoa
+      </button>
+      <div class="sidebar-divider"></div>
+      <button class="quick-btn" onclick="fillP('Đăng ký bệnh nhân mới')">
+        <span class="icon">➕</span> Đăng ký mới
+      </button>
+    </nav>
+
+    <div class="chat-area">
+      <div class="messages" id="p-messages">
+        <div class="welcome" id="p-welcome">
+          <div class="welcome-icon">🏥</div>
+          <h2>Xin chào! Tôi có thể giúp gì cho bạn?</h2>
+          <p>Trợ lý AI hỗ trợ đặt lịch khám, tra cứu hồ sơ và tư vấn triệu chứng.</p>
+          <div class="chips">
+            <button class="chip" onclick="fillP('Tôi muốn đặt lịch khám tim mạch')">Đặt lịch tim mạch</button>
+            <button class="chip" onclick="fillP('Tôi bị đau bụng, nên khám khoa nào?')">Đau bụng khám đâu?</button>
+            <button class="chip" onclick="fillP('Kiểm tra lịch hẹn của tôi')">Kiểm tra lịch hẹn</button>
+            <button class="chip" onclick="fillP('Đăng ký bệnh nhân mới')">Đăng ký mới</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="input-bar">
+        <div class="input-wrap">
+          <textarea id="p-input" class="chat-input" rows="1" placeholder="Nhập tin nhắn..."></textarea>
+          <button id="p-send" class="send-btn" onclick="sendMsg('patient')">
+            <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+          </button>
+        </div>
+        <div class="input-hint">Enter gửi · Shift+Enter xuống dòng</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ MÀNG 3: DOCTOR ════ -->
+<div id="screen-doctor" class="hidden">
+  <header class="app-header">
+    <div class="h-logo">
+      <div class="h-logo-icon">🏥</div>
+      <div class="h-logo-text">
+        <h1>HIS — Cổng bác sĩ</h1>
+        <p id="doctor-name-display">Bệnh viện Đa khoa Hà Nội</p>
+      </div>
+    </div>
+    <button class="h-icon-btn" title="Tìm kiếm">🔍</button>
+    <button class="h-icon-btn" title="Thông báo">🔔</button>
+    <button class="h-icon-btn" title="Tài khoản">👤</button>
+    <button class="h-logout" onclick="logout()">← Đăng xuất</button>
+  </header>
+
+  <div class="doctor-body">
+    <!-- Sidebar nav -->
+    <nav class="doc-sidebar">
+      <button class="doc-nav-item active" id="nav-dashboard" onclick="docNav('dashboard')">
+        <span class="nav-icon">📊</span> Dashboard
+      </button>
+      <button class="doc-nav-item" id="nav-appointments" onclick="docNav('appointments')">
+        <span class="nav-icon">📅</span> Lịch hẹn hôm nay
+      </button>
+      <button class="doc-nav-item" id="nav-patients" onclick="docNav('patients')">
+        <span class="nav-icon">👥</span> Bệnh nhân
+      </button>
+      <div class="doc-nav-sep"></div>
+      <button class="doc-nav-item" id="nav-lab" onclick="docNav('lab')">
+        <span class="nav-icon">🔬</span> Xét nghiệm
+      </button>
+      <button class="doc-nav-item" id="nav-search" onclick="docNav('search')">
+        <span class="nav-icon">🔍</span> Tra cứu hồ sơ
+      </button>
+    </nav>
+
+    <!-- Main content -->
+    <main class="doc-main">
+      <!-- Page header -->
+      <div class="doc-page-header">
+        <div class="page-label">Phòng khám</div>
+        <h2 id="doc-page-title">Dashboard</h2>
+      </div>
+
+      <!-- Swappable content area -->
+      <div id="doc-content" class="doc-content"></div>
+
+      <!-- AI Chat panel -->
+      <div class="doc-chat-section">
+        <div class="doc-chat-header">
+          <h3>Trợ lý AI</h3>
+          <button class="clear-btn" onclick="clearDocChat()">Xóa hội thoại</button>
+        </div>
+
+        <div class="doc-messages" id="d-messages">
+          <div class="welcome" id="d-welcome" style="padding:32px 16px;">
+            <div class="welcome-icon" style="width:48px;height:48px;font-size:20px;">🤖</div>
+            <h2 style="font-size:16px;">Trợ lý dành cho bác sĩ</h2>
+            <p style="font-size:13px;">Tra cứu hồ sơ, xem xét nghiệm, kiểm tra lịch hẹn bệnh nhân.</p>
+            <div class="chips">
+              <button class="chip" onclick="fillD('Tìm hồ sơ bệnh nhân Nguyễn Văn An')">Tìm hồ sơ bệnh nhân</button>
+              <button class="chip" onclick="fillD('Xem kết quả xét nghiệm bệnh nhân')">Kết quả xét nghiệm</button>
+              <button class="chip" onclick="fillD('Lịch hẹn còn trống khoa Tim Mạch hôm nay')">Lịch trống Tim Mạch</button>
+              <button class="chip" onclick="fillD('Danh sách khoa khám bệnh')">Danh sách khoa</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="doc-input-bar">
+          <div class="input-wrap">
+            <textarea id="d-input" class="chat-input" rows="1"
+              placeholder="Nhập tên bệnh nhân, triệu chứng, mã lịch hẹn..."></textarea>
+            <button id="d-send" class="send-btn" onclick="sendMsg('doctor')">
+              <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+            </button>
+          </div>
+          <div class="input-hint">Enter gửi · Shift+Enter xuống dòng</div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>
+  /* ── State ── */
+  let role = null;
+  let sessionPatient = null;
+  let sessionDoctor  = null;
+  let currentDoctor  = null;
+
+  /* ── Screen switching ── */
+  function show(id) {
+    ['screen-login','screen-select-doctor','screen-patient','screen-doctor'].forEach(s => {
+      document.getElementById(s).classList.toggle('hidden', s !== id);
+    });
+  }
+
+  function enterRole(r) {
+    role = r;
+    if (r === 'patient') {
+      show('screen-patient');
+      document.getElementById('p-input').focus();
+    } else {
+      show('screen-select-doctor');
+      loadPractitioners();
+    }
+  }
+
+  function logout() {
+    role = null;
+    currentDoctor = null;
+    show('screen-login');
+  }
+
+  /* ── Practitioner selection ── */
+  async function loadPractitioners() {
+    const grid = document.getElementById('pract-grid');
+    grid.innerHTML = [0,1,2,3].map(() => `
+      <div class="pract-card" style="pointer-events:none">
+        <span style="display:block;background:var(--ui-03);border-radius:50%;width:36px;height:36px;margin-bottom:10px;animation:pulse 1.2s infinite"></span>
+        <div style="background:var(--ui-03);height:14px;width:70%;border-radius:2px;margin-bottom:8px;animation:pulse 1.2s infinite"></div>
+        <div style="background:var(--ui-03);height:12px;width:50%;border-radius:2px;margin-bottom:14px;animation:pulse 1.2s infinite"></div>
+        <div style="background:var(--ui-03);height:28px;border-radius:2px;animation:pulse 1.2s infinite"></div>
+      </div>`).join('');
+    try {
+      const data = await fetch('/api/practitioners').then(r => r.json());
+      const rows = data.practitioners || [];
+      if (!rows.length) {
+        grid.innerHTML = '<p style="color:var(--text-02);padding:16px">Không tìm thấy bác sĩ nào trong hệ thống.</p>';
+        return;
+      }
+      grid.innerHTML = rows.map(p => `
+        <div class="pract-card" onclick="selectDoctor('${p.id}', '${(p.name||'').replace(/'/g,'&#39;')}')">
+          <span class="p-icon">👨‍⚕️</span>
+          <div class="p-name">${p.name || '(Chưa có tên)'}</div>
+          <div class="p-spec">${p.specialty || ''}</div>
+          <button class="p-btn">Chọn →</button>
+        </div>`).join('');
+    } catch (e) {
+      grid.innerHTML = `<p style="color:var(--danger);padding:16px">Lỗi tải danh sách: ${e.message}</p>`;
+    }
+  }
+
+  function selectDoctor(id, name) {
+    currentDoctor = { id, name };
+    document.getElementById('doctor-name-display').textContent = name;
+    show('screen-doctor');
+    docNav('dashboard');
+    document.getElementById('d-input').focus();
+  }
+
+  /* ── Doctor nav ── */
+  const NAV_TITLES = {
+    dashboard: 'Dashboard', appointments: 'Lịch hẹn hôm nay',
+    patients: 'Bệnh nhân', lab: 'Xét nghiệm', search: 'Tra cứu hồ sơ'
+  };
+  const NAV_PLACEHOLDERS = {
+    dashboard:    'Hỏi về lịch hẹn, bệnh nhân, tình trạng phòng khám...',
+    appointments: 'Tìm lịch hẹn theo tên bệnh nhân hoặc khoa...',
+    patients:     'Nhập tên bệnh nhân để tra cứu hồ sơ...',
+    lab:          'Hỏi về kết quả xét nghiệm của bệnh nhân...',
+    search:       'Nhập tên bệnh nhân, ngày sinh hoặc SĐT để tìm hồ sơ...',
+  };
+
+  function docNav(nav) {
+    document.querySelectorAll('.doc-nav-item').forEach(el => el.classList.remove('active'));
+    document.getElementById('nav-' + nav)?.classList.add('active');
+    document.getElementById('doc-page-title').textContent = NAV_TITLES[nav] || nav;
+    document.getElementById('d-input').placeholder = NAV_PLACEHOLDERS[nav] || 'Nhập câu hỏi...';
+    renderDocContent(nav);
+  }
+
+  /* ── Skeleton / loading HTML ── */
+  function skeletonRows(cols, rows = 4) {
+    const cells = Array(cols).fill('<td><span style="display:inline-block;width:80%;height:12px;background:var(--ui-03);border-radius:2px;animation:pulse 1.2s infinite"></span></td>').join('');
+    return Array(rows).fill(`<tr>${cells}</tr>`).join('');
+  }
+
+  function renderDocContent(nav) {
+    const el = document.getElementById('doc-content');
+
+    if (nav === 'dashboard') {
+      el.innerHTML = `
+        <div class="stat-cards">
+          <div class="stat-card">
+            <div class="s-label">📅 Lịch hẹn hôm nay</div>
+            <div class="s-value" id="stat-appointments">--</div>
+            <div class="s-sub">Lịch đã đặt</div>
+          </div>
+          <div class="stat-card">
+            <div class="s-label">⏳ Đang chờ khám</div>
+            <div class="s-value" id="stat-waiting">--</div>
+            <div class="s-sub">Bệnh nhân</div>
+          </div>
+          <div class="stat-card">
+            <div class="s-label">👥 Tổng bệnh nhân</div>
+            <div class="s-value" id="stat-total">--</div>
+            <div class="s-sub">Trong hệ thống</div>
+          </div>
+        </div>`;
+      loadDashboardStats();
+
+    } else if (nav === 'appointments') {
+      const today = new Date().toISOString().slice(0, 10);
+      el.innerHTML = `
+        <div class="page-toolbar">
+          <input type="date" id="appt-date" class="tb-search" style="max-width:160px"
+            value="${today}" onchange="loadAppointments()">
+          <button class="tb-btn" style="background:var(--ui-02);color:var(--brand-01);border:1px solid var(--brand-01);padding:6px 10px;"
+            onclick="document.getElementById('appt-date').value='${today}';loadAppointments()">Hôm nay</button>
+          <input id="appt-search" class="tb-search" placeholder="🔍  Lọc theo tên bệnh nhân..."
+            oninput="filterAppointments()">
+          <select id="appt-status" class="tb-select" onchange="filterAppointments()">
+            <option value="">Tất cả trạng thái</option>
+            <option value="booked">Đã xác nhận</option>
+            <option value="fulfilled">Đã khám</option>
+            <option value="cancelled">Đã hủy</option>
+            <option value="noshow">Vắng mặt</option>
+          </select>
+          <button class="tb-btn" onclick="loadAppointments()">↺ Làm mới</button>
+        </div>
+        <div class="data-table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Giờ</th><th>Bệnh nhân</th><th>Khoa</th>
+              <th>Bác sĩ</th><th>Trạng thái</th><th>Lý do</th></tr></thead>
+            <tbody id="appt-tbody">${skeletonRows(6)}</tbody>
+          </table>
+        </div>`;
+      loadAppointments();
+
+    } else if (nav === 'patients') {
+      el.innerHTML = `
+        <div class="page-toolbar">
+          <input id="pt-search" class="tb-search" placeholder="🔍  Tìm theo tên bệnh nhân..."
+            onkeydown="if(event.key==='Enter') loadPatients()">
+          <button class="tb-btn" onclick="loadPatients()">Tìm kiếm</button>
+          <button class="tb-btn" style="background:var(--ui-02);color:var(--brand-01);border:1px solid var(--brand-01);"
+            onclick="loadPatients('')">Tất cả</button>
+        </div>
+        <div class="data-table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Họ tên</th><th>Ngày sinh</th><th>Giới tính</th>
+              <th>SĐT</th><th>Hành động</th></tr></thead>
+            <tbody id="pt-tbody">${skeletonRows(5)}</tbody>
+          </table>
+        </div>`;
+      loadPatients();
+
+    } else if (nav === 'lab') {
+      el.innerHTML = `
+        <div class="page-toolbar">
+          <select id="lab-cat" class="tb-select" onchange="loadObservations()">
+            <option value="all">Tất cả loại</option>
+            <option value="vital-signs">Sinh hiệu</option>
+            <option value="laboratory">Xét nghiệm</option>
+          </select>
+          <button class="tb-btn" onclick="loadObservations()">↺ Làm mới</button>
+        </div>
+        <div class="data-table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Bệnh nhân</th><th>Chỉ số</th><th>Giá trị</th>
+              <th>Trạng thái</th><th>Ngày</th></tr></thead>
+            <tbody id="lab-tbody">${skeletonRows(5)}</tbody>
+          </table>
+        </div>`;
+      loadObservations();
+
+    } else if (nav === 'search') {
+      el.innerHTML = `
+        <div class="search-hero">
+          <label>Tìm kiếm hồ sơ bệnh nhân</label>
+          <div class="search-hero-row">
+            <input id="search-input" placeholder="Nhập họ tên bệnh nhân..."
+              onkeydown="if(event.key==='Enter') searchPatientAI()">
+            <button class="tb-btn" onclick="searchPatientAI()">Tìm kiếm (AI)</button>
+          </div>
+          <div class="search-hero-hint">Trợ lý AI sẽ tìm và hiển thị hồ sơ bên dưới.</div>
+        </div>`;
+    }
+  }
+
+  /* ─── FHIR Data Loaders ─── */
+
+  window._apptData = [];  // cache for client-side filter
+
+  const STATUS_VI = {
+    booked: ['badge-green', 'Đã xác nhận'],
+    fulfilled: ['badge-gray', 'Đã khám'],
+    cancelled: ['badge-red', 'Đã hủy'],
+    noshow: ['badge-yellow', 'Vắng mặt'],
+    pending: ['badge-yellow', 'Chờ xác nhận'],
+  };
+  function statusBadge(s) {
+    const [cls, label] = STATUS_VI[s] || ['badge-gray', s];
+    return `<span class="badge ${cls}">${label}</span>`;
+  }
+
+  async function loadDashboardStats() {
+    try {
+      const apptUrl = '/api/appointments' + (currentDoctor ? '?practitioner_id=' + currentDoctor.id : '');
+      const [apptRes, ptRes] = await Promise.all([
+        fetch(apptUrl).then(r => r.json()),
+        fetch('/api/patients?_count=1').then(r => r.json()),
+      ]);
+      const waiting = (apptRes.appointments || []).filter(a => a.status === 'booked').length;
+      document.getElementById('stat-appointments').textContent = apptRes.total ?? '--';
+      document.getElementById('stat-waiting').textContent      = waiting;
+      document.getElementById('stat-total').textContent        = ptRes.total ?? '--';
+    } catch { /* silently keep -- */ }
+  }
+
+  async function loadAppointments() {
+    const tbody = document.getElementById('appt-tbody');
+    if (!tbody) return;
+    tbody.innerHTML = skeletonRows(6);
+    try {
+      const date = document.getElementById('appt-date')?.value || '';
+      const params = new URLSearchParams();
+      if (date) params.set('date_str', date);
+      if (currentDoctor) params.set('practitioner_id', currentDoctor.id);
+      const apptUrl = '/api/appointments' + (params.toString() ? '?' + params.toString() : '');
+      const data = await fetch(apptUrl).then(r => r.json());
+      window._apptData = data.appointments || [];
+      renderAppointmentRows(window._apptData);
+    } catch (e) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--danger);padding:16px">Lỗi tải dữ liệu: ${e.message}</td></tr>`;
+    }
+  }
+
+  function renderAppointmentRows(rows) {
+    const tbody = document.getElementById('appt-tbody');
+    if (!tbody) return;
+    if (!rows.length) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-03);padding:20px">Không có lịch hẹn</td></tr>';
+      return;
+    }
+    tbody.innerHTML = rows.map(a => `
+      <tr>
+        <td>${a.start.slice(11, 16) || '--'}</td>
+        <td>${a.patient_name || '—'}</td>
+        <td>${a.department || '—'}</td>
+        <td>${a.practitioner || '—'}</td>
+        <td>${statusBadge(a.status)}</td>
+        <td style="color:var(--text-02)">${a.reason || ''}</td>
+      </tr>`).join('');
+  }
+
+  function filterAppointments() {
+    const q   = (document.getElementById('appt-search')?.value || '').toLowerCase();
+    const st  = document.getElementById('appt-status')?.value || '';
+    const filtered = window._apptData.filter(a =>
+      (!q  || a.patient_name.toLowerCase().includes(q)) &&
+      (!st || a.status === st)
+    );
+    renderAppointmentRows(filtered);
+  }
+
+  async function loadPatients(q) {
+    const tbody = document.getElementById('pt-tbody');
+    if (!tbody) return;
+    tbody.innerHTML = skeletonRows(5);
+    const search = q !== undefined ? q : (document.getElementById('pt-search')?.value || '');
+    try {
+      const data = await fetch(`/api/patients?_count=30${search ? '&q=' + encodeURIComponent(search) : ''}`).then(r => r.json());
+      const rows = data.patients || [];
+      if (!rows.length) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-03);padding:20px">Không tìm thấy bệnh nhân</td></tr>';
+        return;
+      }
+      tbody.innerHTML = rows.map(p => `
+        <tr>
+          <td><strong style="color:var(--brand-01)">${p.name || '—'}</strong></td>
+          <td>${p.birth_date ? p.birth_date.split('-').reverse().join('/') : '—'}</td>
+          <td>${p.gender || '—'}</td>
+          <td>${p.phone || '—'}</td>
+          <td><button class="tb-btn" style="padding:4px 10px;font-size:12px;"
+              onclick="fillD('Xem hồ sơ bệnh nhân ${p.name}')">Xem hồ sơ</button></td>
+        </tr>`).join('');
+    } catch (e) {
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--danger);padding:16px">Lỗi: ${e.message}</td></tr>`;
+    }
+  }
+
+  async function loadObservations() {
+    const tbody = document.getElementById('lab-tbody');
+    if (!tbody) return;
+    tbody.innerHTML = skeletonRows(5);
+    const cat = document.getElementById('lab-cat')?.value || 'all';
+    try {
+      const data = await fetch(`/api/observations?category=${cat}&_count=30`).then(r => r.json());
+      const rows = data.observations || [];
+      if (!rows.length) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-03);padding:20px">Không có dữ liệu</td></tr>';
+        return;
+      }
+      tbody.innerHTML = rows.map(o => `
+        <tr>
+          <td>${o.patient_name || '—'}</td>
+          <td>${o.name || '—'}</td>
+          <td><strong>${o.value || '—'}</strong> <span style="color:var(--text-03)">${o.unit}</span></td>
+          <td>${statusBadge(o.status)}</td>
+          <td>${o.date || '—'}</td>
+        </tr>`).join('');
+    } catch (e) {
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--danger);padding:16px">Lỗi: ${e.message}</td></tr>`;
+    }
+  }
+
+  function searchPatientAI() {
+    const q = document.getElementById('search-input')?.value?.trim();
+    if (q) fillD('Tìm hồ sơ bệnh nhân: ' + q);
+  }
+
+  /* ── Input helpers ── */
+  function setupInput(el, sendFn) {
+    el.addEventListener('input', () => {
+      el.style.height = 'auto';
+      el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+    });
+    el.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendFn(); }
+    });
+  }
+
+  const pInput = document.getElementById('p-input');
+  const dInput = document.getElementById('d-input');
+  setupInput(pInput, () => sendMsg('patient'));
+  setupInput(dInput, () => sendMsg('doctor'));
+
+  function fillP(text) { pInput.value = text; pInput.focus(); pInput.dispatchEvent(new Event('input')); }
+  function fillD(text) { dInput.value = text; dInput.focus(); dInput.dispatchEvent(new Event('input')); }
+
+  /* ── Clear doctor chat ── */
+  function clearDocChat() {
+    sessionDoctor = null;
+    document.getElementById('d-messages').innerHTML = `
+      <div class="welcome" id="d-welcome" style="padding:32px 16px;">
+        <div class="welcome-icon" style="width:48px;height:48px;font-size:20px;">🤖</div>
+        <h2 style="font-size:16px;">Trợ lý dành cho bác sĩ</h2>
+        <p style="font-size:13px;">Tra cứu hồ sơ, xem xét nghiệm, kiểm tra lịch hẹn bệnh nhân.</p>
+      </div>`;
+  }
+
+  /* ── Shared chat logic ── */
+  function getCtx(role) {
+    return role === 'patient'
+      ? { msgsEl: document.getElementById('p-messages'),
+          inputEl: pInput,
+          sendEl:  document.getElementById('p-send'),
+          welcomeId: 'p-welcome',
+          session: sessionPatient,
+          setSession: s => { sessionPatient = s; } }
+      : { msgsEl: document.getElementById('d-messages'),
+          inputEl: dInput,
+          sendEl:  document.getElementById('d-send'),
+          welcomeId: 'd-welcome',
+          session: sessionDoctor,
+          setSession: s => { sessionDoctor = s; } };
+  }
+
+  function addMsg(ctx, text, msgRole) {
+    document.getElementById(ctx.welcomeId)?.remove();
+    const row = document.createElement('div');
+    row.className = 'msg-row ' + msgRole;
+    const av = document.createElement('div');
+    av.className = 'avatar ' + msgRole;
+    av.textContent = msgRole === 'bot' ? 'AI' : (role === 'doctor' ? 'BS' : 'BN');
+    const bub = document.createElement('div');
+    bub.className = 'bubble';
+    bub.textContent = text;
+    row.appendChild(av); row.appendChild(bub);
+    ctx.msgsEl.appendChild(row);
+    ctx.msgsEl.scrollTop = ctx.msgsEl.scrollHeight;
+    return bub;
+  }
+
+  function createBotBubble(ctx) {
+    document.getElementById(ctx.welcomeId)?.remove();
+    const row = document.createElement('div');
+    row.className = 'msg-row bot';
+    const av = document.createElement('div');
+    av.className = 'avatar bot'; av.textContent = 'AI';
+    const bub = document.createElement('div');
+    bub.className = 'bubble';
+    bub.innerHTML = '<div class="typing-dots"><span></span><span></span><span></span></div>';
+    row.appendChild(av); row.appendChild(bub);
+    ctx.msgsEl.appendChild(row);
+    ctx.msgsEl.scrollTop = ctx.msgsEl.scrollHeight;
+    return bub;
+  }
+
+  async function sendMsg(r) {
+    const ctx  = getCtx(r);
+    const text = ctx.inputEl.value.trim();
+    if (!text || ctx.sendEl.disabled) return;
+
+    ctx.inputEl.value = '';
+    ctx.inputEl.style.height = 'auto';
+    ctx.sendEl.disabled = true;
+
+    addMsg(ctx, text, 'user');
+    const bubble = createBotBubble(ctx);
+
+    let fullText = '', textStarted = false, badgesDiv = null;
+
+    try {
+      const res = await fetch('/chat/stream', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: text,
+          session_id: ctx.session,
+          role: role,
+          doctor_name: (role === 'doctor' && currentDoctor) ? currentDoctor.name : '',
+        }),
+      });
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buf = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buf += decoder.decode(value, { stream: true });
+        const lines = buf.split('\n');
+        buf = lines.pop();
+
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+          let ev;
+          try { ev = JSON.parse(line.slice(6)); } catch { continue; }
+
+          if (ev.type === 'status' && ev.text && !textStarted) {
+            bubble.innerHTML = `<div class="status-line">${ev.text}</div>`;
+            badgesDiv = null;
+
+          } else if (ev.type === 'tool_call' && !textStarted) {
+            if (!badgesDiv) {
+              badgesDiv = document.createElement('div');
+              badgesDiv.className = 'tool-badges';
+              bubble.appendChild(badgesDiv);
+            }
+            const badge = document.createElement('span');
+            badge.className = 'tool-badge';
+            badge.textContent = ev.label || ev.name;
+            badgesDiv.appendChild(badge);
+            const st = bubble.querySelector('.status-line');
+            if (st) st.textContent = ev.label || ev.name;
+
+          } else if (ev.type === 'text') {
+            if (!textStarted) { bubble.innerHTML = ''; textStarted = true; }
+            fullText += ev.delta;
+            bubble.innerHTML = marked.parse(fullText);
+            ctx.msgsEl.scrollTop = ctx.msgsEl.scrollHeight;
+
+          } else if (ev.type === 'error') {
+            bubble.textContent = 'Lỗi: ' + ev.text;
+
+          } else if (ev.session_id) {
+            ctx.setSession(ev.session_id);
+          }
+        }
+      }
+    } catch (e) {
+      bubble.textContent = 'Lỗi kết nối. Vui lòng thử lại.';
+    }
+
+    ctx.sendEl.disabled = false;
+    ctx.inputEl.focus();
+  }
+</script>
+</body>
+</html>

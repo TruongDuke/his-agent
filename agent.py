@@ -1,11 +1,12 @@
-"""HIS Agent — Anthropic tool-calling loop."""
+"""HIS Agent — tool-calling loop (OpenAI-compatible SDK, works with OpenRouter)."""
 
+from __future__ import annotations
 import importlib, os, sys, json
 from pathlib import Path
-from typing import Any
+from typing import Any, Dict, List, Tuple
 
-import anthropic
-from system_prompt import SYSTEM_PROMPT
+from openai import OpenAI
+from system_prompt import SYSTEM_PROMPT, SYSTEM_PROMPT_DOCTOR
 
 # Thêm thư mục tools vào path để tools tự import được nhau
 sys.path.insert(0, str(Path(__file__).parent / "tools"))
@@ -31,8 +32,8 @@ def _load_tool_modules() -> dict[str, Any]:
     return modules
 
 
-def _build_anthropic_tools(modules: dict) -> list[dict]:
-    """Chuyển ARGS_SCHEMA của tool sang format Anthropic tool use."""
+def _build_openai_tools(modules: dict) -> list[dict]:
+    """Chuyển ARGS_SCHEMA của tool sang format OpenAI function calling."""
     result = []
     for name, mod in modules.items():
         schema = getattr(mod, "ARGS_SCHEMA", {})
@@ -40,11 +41,14 @@ def _build_anthropic_tools(modules: dict) -> list[dict]:
         for param, desc in schema.items():
             properties[param] = {"type": "string", "description": desc}
         result.append({
-            "name": name,
-            "description": getattr(mod, "DESCRIPTION", ""),
-            "input_schema": {
-                "type": "object",
-                "properties": properties,
+            "type": "function",
+            "function": {
+                "name": name,
+                "description": getattr(mod, "DESCRIPTION", ""),
+                "parameters": {
+                    "type": "object",
+                    "properties": properties,
+                },
             },
         })
     return result
@@ -71,50 +75,167 @@ def _execute_tool(name: str, args: dict, modules: dict) -> str:
 
 # Cache modules + tools để không reload mỗi request
 _MODULES = _load_tool_modules()
-_TOOLS   = _build_anthropic_tools(_MODULES)
-_CLIENT  = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
-_MODEL   = os.getenv("ANTHROPIC_MODEL", "claude-haiku-4-5-20251001")
+_TOOLS   = _build_openai_tools(_MODULES)
+
+_OPENROUTER_KEY = os.getenv("OPENROUTER_API_KEY", "")
+if _OPENROUTER_KEY:
+    _CLIENT = OpenAI(
+        api_key=_OPENROUTER_KEY,
+        base_url="https://openrouter.ai/api/v1",
+    )
+    _MODEL = os.getenv("OPENROUTER_MODEL", "anthropic/claude-haiku-4-5")
+else:
+    _CLIENT = OpenAI(
+        api_key=os.getenv("ANTHROPIC_API_KEY", ""),
+        base_url="https://api.anthropic.com/v1/",
+    )
+    _MODEL = os.getenv("ANTHROPIC_MODEL", "claude-haiku-4-5-20251001")
 
 
-def chat(message: str, history: list[dict]) -> tuple[str, list[dict]]:
+_TOOL_LABELS = {
+    "fhir_triage_assessment":      "Đang đánh giá triệu chứng...",
+    "fhir_suggest_department":     "Đang gợi ý khoa khám...",
+    "fhir_search_patient":         "Đang tìm hồ sơ bệnh nhân...",
+    "fhir_get_available_slots":    "Đang kiểm tra lịch trống...",
+    "fhir_get_next_available_slot":"Đang tìm slot sớm nhất...",
+    "fhir_create_appointment":     "Đang đặt lịch hẹn...",
+    "fhir_register_new_patient":   "Đang đăng ký bệnh nhân mới...",
+    "fhir_get_patient_history":    "Đang tra cứu lịch sử khám...",
+    "fhir_get_observations":       "Đang lấy kết quả xét nghiệm...",
+}
+
+
+def chat_stream(message: str, history: list[dict], role: str = "patient", doctor_name: str = ""):
+    """
+    Generator yield SSE strings. Mutates `history` in-place so caller can persist it.
+    Format: "data: {json}\\n\\n"
+    Types: status | tool_call | text | done | error
+    """
+    def sse(payload: dict) -> str:
+        return f"data: {json.dumps(payload, ensure_ascii=False)}\n\n"
+
+    if role == "doctor":
+        system = SYSTEM_PROMPT_DOCTOR.replace("{doctor_name}", doctor_name or "Bác sĩ")
+    else:
+        system = SYSTEM_PROMPT
+
+    history.append({"role": "user", "content": message})
+    yield sse({"type": "status", "text": "Đang xử lý..."})
+
+    # Tool-calling loop (non-streaming — cần full JSON để parse tool calls)
+    while True:
+        response = _CLIENT.chat.completions.create(
+            model=_MODEL,
+            max_tokens=4096,
+            messages=[{"role": "system", "content": system}] + history,
+            tools=_TOOLS or None,
+        )
+        choice = response.choices[0]
+        msg    = choice.message
+
+        if choice.finish_reason == "tool_calls" and msg.tool_calls:
+            history.append({
+                "role": "assistant",
+                "content": msg.content,
+                "tool_calls": [
+                    {"id": tc.id, "type": "function",
+                     "function": {"name": tc.function.name, "arguments": tc.function.arguments}}
+                    for tc in msg.tool_calls
+                ],
+            })
+            for tc in msg.tool_calls:
+                label = _TOOL_LABELS.get(tc.function.name, f"Gọi {tc.function.name}...")
+                yield sse({"type": "tool_call", "name": tc.function.name, "label": label})
+                args   = json.loads(tc.function.arguments)
+                result = _execute_tool(tc.function.name, args, _MODULES)
+                history.append({"role": "tool", "tool_call_id": tc.id, "content": result})
+            yield sse({"type": "status", "text": "Đang tổng hợp kết quả..."})
+        else:
+            # Phản hồi cuối — stream từng token
+            yield sse({"type": "status", "text": ""})
+            stream = _CLIENT.chat.completions.create(
+                model=_MODEL,
+                max_tokens=4096,
+                messages=[{"role": "system", "content": system}] + history,
+                tools=None,
+                stream=True,
+            )
+            full_reply = ""
+            in_think   = False
+            buf        = ""
+            for chunk in stream:
+                if not (chunk.choices and chunk.choices[0].delta.content):
+                    continue
+                full_reply += chunk.choices[0].delta.content
+                buf        += chunk.choices[0].delta.content
+                # Stream từng chunk sau khi strip thinking
+                while buf:
+                    if not in_think:
+                        s = buf.find("<think>")
+                        if s == -1:
+                            yield sse({"type": "text", "delta": buf}); buf = ""; break
+                        if s > 0:
+                            yield sse({"type": "text", "delta": buf[:s]})
+                        in_think = True; buf = buf[s+7:]
+                    else:
+                        e = buf.find("</think>")
+                        if e == -1:
+                            buf = ""; break
+                        in_think = False; buf = buf[e+8:]
+
+            import re
+            clean = re.sub(r"<think>.*?</think>", "", full_reply, flags=re.DOTALL).strip()
+            history.append({"role": "assistant", "content": clean or full_reply})
+            yield sse({"type": "done"})
+            return
+
+
+def chat(message: str, history: list[dict], role: str = "patient", doctor_name: str = "") -> tuple[str, list[dict]]:
     """
     Xử lý 1 lượt hội thoại.
     history: list of {"role": "user"|"assistant", "content": ...}
     Trả về (reply_text, updated_history)
     """
+    if role == "doctor":
+        system = SYSTEM_PROMPT_DOCTOR.replace("{doctor_name}", doctor_name or "Bác sĩ")
+    else:
+        system = SYSTEM_PROMPT
+
     history = history + [{"role": "user", "content": message}]
 
     while True:
-        response = _CLIENT.messages.create(
+        response = _CLIENT.chat.completions.create(
             model=_MODEL,
-            max_tokens=2048,
-            system=SYSTEM_PROMPT,
-            tools=_TOOLS,
-            messages=history,
+            max_tokens=4096,
+            messages=[{"role": "system", "content": system}] + history,
+            tools=_TOOLS or None,
         )
 
-        if response.stop_reason == "tool_use":
-            # Append assistant message (có thể gồm text + tool_use blocks)
-            history.append({"role": "assistant", "content": response.content})
+        choice = response.choices[0]
+        msg    = choice.message
 
-            # Xử lý tất cả tool calls trong response này
-            tool_results = []
-            for block in response.content:
-                if block.type == "tool_use":
-                    result = _execute_tool(block.name, dict(block.input), _MODULES)
-                    tool_results.append({
-                        "type":        "tool_result",
-                        "tool_use_id": block.id,
-                        "content":     result,
-                    })
-
-            history.append({"role": "user", "content": tool_results})
-
+        if choice.finish_reason == "tool_calls" and msg.tool_calls:
+            history.append({
+                "role": "assistant",
+                "content": msg.content,
+                "tool_calls": [
+                    {
+                        "id": tc.id,
+                        "type": "function",
+                        "function": {"name": tc.function.name, "arguments": tc.function.arguments},
+                    }
+                    for tc in msg.tool_calls
+                ],
+            })
+            for tc in msg.tool_calls:
+                args   = json.loads(tc.function.arguments)
+                result = _execute_tool(tc.function.name, args, _MODULES)
+                history.append({
+                    "role":         "tool",
+                    "tool_call_id": tc.id,
+                    "content":      result,
+                })
         else:
-            # stop_reason == "end_turn" — lấy text trả về
-            reply = ""
-            for block in response.content:
-                if hasattr(block, "text"):
-                    reply += block.text
+            reply = msg.content or ""
             history.append({"role": "assistant", "content": reply})
             return reply, history
