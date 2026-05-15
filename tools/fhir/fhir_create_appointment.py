@@ -1,4 +1,5 @@
 """Book an appointment: create Appointment + mark Slot as busy (FHIR R5)."""
+from __future__ import annotations
 
 TOOL_NAME = "fhir_create_appointment"
 CATEGORY = "Healthcare"
@@ -17,6 +18,12 @@ ARGS_SCHEMA = {
     "reason":        "string (tùy chọn) — lý do khám. Mặc định 'Khám theo yêu cầu'",
     "patient_email": "string (tùy chọn) — email bệnh nhân để gửi xác nhận tự động",
     "slot_id":       "string (tùy chọn, KHÔNG KHUYẾN NGHỊ) — chỉ dùng nếu có UUID slot chính xác từ fhir_get_available_slots",
+    "clinical_note": (
+        "string (tùy chọn) — Ghi chú lâm sàng đính kèm lịch hẹn. "
+        "Dùng khi bệnh nhân đặt lịch qua sàng lọc SXHD: truyền tóm tắt "
+        "kết quả dengue_symptom_assessment (severity, fever_day, triệu chứng chính). "
+        "Ví dụ: 'Sàng lọc SXHD: warning — sốt ngày 3, đau bụng, nôn liên tục'"
+    ),
 }
 
 SETTINGS_KEYS = ["gmail_user", "gmail_app_password", "gmail_from_name"]
@@ -62,7 +69,7 @@ def _resolve_slot_by_time(client, url: str, dept: str, date_str: str, time_str: 
 
 def run(args: dict) -> dict:
     import sys, os
-    sys.path.insert(0, os.path.dirname(__file__))
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "shared"))
     from _aidbox_client import _config
     import httpx
 
@@ -73,6 +80,7 @@ def run(args: dict) -> dict:
     time_str = str(args.get("time") or "").strip()
     reason = str(args.get("reason") or "Khám theo yêu cầu").strip()
     patient_email = str(args.get("patient_email") or "").strip()
+    clinical_note = str(args.get("clinical_note") or "").strip()
 
     if not pid:
         return {"error": "patient_id is required"}
@@ -112,12 +120,14 @@ def run(args: dict) -> dict:
         actor_ref = ((sched.get("actor") or [{}])[0] or {}).get("reference", "")
         service_type = sched.get("serviceType", [])
 
-        pract_name = ""
+        pract_name = "Bác sĩ phụ trách"
         if actor_ref.startswith("Practitioner/"):
             pr = client.get(f"{url}/fhir/{actor_ref}").json()
             if pr.get("resourceType") == "Practitioner":
                 nm = (pr.get("name") or [{}])[0]
-                pract_name = f"BS. {nm.get('family','')} {' '.join(nm.get('given',[]))}".strip()
+                resolved = f"BS. {nm.get('family','')} {' '.join(nm.get('given',[]))}".strip()
+                if resolved and resolved != "BS.":
+                    pract_name = resolved
 
         dept_name = ""
         if service_type and isinstance(service_type[0], dict):
@@ -145,6 +155,8 @@ def run(args: dict) -> dict:
                 {"actor": {"reference": f"Patient/{pid}"}, "status": "accepted"},
             ],
         }
+        if clinical_note:
+            appointment["note"] = [{"text": clinical_note}]
         if actor_ref:
             appointment["participant"].append(
                 {"actor": {"reference": actor_ref}, "status": "accepted"}

@@ -1,4 +1,6 @@
 """UC-03 Triage thông minh: đánh giá mức độ ưu tiên từ triệu chứng + bệnh nền."""
+from __future__ import annotations
+
 
 TOOL_NAME = "fhir_triage_assessment"
 CATEGORY = "Healthcare"
@@ -22,7 +24,7 @@ ARGS_SCHEMA = {
 
 def _load_kb() -> dict:
     import json, os
-    kb_path = os.path.join(os.path.dirname(__file__), "knowledge_base", "triage_kb.json")
+    kb_path = os.path.join(os.path.dirname(__file__), "..", "knowledge_base", "triage_kb.json")
     with open(kb_path, encoding="utf-8") as f:
         return json.load(f)
 
@@ -65,7 +67,7 @@ def _upgrade(current: str, rule: str) -> str:
 
 def run(args: dict) -> dict:
     import sys, os
-    sys.path.insert(0, os.path.dirname(__file__))
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "shared"))
     from _aidbox_client import fhir_get, extract_entries
 
     symptoms_raw   = str(args.get("symptoms") or "").strip()

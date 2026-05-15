@@ -1,0 +1,239 @@
+{
+  "meta": {
+    "version": "1.0",
+    "source": "Phụ lục 2 — Phân độ Sốt Xuất Huyết Dengue, Bộ Y tế Việt Nam",
+    "disclaimer": "Đây là công cụ sàng lọc ban đầu qua hội thoại. KHÔNG thay thế chẩn đoán lâm sàng của bác sĩ. Mọi quyết định điều trị thuộc về nhân viên y tế.",
+    "severity_levels": {
+      "none":    "Chưa đủ tiêu chí nghi sốt xuất huyết — theo dõi thêm",
+      "mild":    "SXHD thông thường — nên đến phòng khám xét nghiệm CBC",
+      "warning": "SXHD có dấu hiệu cảnh báo — cần đến bệnh viện trong ngày hôm nay",
+      "severe":  "SXHD nặng — cấp cứu ngay lập tức, gọi 115"
+    }
+  },
+
+  "layer_1_epidemiology": {
+    "description": "Sàng lọc dịch tễ — hỏi trước tiên. Nếu không có cả 2 điều kiện thì dừng sớm.",
+    "required_all": true,
+    "questions": [
+      {
+        "id": "epi_1",
+        "field": "in_epidemic_area",
+        "question": "Bạn hiện đang sống hoặc vừa đến vùng đang có dịch sốt xuất huyết không?",
+        "keywords_yes": ["có", "đúng", "vùng dịch", "khu có dịch", "hàng xóm bị", "xung quanh có người bị", "đang có dịch", "nghe nói có dịch"],
+        "keywords_no": ["không", "chưa", "không biết"],
+        "type": "boolean"
+      },
+      {
+        "id": "epi_2",
+        "field": "fever_days",
+        "question": "Bạn có đang bị sốt không? Nếu có, sốt mấy ngày rồi?",
+        "keywords_fever": ["sốt", "nóng người", "nóng sốt", "38", "39", "40", "thân nhiệt cao"],
+        "keywords_no_fever": ["không sốt", "không bị sốt", "hết sốt"],
+        "type": "number",
+        "unit": "ngày",
+        "threshold_max": 7,
+        "note": "Sốt > 7 ngày không điển hình cho SXHD giai đoạn cấp"
+      }
+    ]
+  },
+
+  "layer_2_basic_symptoms": {
+    "description": "Triệu chứng cơ bản — cần ≥2 để nghi SXHD mức độ thông thường",
+    "required_count": 2,
+    "questions": [
+      {
+        "id": "sym_1",
+        "field": "nausea_vomiting",
+        "question": "Bạn có bị buồn nôn hoặc nôn không?",
+        "keywords_yes": ["buồn nôn", "nôn", "ói", "muốn nôn", "nôn mửa", "ói mửa"],
+        "keywords_no": ["không nôn", "không buồn nôn"],
+        "type": "boolean",
+        "weight": 1
+      },
+      {
+        "id": "sym_2",
+        "field": "rash",
+        "question": "Bạn có thấy phát ban, nổi mẩn đỏ hoặc chấm đỏ trên da không?",
+        "keywords_yes": ["phát ban", "nổi mẩn", "mẩn đỏ", "chấm đỏ", "nổi đỏ", "ban đỏ", "nổi hạt đỏ"],
+        "keywords_no": ["không nổi", "da bình thường"],
+        "type": "boolean",
+        "weight": 1
+      },
+      {
+        "id": "sym_3",
+        "field": "body_pain",
+        "question": "Bạn có bị đau cơ, đau khớp hoặc nhức hai hố mắt không?",
+        "keywords_yes": ["đau người", "nhức mỏi", "đau cơ", "đau khớp", "nhức mắt", "nhức hố mắt", "đau nhức", "mỏi người", "đau toàn thân"],
+        "keywords_no": ["không đau", "không nhức"],
+        "type": "boolean",
+        "weight": 1
+      },
+      {
+        "id": "sym_4",
+        "field": "skin_bleeding",
+        "question": "Bạn có thấy chấm xuất huyết dưới da (chấm đỏ nhỏ li ti) hoặc vết bầm tím không rõ nguyên nhân không?",
+        "keywords_yes": ["xuất huyết", "chấm đỏ dưới da", "bầm tím", "bầm không rõ", "chấm li ti", "nốt đỏ dưới da"],
+        "keywords_no": ["không bầm", "không có"],
+        "type": "boolean",
+        "weight": 1
+      }
+    ]
+  },
+
+  "layer_3_warning_signs": {
+    "description": "Dấu hiệu cảnh báo — chỉ hỏi khi đã đủ điều kiện lớp 2. Có ≥1 → mức WARNING",
+    "required_count": 1,
+    "questions": [
+      {
+        "id": "warn_1",
+        "field": "abdominal_pain",
+        "question": "Bạn có bị đau bụng nhiều, liên tục hoặc đau tăng dần vùng hạ sườn phải (vùng gan) không?",
+        "keywords_yes": ["đau bụng", "đau vùng gan", "đau hạ sườn", "đau bụng nhiều", "đau bụng liên tục", "đau bụng dữ dội"],
+        "keywords_no": ["không đau bụng"],
+        "type": "boolean",
+        "severity_upgrade": "warning"
+      },
+      {
+        "id": "warn_2",
+        "field": "persistent_vomiting",
+        "question": "Bạn có nôn ói liên tục, nôn nhiều lần (≥3 lần trong 1 giờ hoặc ≥4 lần trong 6 giờ) không?",
+        "keywords_yes": ["nôn liên tục", "nôn nhiều lần", "nôn không ngừng", "ói liên tục", "nôn hoài", "nôn mãi"],
+        "keywords_no": ["không nôn nhiều", "nôn ít"],
+        "type": "boolean",
+        "severity_upgrade": "warning"
+      },
+      {
+        "id": "warn_3",
+        "field": "mucosal_bleeding",
+        "question": "Bạn có bị chảy máu chân răng, chảy máu mũi, nôn ra máu, đi tiêu phân đen hoặc có máu không?",
+        "keywords_yes": ["chảy máu răng", "chảy máu mũi", "nôn máu", "phân đen", "tiêu ra máu", "máu trong phân", "chảy máu miệng", "chảy máu cam"],
+        "keywords_no": ["không chảy máu", "bình thường"],
+        "type": "boolean",
+        "severity_upgrade": "warning"
+      },
+      {
+        "id": "warn_4",
+        "field": "oliguria",
+        "question": "Bạn có đi tiểu ít hơn bình thường không (tiểu ít, nước tiểu sẫm màu)?",
+        "keywords_yes": ["tiểu ít", "ít đi tiểu", "nước tiểu ít", "tiểu sẫm", "không tiểu được", "tiểu vàng đậm"],
+        "keywords_no": ["tiểu bình thường", "không"],
+        "type": "boolean",
+        "severity_upgrade": "warning"
+      },
+      {
+        "id": "warn_5",
+        "field": "lethargy",
+        "question": "Bạn có cảm thấy vật vã, lờ đờ, khó chịu nhiều, mệt lả không?",
+        "keywords_yes": ["vật vã", "lờ đờ", "li bì", "mệt lả", "mệt nhiều", "không tỉnh táo", "uể oải nhiều", "kiệt sức"],
+        "keywords_no": ["không", "bình thường", "vẫn tỉnh táo"],
+        "type": "boolean",
+        "severity_upgrade": "warning"
+      }
+    ]
+  },
+
+  "layer_4_severe_signs": {
+    "description": "Dấu hiệu SXHD nặng — dừng ngay khi phát hiện, không hỏi thêm",
+    "stop_immediately": true,
+    "questions": [
+      {
+        "id": "sev_1",
+        "field": "shock_signs",
+        "question": null,
+        "keywords_yes": ["sốc", "tụt huyết áp", "ngất", "mất ý thức", "không tỉnh", "da lạnh", "tay chân lạnh", "tim đập nhanh mạnh", "khó thở nặng"],
+        "severity_upgrade": "severe",
+        "note": "Sốc SXHD — thoát huyết tương nặng"
+      },
+      {
+        "id": "sev_2",
+        "field": "severe_bleeding",
+        "keywords_yes": ["nôn ra máu nhiều", "xuất huyết ồ ạt", "chảy máu không cầm", "máu chảy nhiều"],
+        "severity_upgrade": "severe",
+        "note": "Xuất huyết nặng"
+      },
+      {
+        "id": "sev_3",
+        "field": "organ_failure",
+        "keywords_yes": ["vàng da", "vàng mắt", "rối loạn ý thức", "nói lảm nhảm", "co giật", "khó thở không thở được"],
+        "severity_upgrade": "severe",
+        "note": "Suy tạng — gan, thần kinh, hô hấp"
+      }
+    ]
+  },
+
+  "classification_rules": {
+    "none": {
+      "condition": "Không đủ điều kiện dịch tễ HOẶC sốt > 7 ngày HOẶC < 2 triệu chứng cơ bản",
+      "severity_label": "Chưa có dấu hiệu bất thường rõ ràng",
+      "summary": "Dựa trên thông tin bạn cung cấp, hiện chưa ghi nhận đủ các dấu hiệu đặc trưng của sốt xuất huyết Dengue. Tuy nhiên, tình trạng sức khoẻ cần được tiếp tục theo dõi.",
+      "recommendation": "Tiếp tục theo dõi tình trạng sức khoẻ, uống đủ nước và nghỉ ngơi. Nếu sốt kéo dài hoặc xuất hiện thêm triệu chứng mới, hãy liên hệ lại hoặc đến cơ sở y tế.",
+      "next_action": "monitor",
+      "urgency_color": "green"
+    },
+    "mild": {
+      "condition": "Đủ dịch tễ + sốt ≤7 ngày + ≥2 triệu chứng cơ bản + KHÔNG có dấu hiệu cảnh báo",
+      "severity_label": "Chưa có dấu hiệu bất thường rõ ràng",
+      "summary": "Dựa trên thông tin bạn cung cấp, hiện chưa ghi nhận rõ các dấu hiệu cảnh báo nặng. Bạn có một số triệu chứng nghi ngờ sốt xuất huyết thông thường, cần xét nghiệm máu để xác nhận.",
+      "recommendation": "Tiếp tục theo dõi tình trạng sức khoẻ, uống đủ nước (oresol, nước dừa, nước lọc), hạ sốt bằng paracetamol (KHÔNG dùng ibuprofen/aspirin), nghỉ ngơi tránh vận động mạnh. Nên đến xét nghiệm máu (CBC) trong ngày hôm nay hoặc ngày mai.",
+      "next_action": "book_appointment",
+      "urgency_color": "yellow",
+      "home_care": [
+        "Uống nhiều nước (oresol, nước dừa, nước lọc)",
+        "Hạ sốt bằng paracetamol — KHÔNG dùng aspirin hoặc ibuprofen",
+        "Nghỉ ngơi, tránh vận động mạnh",
+        "Theo dõi: nếu xuất hiện dấu hiệu cảnh báo → đến viện ngay"
+      ]
+    },
+    "warning": {
+      "condition": "Đủ tiêu chí SXHD thông thường + có ≥1 dấu hiệu cảnh báo",
+      "severity_label": "Có dấu hiệu sốt xuất huyết",
+      "summary": "Các dấu hiệu bạn cung cấp gợi ý nguy cơ ở mức trung bình — có thể đang ở giai đoạn nguy hiểm của sốt xuất huyết. Trong thời gian theo dõi không nên chủ quan, cần được bác sĩ kiểm tra trực tiếp.",
+      "recommendation": "Bạn cần đến bệnh viện NGAY TRONG HÔM NAY để được theo dõi và điều trị kịp thời. Không nên ở nhà tự theo dõi. Mang theo kết quả xét nghiệm máu nếu đã có.",
+      "next_action": "urgent_appointment",
+      "urgency_color": "orange",
+      "suggested_department": "INFECT"
+    },
+    "severe": {
+      "condition": "Có bất kỳ dấu hiệu nặng: sốc, xuất huyết ồ ạt, suy tạng",
+      "severity_label": "Sốt xuất huyết với dấu hiệu cảnh báo nghiêm trọng",
+      "summary": "HIỆN CÓ DẤU HIỆU NGUY HIỂM. Tình trạng của bạn có thể đe doạ tính mạng và cần được can thiệp y tế khẩn cấp ngay lập tức.",
+      "recommendation": "Bạn cần đến cơ sở y tế gần nhất NGAY LẬP TỨC hoặc gọi 115 để được hỗ trợ vận chuyển. Không tự lái xe, không chờ đợi.",
+      "next_action": "emergency",
+      "urgency_color": "red",
+      "suggested_department": "EMERGENCY"
+    }
+  },
+
+  "early_stop_keywords": {
+    "description": "Phát hiện các từ khóa này trong bất kỳ tin nhắn nào → upgrade severe ngay, dừng hỏi",
+    "keywords": [
+      "nôn ra máu", "nôn máu", "ói máu",
+      "ngất", "mất ý thức", "không tỉnh",
+      "co giật", "giật người",
+      "tay chân lạnh ngắt", "da lạnh tím",
+      "khó thở không thở được",
+      "xuất huyết ồ ạt", "chảy máu không cầm",
+      "vàng da", "vàng mắt",
+      "rối loạn ý thức", "nói lảm nhảm"
+    ]
+  },
+
+  "trigger_keywords": {
+    "description": "Các từ khóa kích hoạt dengue screening flow",
+    "explicit": [
+      "sốt xuất huyết", "sxh", "dengue", "xuất huyết dengue",
+      "nghi sốt xuất huyết", "sợ bị sxh", "kiểm tra sxh"
+    ],
+    "symptom_pattern": {
+      "required": ["sốt"],
+      "plus_any": [
+        "đau người", "nhức mỏi", "đau khớp", "đau cơ",
+        "nhức mắt", "nhức hố mắt",
+        "phát ban", "nổi mẩn", "mẩn đỏ",
+        "buồn nôn", "nôn", "ói",
+        "chấm đỏ", "xuất huyết dưới da", "bầm tím"
+      ],
+      "note": "Sốt + ≥1 triệu chứng trên → kích hoạt hỏi thêm để đánh giá"
+    }
+  }
+}

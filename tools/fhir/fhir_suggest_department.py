@@ -1,4 +1,6 @@
 """Suggest which hospital department fits the patient's symptoms + history."""
+from __future__ import annotations
+
 
 TOOL_NAME = "fhir_suggest_department"
 CATEGORY = "Healthcare"

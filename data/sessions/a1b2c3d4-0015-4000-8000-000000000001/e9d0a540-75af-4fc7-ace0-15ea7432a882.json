@@ -1,0 +1,16 @@
+{
+  "session_id": "doctor_a1b2c3d4-0015-4000-8000-000000000001_e9d0a540-75af-4fc7-ace0-15ea7432a882",
+  "title": "alo",
+  "created_at": "2026-05-12T23:06:01",
+  "updated_at": "2026-05-12T23:06:01",
+  "messages": [
+    {
+      "role": "user",
+      "content": "alo"
+    },
+    {
+      "role": "assistant",
+      "content": "Đây là bác sĩ Bùi Văn Thắng, hay có tôi có thể giúp gì?"
+    }
+  ]
+}

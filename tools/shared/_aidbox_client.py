@@ -3,6 +3,7 @@
 Reads AIDBOX_URL / AIDBOX_CLIENT_ID / AIDBOX_CLIENT_SECRET from env.
 Leading underscore in filename prevents Sphinx from loading this as a tool.
 """
+from __future__ import annotations
 import os
 import httpx
 
@@ -24,6 +25,25 @@ def fhir_get(path: str, params: dict | None = None, timeout: float = 15.0) -> di
     try:
         with httpx.Client(timeout=timeout, auth=auth) as client:
             resp = client.get(full, params=params or {})
+        if resp.status_code >= 400:
+            return {"error": f"FHIR {resp.status_code}: {resp.text[:300]}"}
+        return resp.json()
+    except httpx.TimeoutException:
+        return {"error": f"Timeout calling {full}"}
+    except Exception as e:
+        return {"error": f"Request failed: {e}"}
+
+
+def fhir_post(path: str, body: dict, timeout: float = 15.0) -> dict:
+    url, cid, sec = _config()
+    if not url:
+        return {"error": "AIDBOX_URL not configured"}
+
+    full = f"{url}/fhir/{path.lstrip('/')}"
+    auth = (cid, sec) if cid and sec else None
+    try:
+        with httpx.Client(timeout=timeout, auth=auth) as client:
+            resp = client.post(full, json=body, headers={"Content-Type": "application/json"})
         if resp.status_code >= 400:
             return {"error": f"FHIR {resp.status_code}: {resp.text[:300]}"}
         return resp.json()

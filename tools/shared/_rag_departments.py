@@ -11,7 +11,7 @@ from typing import Optional
 os.environ.setdefault("TRANSFORMERS_NO_TF", "1")
 os.environ.setdefault("USE_TF", "0")
 
-_KNOWLEDGE_FILE = Path(__file__).parent / "knowledge_base" / "symptoms_departments.json"
+_KNOWLEDGE_FILE = Path(__file__).parent.parent / "knowledge_base" / "symptoms_departments.json"
 _EMBEDDING_MODEL = "paraphrase-multilingual-MiniLM-L12-v2"
 _TOP_K = 10
 _THRESHOLD = 0.30

@@ -1,0 +1,62 @@
+{
+  "session_id": "doctor_fdf43bd5-432b-4110-a522-e22e0da3e15b_b75bd18f-2c91-46e9-8dd5-daf616693241",
+  "title": "tuần này tôi có lịch hẹn nào ko",
+  "created_at": "2026-05-14T20:08:34",
+  "updated_at": "2026-05-14T20:09:05",
+  "messages": [
+    {
+      "role": "user",
+      "content": "tuần này tôi có lịch hẹn nào ko"
+    },
+    {
+      "role": "assistant",
+      "content": null,
+      "tool_calls": [
+        {
+          "id": "toolu_bdrk_019NM66W5kT2YDXxaDUzVrAf",
+          "type": "function",
+          "function": {
+            "name": "fhir_get_doctor_schedule",
+            "arguments": "{\"practitioner_id\": \"fdf43bd5-432b-4110-a522-e22e0da3e15b\", \"date_from\": \"2026-01-20\", \"date_to\": \"2026-01-26\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "toolu_bdrk_019NM66W5kT2YDXxaDUzVrAf",
+      "content": "{\"total\": 0, \"appointments\": [], \"message\": \"Không có lịch hẹn từ 2026-01-20 đến 2026-01-26.\"}"
+    },
+    {
+      "role": "assistant",
+      "content": "Không có lịch hẹn nào trong tuần này (20/01 – 26/01). Bảng lịch của bác sĩ trống."
+    },
+    {
+      "role": "user",
+      "content": "tuần này từ ngày 15/5/2026-16/5 tôi có lịch hẹn nào không"
+    },
+    {
+      "role": "assistant",
+      "content": null,
+      "tool_calls": [
+        {
+          "id": "toolu_bdrk_01KjY9V1hnp3tVjpTb934GvJ",
+          "type": "function",
+          "function": {
+            "name": "fhir_get_doctor_schedule",
+            "arguments": "{\"practitioner_id\": \"fdf43bd5-432b-4110-a522-e22e0da3e15b\", \"date_from\": \"2026-05-15\", \"date_to\": \"2026-05-16\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "toolu_bdrk_01KjY9V1hnp3tVjpTb934GvJ",
+      "content": "{\"total\": 1, \"date_from\": \"2026-05-15\", \"date_to\": \"2026-05-16\", \"appointments\": [{\"start\": \"2026-05-15 08:00\", \"patient_name\": \"Alex Pham\", \"department\": \"Khoa Tim mạch\", \"status\": \"booked\"}]}"
+    },
+    {
+      "role": "assistant",
+      "content": "**Lịch hẹn từ 15/05 - 16/05/2026:**\n- **15/05 08:00** — Alex Pham — Khoa Tim mạch — Booked"
+    }
+  ]
+}

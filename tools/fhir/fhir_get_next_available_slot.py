@@ -9,8 +9,9 @@ DESCRIPTION = (
     "không cần user chọn. Dùng khi urgency_level=URGENT và cần đặt lịch nhanh nhất có thể."
 )
 ARGS_SCHEMA = {
-    "department": "string — mã khoa (PEDIAT/CARDIO/ENDO/ENT/NEURO/GASTRO/RHEUMA/DERMA/OBGYN/OPHTHAL/UROLOGY/GENERAL/SURGERY/DENTAL/PULMO/ORTHO)",
-    "date_from":  "string (tùy chọn) — YYYY-MM-DD. Mặc định hôm nay",
+    "department":      "string — mã khoa (PEDIAT/CARDIO/ENDO/ENT/NEURO/GASTRO/RHEUMA/DERMA/OBGYN/OPHTHAL/UROLOGY/GENERAL/SURGERY/DENTAL/PULMO/ORTHO)",
+    "date_from":       "string (tùy chọn) — YYYY-MM-DD. Mặc định hôm nay",
+    "practitioner_id": "string (tùy chọn) — UUID bác sĩ. Nếu truyền, chỉ lấy slot của bác sĩ này.",
 }
 
 _WEEKDAY_VI = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ nhật"]
@@ -25,6 +26,7 @@ def run(args: dict) -> dict:
     dept = str(args.get("department") or "").strip().upper()
     if not dept:
         return {"error": "department is required"}
+    filter_pract_id = str(args.get("practitioner_id") or "").strip()
 
     today = date.today()
     d_from = str(args.get("date_from") or "").strip() or today.isoformat()
@@ -48,13 +50,21 @@ def run(args: dict) -> dict:
     for sched in schedules:
         sched_id = sched.get("id", "")
         actor_ref = ((sched.get("actor") or [{}])[0] or {}).get("reference", "")
-        pract_name = ""
+
+        # Filter by practitioner if requested
+        if filter_pract_id:
+            sched_pract_id = actor_ref.split("/")[-1] if actor_ref.startswith("Practitioner/") else ""
+            if sched_pract_id != filter_pract_id:
+                continue
+        pract_name = "Bác sĩ phụ trách"
         if actor_ref.startswith("Practitioner/"):
             pract = fhir_get(actor_ref)
             if isinstance(pract, dict) and pract.get("resourceType") == "Practitioner":
                 name = (pract.get("name") or [{}])[0]
                 given = " ".join(name.get("given") or [])
-                pract_name = f"BS. {name.get('family', '')} {given}".strip()
+                resolved = f"BS. {name.get('family', '')} {given}".strip()
+                if resolved and resolved != "BS.":
+                    pract_name = resolved
 
         dept_name = ""
         stype = (sched.get("serviceType") or [{}])[0]
@@ -65,17 +75,14 @@ def run(args: dict) -> dict:
         slot_bundle = fhir_get("Slot", {
             "schedule": f"Schedule/{sched_id}",
             "status": "free",
-            "start": f"ge{d_from}",
+            "start": f"ge{now_iso}",
             "_sort": "start",
-            "_count": "20",
+            "_count": "50",
         })
 
         for s in extract_entries(slot_bundle):
             start_iso = s.get("start", "")
             if start_iso[:10] > d_to:
-                continue
-            # Bỏ qua slot đã qua giờ hiện tại (so sánh YYYY-MM-DDTHH:MM)
-            if start_iso[:16] <= now_iso:
                 continue
             if earliest is None or start_iso < earliest["start_iso"]:
                 d = date.fromisoformat(start_iso[:10])
@@ -101,6 +108,7 @@ def run(args: dict) -> dict:
     slot = earliest
     return {
         "found": True,
+        "slot_id":      slot["slot_id"],
         "department":   slot["department"],
         "date":         slot["date"],
         "date_vi":      slot["date_vi"],

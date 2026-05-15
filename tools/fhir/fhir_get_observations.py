@@ -1,4 +1,6 @@
 """Get patient vital signs and lab observations from HIS (FHIR R5)."""
+from __future__ import annotations
+
 
 TOOL_NAME = "fhir_get_observations"
 CATEGORY = "Healthcare"

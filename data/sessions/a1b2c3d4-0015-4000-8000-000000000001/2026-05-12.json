@@ -1,0 +1,134 @@
+{
+  "session_id": "doctor_a1b2c3d4-0015-4000-8000-000000000001_2026-05-12",
+  "title": "hello",
+  "created_at": "2026-05-12T23:01:21",
+  "updated_at": "2026-05-12T23:05:33",
+  "messages": [
+    {
+      "role": "user",
+      "content": "hello"
+    },
+    {
+      "role": "assistant",
+      "content": "Tôi là công cụ hỗ trợ quyết định lâm sàn của Bệnh viện Đa khoa Hà Nội, hỗ trợ BS. Bùi Văn Thắng.\n\nTôi có thể giúp:\n- Tra cứu / tóm tắt hồ sơ bệnh nhân\n- Xem kết quả xét nghiệm, sinh hiệu\n- Kiểm tra lịch trống bác sĩ / khoa\n- Phân tích xét nghiệm máu (CBC) — sàng lọc Sốt Xuất Huyết Dengue\n- Xem lịch hẹn bệnh nhân / lịch của bác sĩ\n\nBác sĩ cần gì?"
+    },
+    {
+      "role": "user",
+      "content": "ngày mai 13/5 tôi có lịch hẹn nào ko"
+    },
+    {
+      "role": "assistant",
+      "content": "Tôi sẽ kiểm tra lịch của bác sĩ ngày 13/5.",
+      "tool_calls": [
+        {
+          "id": "toolu_bdrk_01RMo73g8QiJWU2qQUDD7gPg",
+          "type": "function",
+          "function": {
+            "name": "fhir_get_doctor_schedule",
+            "arguments": "{\"practitioner_id\": \"a1b2c3d4-0015-4000-8000-000000000001\", \"date_from\": \"2026-05-13\", \"date_to\": \"2026-05-13\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "toolu_bdrk_01RMo73g8QiJWU2qQUDD7gPg",
+      "content": "{\"total\": 0, \"appointments\": [], \"message\": \"Không có lịch hẹn từ 2026-05-13 đến 2026-05-13.\"}"
+    },
+    {
+      "role": "assistant",
+      "content": "Ngày 13/5 bác sĩ không có lịch hẹn."
+    },
+    {
+      "role": "user",
+      "content": "hêllo"
+    },
+    {
+      "role": "assistant",
+      "content": "Cần hỗ trợ gì?"
+    },
+    {
+      "role": "user",
+      "content": "hồ sơ bệnh nhân alex phạm"
+    },
+    {
+      "role": "assistant",
+      "content": "Tôi sẽ tìm hồ sơ bệnh nhân Alex Phạm.",
+      "tool_calls": [
+        {
+          "id": "toolu_bdrk_01NRwyR6suQQJ9fEq3K2aJY4",
+          "type": "function",
+          "function": {
+            "name": "fhir_search_patient",
+            "arguments": "{\"query\": \"Alex Phạm\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "toolu_bdrk_01NRwyR6suQQJ9fEq3K2aJY4",
+      "content": "{\"matched_by\": \"name\", \"count\": 2, \"patients\": [{\"id\": \"b2e0627b-1767-4f80-8519-f3dc776d0b1d\", \"name\": \"Alex Pham\", \"gender\": \"male\", \"birth_date\": \"2004-10-22\", \"age\": 21, \"bhyt\": null, \"cccd\": null, \"phone\": \"0904608749\"}, {\"id\": \"294b0ed1-6df7-44a4-9838-2b5a99d59e33\", \"name\": \"Alex Phạm\", \"gender\": \"male\", \"birth_date\": \"2004-04-27\", \"age\": 22, \"bhyt\": \"HS4010234567890\", \"cccd\": \"123456789012\", \"phone\": \"0909090909\"}]}"
+    },
+    {
+      "role": "assistant",
+      "content": "Tìm được 2 bệnh nhân tên Alex Phạm. Bác sĩ chọn bệnh nhân nào?\n\n1. **Alex Pham** — Nam, 21 tuổi (sinh 22/10/2004) — SĐT: 0904608749\n2. **Alex Phạm** — Nam, 22 tuổi (sinh 27/04/2004) — BHYT: HS4010234567890, CCCD: 123456789012"
+    },
+    {
+      "role": "user",
+      "content": "tháng 10"
+    },
+    {
+      "role": "assistant",
+      "content": "Bệnh nhân **Alex Pham** — Nam, 21 tuổi (sinh 22/10/2004).\n\nTôi sẽ lấy hồ sơ.",
+      "tool_calls": [
+        {
+          "id": "toolu_bdrk_01MFUWTNy5FWVmpMEmtDsYU3",
+          "type": "function",
+          "function": {
+            "name": "fhir_get_patient_history",
+            "arguments": "{\"patient_id\": \"b2e0627b-1767-4f80-8519-f3dc776d0b1d\"}"
+          }
+        },
+        {
+          "id": "toolu_bdrk_019JRyAQGWpQG7Bwfk7WyopA",
+          "type": "function",
+          "function": {
+            "name": "fhir_get_observations",
+            "arguments": "{\"patient_id\": \"b2e0627b-1767-4f80-8519-f3dc776d0b1d\", \"category\": \"all\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "toolu_bdrk_01MFUWTNy5FWVmpMEmtDsYU3",
+      "content": "{\"patient\": {\"id\": \"b2e0627b-1767-4f80-8519-f3dc776d0b1d\", \"name\": \"Alex Pham\", \"gender\": \"male\", \"birth_date\": \"2004-10-22\", \"age\": 21, \"bhyt\": null, \"cccd\": null, \"phone\": \"0904608749\"}, \"summary\": {\"visits_count\": 0, \"active_conditions\": [], \"current_medications\": []}, \"encounters\": [], \"conditions\": [], \"medications\": [], \"observations\": [{\"date\": \"2026-05-12\", \"measure\": \"CBC panel\", \"value\": \"Platelets: 48.0 10*3/uL; WBC: 2.6 10*3/uL; Hematocrit: 43.0 %; Hemoglobin: 13.5 g/dL\"}, {\"date\": \"2026-05-12\", \"measure\": \"CBC panel\", \"value\": \"Platelets: 48.0 10*3/uL; WBC: 2.6 10*3/uL; Hematocrit: 43.0 %\"}, {\"date\": \"2026-05-12\", \"measure\": \"CBC panel\", \"value\": \"Platelets: 48.0 10*3/uL; WBC: 2.6 10*3/uL; Hematocrit: 43.0 %\"}, {\"date\": \"2026-05-12\", \"measure\": \"CBC panel\", \"value\": \"Platelets: 48.0 10*3/uL; WBC: 2.6 10*3/uL; Hematocrit: 43.0 %\"}, {\"date\": \"2026-05-12\", \"measure\": \"CBC panel\", \"value\": \"Platelets: 48.0 10*3/uL; WBC: 2.6 10*3/uL; Hematocrit: 43.0 %\"}, {\"date\": \"2026-05-12\", \"measure\": \"CBC panel\", \"value\": \"Platelets: 48.0 10*3/uL; WBC: 2.6 10*3/uL; Hematocrit: 43.0 %\"}]}"
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "toolu_bdrk_019JRyAQGWpQG7Bwfk7WyopA",
+      "content": "{\"patient_id\": \"b2e0627b-1767-4f80-8519-f3dc776d0b1d\", \"count\": 6, \"observations\": [{\"date\": \"2026-05-12\", \"name\": \"CBC panel\", \"value\": \"Platelets: 48.0 10*3/uL | WBC: 2.6 10*3/uL | Hematocrit: 43.0 %\", \"unit\": null, \"status\": \"final\"}, {\"date\": \"2026-05-12\", \"name\": \"CBC panel\", \"value\": \"Platelets: 48.0 10*3/uL | WBC: 2.6 10*3/uL | Hematocrit: 43.0 %\", \"unit\": null, \"status\": \"final\"}, {\"date\": \"2026-05-12\", \"name\": \"CBC panel\", \"value\": \"Platelets: 48.0 10*3/uL | WBC: 2.6 10*3/uL | Hematocrit: 43.0 %\", \"unit\": null, \"status\": \"final\"}, {\"date\": \"2026-05-12\", \"name\": \"CBC panel\", \"value\": \"Platelets: 48.0 10*3/uL | WBC: 2.6 10*3/uL | Hematocrit: 43.0 %\", \"unit\": null, \"status\": \"final\"}, {\"date\": \"2026-05-12\", \"name\": \"CBC panel\", \"value\": \"Platelets: 48.0 10*3/uL | WBC: 2.6 10*3/uL | Hematocrit: 43.0 %\", \"unit\": null, \"status\": \"final\"}, {\"date\": \"2026-05-12\", \"name\": \"CBC panel\", \"value\": \"Platelets: 48.0 10*3/uL | WBC: 2.6 10*3/uL | Hematocrit: 43.0 % | Hemoglobin: 13.5 g/dL\", \"unit\": null, \"status\": \"final\"}], \"summary\": \"Chỉ số gần nhất:\\n- CBC panel: Platelets: 48.0 10*3/uL | WBC: 2.6 10*3/uL | Hematocrit: 43.0 % (ngày 2026-05-12)\"}"
+    },
+    {
+      "role": "assistant",
+      "content": "**Alex Pham** — Nam, 21 tuổi (sinh 22/10/2004)\nSĐT: 0904608749\n\n**Tiền sử:** Không có\n**Thuốc hiện tại:** Không có\n**Xét nghiệm gần nhất:**\n- **PLT: 48.0** K/μL *(thấp cảnh báo)* — 12/05/2026\n- **WBC: 2.6** K/μL *(thấp)* — 12/05/2026\n- **HCT: 43.0%** — 12/05/2026\n- **HGB: 13.5** g/dL — 12/05/2026\n\n**Lưu ý:** Tiểu cầu giảm đáng kể (bình thường: 150-400 K/μL), bạch cầu giảm."
+    },
+    {
+      "role": "user",
+      "content": "hello"
+    },
+    {
+      "role": "assistant",
+      "content": "Cần gì?"
+    },
+    {
+      "role": "user",
+      "content": "alo"
+    },
+    {
+      "role": "assistant",
+      "content": "Cần hỗ trợ gì không?"
+    }
+  ]
+}

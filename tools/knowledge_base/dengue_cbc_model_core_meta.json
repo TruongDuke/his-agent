@@ -1,0 +1,13 @@
+{
+  "model_type": "core",
+  "features": [
+    "plt",
+    "wbc",
+    "hct",
+    "hgb"
+  ],
+  "unit_note": "plt wbc da chia 1000 (cumm->K/mcL)",
+  "cv_auc_mean": 0.6258,
+  "cv_f1_mean": 0.8098,
+  "n_samples": 1523
+}

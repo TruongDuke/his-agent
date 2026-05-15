@@ -7,6 +7,7 @@
   <title>HIS Agent — Bệnh viện Đa khoa Hà Nội</title>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
   <style>
     /* ── Design tokens (OpenMRS / Carbon) ── */
     :root {
@@ -320,6 +321,34 @@
     .send-btn svg { width: 16px; height: 16px; fill: white; }
     .input-hint { font-size: 11px; color: var(--text-03); text-align: right; margin-top: 4px; }
 
+    /* Image attach button */
+    .attach-btn {
+      width: 30px; height: 30px; background: transparent; border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; color: var(--ui-04); border-radius: 2px;
+      transition: color .1s, background .1s;
+    }
+    .attach-btn:hover { color: var(--brand-01); background: var(--ui-03); }
+    .attach-btn svg { width: 18px; height: 18px; }
+    /* Image preview strip */
+    .img-preview-strip {
+      display: flex; align-items: center; gap: 8px;
+      padding: 6px 12px 0; background: var(--ui-01);
+      border: 1px solid var(--ui-03); border-bottom: none;
+    }
+    .img-preview-strip img {
+      height: 48px; width: auto; max-width: 80px; object-fit: cover;
+      border: 1px solid var(--ui-03);
+    }
+    .img-preview-strip .img-name {
+      font-size: 11px; color: var(--text-02); flex: 1;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .img-preview-strip .img-remove {
+      background: none; border: none; cursor: pointer;
+      color: var(--danger); font-size: 16px; line-height: 1; padding: 0 2px;
+    }
+
     /* Welcome screen */
     .welcome {
       margin: auto; text-align: center;
@@ -351,6 +380,22 @@
     .doctor-body {
       flex: 1; display: flex; overflow: hidden;
     }
+
+    /* History sidebar */
+    #hist-sidebar {
+      width: 0; flex-shrink: 0; overflow: hidden;
+      background: var(--ui-02);
+      border-right: 0 solid var(--ui-03);
+      display: flex; flex-direction: column;
+      transition: width .22s ease, border-width .22s ease;
+    }
+    #hist-sidebar.open { width: 224px; border-right-width: 1px; }
+    #hist-sidebar .hist-inner { width: 224px; display: flex; flex-direction: column; height: 100%; }
+    #hist-sidebar .hist-head {
+      padding: 11px 12px; border-bottom: 1px solid var(--ui-03);
+      display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+    }
+    #hist-sidebar .hist-head span { font-weight: 600; font-size: 13px; flex: 1; }
 
     /* Doctor sidebar */
     .doc-sidebar {
@@ -439,6 +484,7 @@
       margin: 16px 24px 0;
       background: var(--ui-02);
       border: 1px solid var(--ui-03);
+      position: relative;
     }
     .doc-chat-header {
       padding: 12px 16px 10px;
@@ -464,6 +510,28 @@
       padding: 4px 8px;
     }
     .doc-chat-header .clear-btn:hover { color: var(--brand-01); }
+
+    .hist-conv-item:hover { background: var(--ui-03) !important; }
+    .hist-conv-item:hover .hist-del-btn { opacity: 1 !important; }
+    .hist-conv-item.active { background: var(--ui-04) !important; }
+    .hist-del-btn:hover { color: var(--danger) !important; }
+
+    /* Timestamp + copy */
+    .msg-meta {
+      font-size: 11px; color: var(--text-03);
+      margin-top: 3px; display: flex; align-items: center; gap: 6px;
+    }
+    .msg-row.user .msg-meta { justify-content: flex-end; padding-right: 2px; }
+    .msg-row.bot  .msg-meta { justify-content: flex-start; padding-left: 36px; }
+    .copy-btn {
+      background: none; border: 1px solid var(--ui-03);
+      color: var(--text-03); font-size: 11px; padding: 1px 6px;
+      cursor: pointer; border-radius: 3px; font-family: inherit;
+      opacity: 0; transition: opacity .15s;
+    }
+    .msg-row:hover .copy-btn { opacity: 1; }
+    .copy-btn:hover { color: var(--brand-01); border-color: var(--brand-01); }
+    .copy-btn.copied { color: var(--success); border-color: var(--success); opacity: 1; }
 
     /* Doctor messages area (reuses .messages base styles) */
     .doc-messages {
@@ -641,9 +709,25 @@
       border-bottom-color: var(--brand-01);
       box-shadow: 0 2px 8px rgba(0,93,93,.1);
     }
-    .pract-card .p-icon  { font-size: 28px; margin-bottom: 10px; display: block; }
+    .pract-card .p-avatar {
+      width: 52px; height: 52px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; font-weight: 700; color: #fff;
+      margin-bottom: 12px; flex-shrink: 0;
+    }
     .pract-card .p-name  { font-size: 14px; font-weight: 600; color: var(--text-01); margin-bottom: 4px; }
     .pract-card .p-spec  { font-size: 12px; color: var(--text-02); margin-bottom: 14px; min-height: 16px; }
+    .select-doc-search-wrap { position: relative; margin-bottom: 20px; }
+    .select-doc-search-wrap::before {
+      content: '🔍'; position: absolute; left: 10px; top: 50%;
+      transform: translateY(-50%); font-size: 13px; pointer-events: none;
+    }
+    .select-doc-search {
+      width: 100%; border: 1px solid var(--ui-03); background: var(--ui-02);
+      font-family: inherit; font-size: 13px; padding: 9px 12px 9px 34px;
+      outline: none; transition: border-color .15s;
+    }
+    .select-doc-search:focus { border-color: var(--brand-01); }
     .pract-card .p-btn   {
       width: 100%; background: var(--brand-01); color: #fff; border: none;
       font-family: inherit; font-size: 12px; padding: 7px; cursor: pointer;
@@ -659,8 +743,359 @@
     }
     .select-doc-back:hover { background: var(--brand-02); }
 
+    /* Chart row */
+    .chart-row {
+      display: flex; gap: 1px;
+      background: var(--ui-03);
+      border: 1px solid var(--ui-03);
+      margin-top: 1px;
+    }
+    .chart-card {
+      flex: 1; background: var(--ui-02);
+      padding: 16px 20px 20px;
+      min-width: 0;
+    }
+    .chart-card:first-child { flex: 2; }
+    .chart-card .c-label {
+      font-size: 12px; font-weight: 600;
+      color: var(--text-02); text-transform: uppercase;
+      letter-spacing: .06em; margin-bottom: 14px;
+    }
+    .chart-wrap { position: relative; height: 160px; }
+
+    /* ── Patient slide-over panel ── */
+    .panel-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(22,22,22,.35);
+      z-index: 200;
+      opacity: 0; pointer-events: none;
+      transition: opacity .2s;
+    }
+    .panel-backdrop.open { opacity: 1; pointer-events: auto; }
+
+    .patient-panel {
+      position: fixed; right: 0; top: 48px;
+      width: 360px; height: calc(100vh - 48px);
+      background: var(--ui-02);
+      border-left: 1px solid var(--ui-03);
+      box-shadow: -4px 0 20px rgba(0,0,0,.12);
+      z-index: 201; overflow-y: auto;
+      transform: translateX(100%);
+      transition: transform .22s ease;
+    }
+    .patient-panel.open { transform: translateX(0); }
+
+    .pp-header {
+      background: var(--brand-01); color: #fff;
+      padding: 20px 16px 16px;
+      position: sticky; top: 0; z-index: 1;
+    }
+    .pp-header-row { display: flex; align-items: flex-start; justify-content: space-between; }
+    .pp-name  { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+    .pp-meta  { font-size: 12px; color: rgba(255,255,255,.75); }
+    .pp-close {
+      background: transparent; border: none; color: #fff;
+      font-size: 18px; cursor: pointer; padding: 0 4px; line-height: 1;
+      opacity: .8;
+    }
+    .pp-close:hover { opacity: 1; }
+
+    .pp-section { padding: 16px; border-bottom: 1px solid var(--ui-03); }
+    .pp-section:last-child { border-bottom: none; }
+    .pp-section-title {
+      font-size: 11px; font-weight: 600; color: var(--text-03);
+      text-transform: uppercase; letter-spacing: .07em;
+      margin-bottom: 10px;
+    }
+    .pp-row {
+      display: flex; justify-content: space-between; align-items: baseline;
+      padding: 5px 0; border-bottom: 1px solid var(--ui-01);
+      font-size: 13px;
+    }
+    .pp-row:last-child { border-bottom: none; }
+    .pp-row-label { color: var(--text-02); }
+    .pp-row-val   { font-weight: 500; color: var(--text-01); }
+    .pp-row-date  { font-size: 11px; color: var(--text-03); margin-left: 6px; }
+
+    .pp-appt-row {
+      padding: 8px 0; border-bottom: 1px solid var(--ui-01);
+      font-size: 13px;
+    }
+    .pp-appt-row:last-child { border-bottom: none; }
+    .pp-appt-time { font-weight: 600; color: var(--brand-01); }
+    .pp-appt-dept { color: var(--text-02); font-size: 12px; margin-top: 2px; }
+
+    .pp-empty { font-size: 12px; color: var(--text-03); font-style: italic; }
+
     /* Hidden util */
     .hidden { display: none !important; }
+
+    /* ── Dengue screening form ── */
+    .dengue-form {
+      background: var(--ui-02);
+      border: 1px solid var(--ui-03);
+      border-left: 3px solid #e67e00;
+      border-radius: 0 6px 6px 0;
+      padding: 14px 16px;
+      font-size: 13px;
+    }
+    .dengue-form-title {
+      font-size: 13px; font-weight: 600;
+      color: #e67e00; margin-bottom: 12px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .dengue-section {
+      margin-bottom: 14px;
+    }
+    .dengue-section-label {
+      font-size: 11px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: .07em; color: var(--text-03);
+      margin-bottom: 8px;
+    }
+    .dengue-q {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 6px 0; border-bottom: 1px solid var(--ui-01);
+      line-height: 1.4;
+    }
+    .dengue-q:last-child { border-bottom: none; }
+    .dengue-q-label { flex: 1; color: var(--text-01); }
+    .dengue-q-label span { color: var(--text-03); font-size: 11px; }
+    .dengue-toggle {
+      display: flex; gap: 4px; flex-shrink: 0;
+    }
+    .dengue-toggle input { display: none; }
+    .dengue-toggle label {
+      padding: 3px 10px;
+      border: 1px solid var(--ui-03);
+      font-size: 12px; font-weight: 500;
+      cursor: pointer; transition: all .1s;
+      color: var(--text-02); background: var(--ui-01);
+      border-radius: 2px;
+    }
+    .dengue-toggle input:checked + label {
+      background: var(--brand-01); color: #fff; border-color: var(--brand-01);
+    }
+    .dengue-number {
+      width: 64px; padding: 4px 8px;
+      border: 1px solid var(--ui-03);
+      border-bottom: 2px solid var(--ui-04);
+      font-family: inherit; font-size: 13px;
+      color: var(--text-01); text-align: center;
+      outline: none; background: var(--ui-01);
+    }
+    .dengue-number:focus { border-bottom-color: var(--brand-01); }
+    .dengue-submit {
+      margin-top: 14px; width: 100%;
+      background: var(--brand-01); color: #fff;
+      border: none; padding: 10px;
+      font-family: inherit; font-size: 13px; font-weight: 500;
+      cursor: pointer; transition: background .1s;
+    }
+    .dengue-submit:hover { background: var(--brand-02); }
+    .dengue-submit:disabled { background: var(--ui-03); cursor: not-allowed; }
+
+    /* ── Booking modal ── */
+    .booking-overlay {
+      position: fixed; inset: 0; z-index: 300;
+      background: rgba(22,22,22,.5);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .booking-modal {
+      background: var(--ui-02); width: 560px; max-width: 96vw;
+      max-height: 88vh; display: flex; flex-direction: column;
+      border: 1px solid var(--ui-03);
+      box-shadow: 0 12px 40px rgba(0,0,0,.25); overflow: hidden;
+    }
+    .bk-top {
+      background: var(--brand-01); color: #fff;
+      padding: 16px 20px 0; flex-shrink: 0;
+    }
+    .bk-top-row {
+      display: flex; align-items: center; margin-bottom: 14px;
+    }
+    .bk-top-row h2 { font-size: 15px; font-weight: 600; flex: 1; }
+    .bk-close {
+      background: none; border: none; color: rgba(255,255,255,.75);
+      font-size: 22px; cursor: pointer; line-height: 1; padding: 0 4px;
+    }
+    .bk-close:hover { color: #fff; }
+    .bk-steps { display: flex; }
+    .bk-step {
+      flex: 1; text-align: center; padding: 8px 4px 10px;
+      font-size: 11px; color: rgba(255,255,255,.45);
+      border-bottom: 3px solid transparent; transition: all .2s;
+    }
+    .bk-step.active { color: #fff; font-weight: 600; border-bottom-color: #fff; }
+    .bk-step.done   { color: rgba(255,255,255,.75); }
+    .bk-body { flex: 1; overflow-y: auto; padding: 22px 20px 24px; }
+    .bk-back {
+      color: var(--brand-01); font-size: 13px; cursor: pointer;
+      margin-bottom: 14px; display: inline-flex; align-items: center; gap: 4px;
+    }
+    .bk-back:hover { text-decoration: underline; }
+    .bk-title { font-size: 16px; font-weight: 600; margin-bottom: 18px; }
+    .bk-loading { text-align: center; color: var(--text-02); font-size: 13px; padding: 48px 0; }
+    /* Departments grid */
+    .bk-dept-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px;
+    }
+    .bk-dept-card {
+      border: 1px solid var(--ui-03); padding: 18px 12px 14px;
+      cursor: pointer; transition: all .15s; text-align: center;
+    }
+    .bk-dept-card:hover { border-color: var(--brand-01); background: #f0fafa; }
+    .bk-dept-icon { font-size: 26px; margin-bottom: 8px; }
+    .bk-dept-name { font-size: 12px; font-weight: 500; color: var(--text-01); line-height: 1.3; }
+    /* Doctor list */
+    .bk-doc-list { display: flex; flex-direction: column; gap: 8px; }
+    .bk-doc-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 14px; border: 1px solid var(--ui-03);
+      cursor: pointer; transition: all .15s;
+    }
+    .bk-doc-item:hover { border-color: var(--brand-01); background: #f0fafa; }
+    .bk-doc-avatar {
+      width: 42px; height: 42px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700; color: #fff;
+    }
+    .bk-doc-name { font-size: 14px; font-weight: 500; }
+    .bk-doc-spec { font-size: 12px; color: var(--text-02); margin-top: 2px; }
+    /* Date + slots */
+    .bk-label {
+      font-size: 11px; font-weight: 600; color: var(--text-02);
+      text-transform: uppercase; letter-spacing: .04em; margin-bottom: 6px;
+    }
+    .bk-date-input {
+      width: 100%; border: 1px solid var(--ui-03); background: var(--ui-01);
+      font-family: inherit; font-size: 14px; padding: 10px 12px;
+      outline: none; transition: border-color .15s; margin-bottom: 20px;
+    }
+    .bk-date-input:focus { border-color: var(--brand-01); background: var(--ui-02); }
+    .bk-slots { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+    .bk-slot {
+      padding: 8px 16px; border: 1px solid var(--ui-03);
+      background: var(--ui-02); font-family: inherit; font-size: 13px;
+      cursor: pointer; transition: all .15s; color: var(--text-01);
+    }
+    .bk-slot:hover  { border-color: var(--brand-01); color: var(--brand-01); }
+    .bk-slot.sel    { background: var(--brand-01); border-color: var(--brand-01); color: #fff; }
+    /* Form */
+    .bk-form { display: flex; flex-direction: column; gap: 16px; margin-bottom: 20px; }
+    .bk-field { display: flex; flex-direction: column; gap: 6px; }
+    .bk-input {
+      border: 1px solid var(--ui-03); background: var(--ui-01);
+      font-family: inherit; font-size: 14px; padding: 10px 12px;
+      outline: none; transition: border-color .15s;
+    }
+    .bk-input:focus { border-color: var(--brand-01); background: var(--ui-02); }
+    .bk-input.err   { border-color: var(--danger); }
+    .bk-submit {
+      width: 100%; background: var(--brand-01); color: #fff; border: none;
+      font-family: inherit; font-size: 14px; font-weight: 600;
+      padding: 13px; cursor: pointer; transition: background .15s;
+    }
+    .bk-submit:hover { background: var(--brand-02); }
+    /* Summary */
+    .bk-summary {
+      background: var(--ui-01); border-left: 3px solid var(--brand-01);
+      padding: 14px 16px; margin: 16px 0; font-size: 13px; line-height: 1.9;
+    }
+
+    /* ── Generic overlay modal (search, dept, register) ── */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 300;
+      background: rgba(22,22,22,.5);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .modal-box {
+      background: var(--ui-02); width: 560px; max-width: 96vw;
+      max-height: 88vh; display: flex; flex-direction: column;
+      border: 1px solid var(--ui-03);
+      box-shadow: 0 12px 40px rgba(0,0,0,.25); overflow: hidden;
+    }
+    .modal-head {
+      background: var(--brand-01); color: #fff;
+      padding: 16px 20px; display: flex; align-items: center; flex-shrink: 0;
+    }
+    .modal-head h2 { font-size: 15px; font-weight: 600; flex: 1; }
+    .modal-close {
+      background: none; border: none; color: rgba(255,255,255,.75);
+      font-size: 22px; cursor: pointer; line-height: 1; padding: 0 4px;
+    }
+    .modal-close:hover { color: #fff; }
+    .modal-body { flex: 1; overflow-y: auto; padding: 20px; }
+    /* Search panel */
+    .srch-row {
+      display: flex; gap: 8px; margin-bottom: 18px;
+    }
+    .srch-input {
+      flex: 1; border: 1px solid var(--ui-03); background: var(--ui-01);
+      font-family: inherit; font-size: 14px; padding: 10px 12px;
+      outline: none; transition: border-color .15s;
+    }
+    .srch-input:focus { border-color: var(--brand-01); background: var(--ui-02); }
+    .srch-btn {
+      background: var(--brand-01); color: #fff; border: none;
+      font-family: inherit; font-size: 13px; font-weight: 600;
+      padding: 0 18px; cursor: pointer; transition: background .15s;
+    }
+    .srch-btn:hover { background: var(--brand-02); }
+    .srch-result {
+      border: 1px solid var(--ui-03); padding: 14px 16px; margin-bottom: 8px;
+      cursor: pointer; transition: background .15s;
+    }
+    .srch-result:hover { background: #f0fafa; border-color: var(--brand-01); }
+    .srch-result-name { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+    .srch-result-sub  { font-size: 12px; color: var(--text-02); }
+    .srch-empty { text-align: center; color: var(--text-02); font-size: 13px; padding: 40px 0; }
+    /* Patient detail card */
+    .pt-card { border: 1px solid var(--ui-03); padding: 18px; margin-top: 4px; }
+    .pt-card-name { font-size: 17px; font-weight: 700; margin-bottom: 12px; }
+    .pt-card-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px;
+    }
+    .pt-card-field label { font-size: 11px; font-weight: 600; color: var(--text-02); text-transform: uppercase; }
+    .pt-card-field span  { display: block; font-size: 13px; margin-top: 2px; }
+    .pt-back { color: var(--brand-01); font-size: 13px; cursor: pointer; margin-bottom: 16px; display: inline-flex; align-items: center; gap: 4px; }
+    .pt-back:hover { text-decoration: underline; }
+    /* Dept grid */
+    .dept-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px;
+    }
+    .dept-card {
+      border: 1px solid var(--ui-03); padding: 18px 10px 14px;
+      text-align: center; cursor: pointer; transition: all .15s;
+    }
+    .dept-card:hover { border-color: var(--brand-01); background: #f0fafa; }
+    .dept-card-icon { font-size: 26px; margin-bottom: 8px; }
+    .dept-card-name { font-size: 12px; font-weight: 500; color: var(--text-01); line-height: 1.35; }
+    .dept-card-count { font-size: 11px; color: var(--text-02); margin-top: 4px; }
+    /* Register form */
+    .reg-form { display: flex; flex-direction: column; gap: 16px; margin-bottom: 20px; }
+    .reg-field { display: flex; flex-direction: column; gap: 6px; }
+    .reg-label { font-size: 11px; font-weight: 600; color: var(--text-02); text-transform: uppercase; }
+    .reg-input, .reg-select {
+      border: 1px solid var(--ui-03); background: var(--ui-01);
+      font-family: inherit; font-size: 14px; padding: 10px 12px;
+      outline: none; transition: border-color .15s; appearance: none;
+    }
+    .reg-input:focus, .reg-select:focus { border-color: var(--brand-01); background: var(--ui-02); }
+    .reg-input.err, .reg-select.err { border-color: var(--danger); }
+    .reg-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .reg-submit {
+      width: 100%; background: var(--brand-01); color: #fff; border: none;
+      font-family: inherit; font-size: 14px; font-weight: 600;
+      padding: 13px; cursor: pointer; transition: background .15s;
+    }
+    .reg-submit:hover { background: var(--brand-02); }
+    .reg-submit:disabled { background: var(--ui-03); cursor: not-allowed; }
+    .reg-success {
+      text-align: center; padding: 32px 20px;
+    }
+    .reg-success-icon { font-size: 48px; margin-bottom: 12px; }
+    .reg-success-msg  { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
+    .reg-success-sub  { font-size: 13px; color: var(--text-02); margin-bottom: 20px; }
   </style>
 </head>
 <body>
@@ -702,6 +1137,10 @@
   </div>
   <div class="select-doc-body">
     <div class="select-doc-title">Danh sách bác sĩ</div>
+    <div class="select-doc-search-wrap">
+      <input class="select-doc-search" id="pract-search" type="text"
+        placeholder="Tìm theo tên..." oninput="filterPractitioners(this.value)">
+    </div>
     <div class="pract-grid" id="pract-grid"></div>
   </div>
 </div>
@@ -722,20 +1161,20 @@
   <div class="patient-layout">
     <nav class="sidebar">
       <div class="sidebar-label">Gợi ý nhanh</div>
-      <button class="quick-btn" onclick="fillP('Tôi muốn đặt lịch khám')">
+      <button class="quick-btn" onclick="openBooking()">
         <span class="icon">📅</span> Đặt lịch khám
       </button>
-      <button class="quick-btn" onclick="fillP('Tra cứu hồ sơ bệnh nhân')">
+      <button class="quick-btn" onclick="openSearch()">
         <span class="icon">🔍</span> Tra cứu hồ sơ
       </button>
       <button class="quick-btn" onclick="fillP('Tôi bị đau đầu và sốt cao')">
         <span class="icon">🩺</span> Tư vấn triệu chứng
       </button>
-      <button class="quick-btn" onclick="fillP('Danh sách khoa khám bệnh')">
+      <button class="quick-btn" onclick="openDepts()">
         <span class="icon">🏨</span> Danh sách khoa
       </button>
       <div class="sidebar-divider"></div>
-      <button class="quick-btn" onclick="fillP('Đăng ký bệnh nhân mới')">
+      <button class="quick-btn" onclick="openRegister()">
         <span class="icon">➕</span> Đăng ký mới
       </button>
     </nav>
@@ -785,6 +1224,18 @@
   </header>
 
   <div class="doctor-body">
+    <!-- History sidebar -->
+    <div id="hist-sidebar">
+      <div class="hist-inner">
+        <div class="hist-head">
+          <span>Lịch sử</span>
+          <button onclick="newConversation()" style="background:var(--brand-01);border:none;cursor:pointer;color:#fff;font-size:11px;padding:4px 8px;border-radius:4px;font-weight:600">+ Mới</button>
+          <button onclick="closeHistory()" style="background:none;border:none;cursor:pointer;font-size:18px;color:var(--text-03);line-height:1;padding:0 2px">×</button>
+        </div>
+        <div id="hist-content" style="flex:1;overflow-y:auto;padding:8px 6px"></div>
+      </div>
+    </div>
+
     <!-- Sidebar nav -->
     <nav class="doc-sidebar">
       <button class="doc-nav-item active" id="nav-dashboard" onclick="docNav('dashboard')">
@@ -820,8 +1271,12 @@
       <div class="doc-chat-section">
         <div class="doc-chat-header">
           <h3>Trợ lý AI</h3>
-          <button class="clear-btn" onclick="clearDocChat()">Xóa hội thoại</button>
+          <div style="display:flex;gap:8px">
+            <button class="clear-btn" onclick="toggleHistory()" style="background:var(--brand-03)">☰ Lịch sử</button>
+            <button class="clear-btn" onclick="clearDocChat()">Hội thoại mới</button>
+          </div>
         </div>
+
 
         <div class="doc-messages" id="d-messages">
           <div class="welcome" id="d-welcome" style="padding:32px 16px;">
@@ -838,17 +1293,35 @@
         </div>
 
         <div class="doc-input-bar">
+          <input type="file" id="d-file-input" accept="image/*,.pdf" style="display:none"
+            onchange="handleDoctorFileSelect(this)">
+          <div id="d-img-preview" class="img-preview-strip" style="display:none">
+            <img id="d-img-thumb" src="" alt="preview">
+            <span class="img-name" id="d-img-name"></span>
+            <button class="img-remove" onclick="clearDoctorImage()" title="Xóa ảnh">×</button>
+          </div>
           <div class="input-wrap">
+            <button class="attach-btn" onclick="document.getElementById('d-file-input').click()" title="Đính kèm ảnh xét nghiệm">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66L9.41 17.41a2 2 0 01-2.83-2.83l8.49-8.48"/>
+              </svg>
+            </button>
             <textarea id="d-input" class="chat-input" rows="1"
-              placeholder="Nhập tên bệnh nhân, triệu chứng, mã lịch hẹn..."></textarea>
+              placeholder="Nhập tên bệnh nhân, hỏi xét nghiệm, hoặc đính kèm ảnh CBC..."></textarea>
             <button id="d-send" class="send-btn" onclick="sendMsg('doctor')">
               <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
             </button>
           </div>
-          <div class="input-hint">Enter gửi · Shift+Enter xuống dòng</div>
+          <div class="input-hint">Enter gửi · Shift+Enter xuống dòng · 📎 đính kèm ảnh xét nghiệm</div>
         </div>
       </div>
     </main>
+  </div>
+
+  <!-- Patient slide-over -->
+  <div class="panel-backdrop" id="panel-backdrop" onclick="closePatientPanel()"></div>
+  <div class="patient-panel" id="patient-panel">
+    <div id="panel-content"></div>
   </div>
 </div>
 
@@ -858,6 +1331,9 @@
   let sessionPatient = null;
   let sessionDoctor  = null;
   let currentDoctor  = null;
+
+  /* Save initial welcome HTML to restore on logout */
+  const _pWelcomeHTML = document.getElementById('p-messages').innerHTML;
 
   /* ── Screen switching ── */
   function show(id) {
@@ -880,44 +1356,105 @@
   function logout() {
     role = null;
     currentDoctor = null;
+    _resetDocChatUI();
+    sessionPatient = null;
+    document.getElementById('p-messages').innerHTML = _pWelcomeHTML;
     show('screen-login');
   }
 
   /* ── Practitioner selection ── */
+  let _allPractitioners = [];
+
+  function _practInitials(name) {
+    const clean = (name || '').replace(/^BS\.\s*/i, '').trim();
+    const words = clean.split(/\s+/).filter(Boolean);
+    if (words.length >= 2) return (words[0][0] + words[words.length - 1][0]).toUpperCase();
+    return clean.slice(0, 2).toUpperCase();
+  }
+
+  function _avatarColor(name) {
+    const colors = ['#005d5d','#0043ce','#6929c4','#9f1853','#198038','#b28600','#00539a'];
+    let h = 0;
+    for (const c of (name || '')) h = (h * 31 + c.charCodeAt(0)) & 0xffff;
+    return colors[h % colors.length];
+  }
+
+  function _renderPractCard(p) {
+    const initials = _practInitials(p.name);
+    const color    = _avatarColor(p.name);
+    return `
+      <div class="pract-card" onclick="selectDoctor('${p.id}','${(p.name||'').replace(/'/g,'&#39;')}')">
+        <div class="p-avatar" style="background:${color}">${initials}</div>
+        <div class="p-name">${p.name || '(Chưa có tên)'}</div>
+        <div class="p-spec">${p.specialty || ''}</div>
+        <button class="p-btn">Chọn →</button>
+      </div>`;
+  }
+
+  function filterPractitioners(q) {
+    const grid = document.getElementById('pract-grid');
+    const list = q.trim()
+      ? _allPractitioners.filter(p => (p.name||'').toLowerCase().includes(q.toLowerCase()))
+      : _allPractitioners;
+    grid.innerHTML = list.length
+      ? list.map(_renderPractCard).join('')
+      : '<p style="color:var(--text-02);font-size:13px">Không tìm thấy bác sĩ nào.</p>';
+  }
+
   async function loadPractitioners() {
     const grid = document.getElementById('pract-grid');
     grid.innerHTML = [0,1,2,3].map(() => `
       <div class="pract-card" style="pointer-events:none">
-        <span style="display:block;background:var(--ui-03);border-radius:50%;width:36px;height:36px;margin-bottom:10px;animation:pulse 1.2s infinite"></span>
+        <div style="background:var(--ui-03);border-radius:50%;width:52px;height:52px;margin-bottom:12px;animation:pulse 1.2s infinite"></div>
         <div style="background:var(--ui-03);height:14px;width:70%;border-radius:2px;margin-bottom:8px;animation:pulse 1.2s infinite"></div>
         <div style="background:var(--ui-03);height:12px;width:50%;border-radius:2px;margin-bottom:14px;animation:pulse 1.2s infinite"></div>
         <div style="background:var(--ui-03);height:28px;border-radius:2px;animation:pulse 1.2s infinite"></div>
       </div>`).join('');
     try {
       const data = await fetch('/api/practitioners').then(r => r.json());
-      const rows = data.practitioners || [];
-      if (!rows.length) {
+      _allPractitioners = data.practitioners || [];
+      if (!_allPractitioners.length) {
         grid.innerHTML = '<p style="color:var(--text-02);padding:16px">Không tìm thấy bác sĩ nào trong hệ thống.</p>';
         return;
       }
-      grid.innerHTML = rows.map(p => `
-        <div class="pract-card" onclick="selectDoctor('${p.id}', '${(p.name||'').replace(/'/g,'&#39;')}')">
-          <span class="p-icon">👨‍⚕️</span>
-          <div class="p-name">${p.name || '(Chưa có tên)'}</div>
-          <div class="p-spec">${p.specialty || ''}</div>
-          <button class="p-btn">Chọn →</button>
-        </div>`).join('');
+      grid.innerHTML = _allPractitioners.map(_renderPractCard).join('');
     } catch (e) {
       grid.innerHTML = `<p style="color:var(--danger);padding:16px">Lỗi tải danh sách: ${e.message}</p>`;
     }
   }
 
-  function selectDoctor(id, name) {
+  async function selectDoctor(id, name) {
     currentDoctor = { id, name };
     document.getElementById('doctor-name-display').textContent = name;
+    _resetDocChatUI();
     show('screen-doctor');
     docNav('dashboard');
     document.getElementById('d-input').focus();
+
+    // Khôi phục hội thoại gần nhất
+    try {
+      const res = await fetch(`/session/doctor/${id}/current`);
+      const data = await res.json();
+      sessionDoctor = data.session_id;
+      if (data.messages && data.messages.length > 0) {
+        const msgsEl = document.getElementById('d-messages');
+        document.getElementById('d-welcome')?.remove();
+        for (const m of data.messages) {
+          const isUser = m.role === 'user';
+          const div = document.createElement('div');
+          div.className = `msg-row ${isUser ? 'user' : 'bot'}`;
+          const av = document.createElement('div');
+          av.className = `avatar ${isUser ? 'user' : 'bot'}`;
+          av.textContent = isUser ? 'BS' : 'AI';
+          const bub = document.createElement('div');
+          bub.className = 'bubble';
+          bub.innerHTML = isUser ? m.content : marked.parse(m.content);
+          div.appendChild(av); div.appendChild(bub);
+          msgsEl.appendChild(div);
+        }
+        msgsEl.scrollTop = msgsEl.scrollHeight;
+      }
+    } catch(e) { /* bình thường nếu chưa có session */ }
   }
 
   /* ── Doctor nav ── */
@@ -967,6 +1504,16 @@
             <div class="s-label">👥 Tổng bệnh nhân</div>
             <div class="s-value" id="stat-total">--</div>
             <div class="s-sub">Trong hệ thống</div>
+          </div>
+        </div>
+        <div class="chart-row">
+          <div class="chart-card">
+            <div class="c-label">Lịch hẹn 7 ngày tới</div>
+            <div class="chart-wrap"><canvas id="chart-bar"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="c-label">Phân bố trạng thái</div>
+            <div class="chart-wrap"><canvas id="chart-donut"></canvas></div>
           </div>
         </div>`;
       loadDashboardStats();
@@ -1066,17 +1613,89 @@
     return `<span class="badge ${cls}">${label}</span>`;
   }
 
+  let _barChart = null, _donutChart = null;
+
   async function loadDashboardStats() {
     try {
-      const apptUrl = '/api/appointments' + (currentDoctor ? '?practitioner_id=' + currentDoctor.id : '');
-      const [apptRes, ptRes] = await Promise.all([
-        fetch(apptUrl).then(r => r.json()),
+      const today   = new Date();
+      const d_from  = today.toISOString().slice(0, 10);
+      const d_to    = new Date(today.getTime() + 6 * 86400000).toISOString().slice(0, 10);
+      const pId     = currentDoctor ? '&practitioner_id=' + currentDoctor.id : '';
+      const rangeUrl = `/api/appointments?date_from=${d_from}&date_to=${d_to}${pId}`;
+      const todayUrl = `/api/appointments?date_str=${d_from}${pId}`;
+
+      const [rangeRes, ptRes] = await Promise.all([
+        fetch(rangeUrl).then(r => r.json()),
         fetch('/api/patients?_count=1').then(r => r.json()),
       ]);
-      const waiting = (apptRes.appointments || []).filter(a => a.status === 'booked').length;
-      document.getElementById('stat-appointments').textContent = apptRes.total ?? '--';
+
+      const allAppts = rangeRes.appointments || [];
+
+      // ── Stat cards ──
+      const todayAppts = allAppts.filter(a => a.start.startsWith(d_from));
+      const waiting    = todayAppts.filter(a => a.status === 'booked').length;
+      document.getElementById('stat-appointments').textContent = todayAppts.length;
       document.getElementById('stat-waiting').textContent      = waiting;
       document.getElementById('stat-total').textContent        = ptRes.total ?? '--';
+
+      // ── Bar chart: lịch hẹn theo từng ngày ──
+      const DAY_VI = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+      const labels = [], counts = [];
+      for (let i = 0; i < 7; i++) {
+        const d    = new Date(today.getTime() + i * 86400000);
+        const dStr = d.toISOString().slice(0, 10);
+        labels.push((i === 0 ? 'Hôm nay' : DAY_VI[d.getDay()]) + '\n' + dStr.slice(5).replace('-', '/'));
+        counts.push(allAppts.filter(a => a.start.startsWith(dStr)).length);
+      }
+
+      // ── Donut chart: phân bố trạng thái ──
+      const STATUS_LABEL = { booked: 'Đã xác nhận', fulfilled: 'Đã khám', cancelled: 'Đã hủy', noshow: 'Vắng mặt', pending: 'Chờ xác nhận' };
+      const STATUS_COLOR = { booked: '#198038', fulfilled: '#8d8d8d', cancelled: '#da1e28', noshow: '#b28600', pending: '#0f62fe' };
+      const statusCount  = {};
+      allAppts.forEach(a => { statusCount[a.status] = (statusCount[a.status] || 0) + 1; });
+      const dLabels = Object.keys(statusCount).map(s => STATUS_LABEL[s] || s);
+      const dData   = Object.values(statusCount);
+      const dColors = Object.keys(statusCount).map(s => STATUS_COLOR[s] || '#c6c6c6');
+
+      // Destroy existing charts before re-render
+      _barChart?.destroy();   _donutChart?.destroy();
+
+      const barCtx    = document.getElementById('chart-bar')?.getContext('2d');
+      const donutCtx  = document.getElementById('chart-donut')?.getContext('2d');
+      if (!barCtx || !donutCtx) return;
+
+      _barChart = new Chart(barCtx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            data: counts,
+            backgroundColor: labels.map((_, i) => i === 0 ? '#005d5d' : '#a3d4d2'),
+            borderRadius: 2, borderSkipped: false,
+          }],
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 11 } }, grid: { color: '#e0e0e0' } },
+            x: { ticks: { font: { size: 10 } }, grid: { display: false } },
+          },
+        },
+      });
+
+      _donutChart = new Chart(donutCtx, {
+        type: 'doughnut',
+        data: { labels: dLabels, datasets: [{ data: dData, backgroundColor: dColors, borderWidth: 2, borderColor: '#fff' }] },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          cutout: '62%',
+          plugins: {
+            legend: { position: 'right', labels: { font: { size: 11 }, boxWidth: 12, padding: 10 } },
+          },
+        },
+      });
+
     } catch { /* silently keep -- */ }
   }
 
@@ -1145,7 +1764,7 @@
           <td>${p.gender || '—'}</td>
           <td>${p.phone || '—'}</td>
           <td><button class="tb-btn" style="padding:4px 10px;font-size:12px;"
-              onclick="fillD('Xem hồ sơ bệnh nhân ${p.name}')">Xem hồ sơ</button></td>
+              onclick="openPatientPanel('${p.id}')">Xem hồ sơ</button></td>
         </tr>`).join('');
     } catch (e) {
       tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--danger);padding:16px">Lỗi: ${e.message}</td></tr>`;
@@ -1202,7 +1821,7 @@
   function fillD(text) { dInput.value = text; dInput.focus(); dInput.dispatchEvent(new Event('input')); }
 
   /* ── Clear doctor chat ── */
-  function clearDocChat() {
+  function _resetDocChatUI() {
     sessionDoctor = null;
     document.getElementById('d-messages').innerHTML = `
       <div class="welcome" id="d-welcome" style="padding:32px 16px;">
@@ -1210,6 +1829,141 @@
         <h2 style="font-size:16px;">Trợ lý dành cho bác sĩ</h2>
         <p style="font-size:13px;">Tra cứu hồ sơ, xem xét nghiệm, kiểm tra lịch hẹn bệnh nhân.</p>
       </div>`;
+  }
+
+  function clearDocChat() {
+    newConversation();
+  }
+
+  /* ── History panel ── */
+  function openHistory() {
+    document.getElementById('hist-sidebar').classList.add('open');
+    histShowConversations();
+  }
+
+  function closeHistory() {
+    document.getElementById('hist-sidebar').classList.remove('open');
+  }
+
+  function toggleHistory() {
+    const sb = document.getElementById('hist-sidebar');
+    if (sb.classList.contains('open')) { closeHistory(); }
+    else { openHistory(); }
+  }
+
+  function newConversation() {
+    if (!currentDoctor) return;
+    _resetDocChatUI();
+    sessionDoctor = `doctor_${currentDoctor.id}_${_genUUID()}`;
+    closeHistory();
+  }
+
+  function _genUUID() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+      const r = Math.random() * 16 | 0;
+      return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+    });
+  }
+
+  function _convDateLabel(updatedAt) {
+    if (!updatedAt) return '';
+    try {
+      const d = new Date(updatedAt);
+      const now = new Date();
+      const diffMs = now - d;
+      const diffDays = Math.floor(diffMs / 86400000);
+      if (diffDays === 0) return 'Hôm nay';
+      if (diffDays === 1) return 'Hôm qua';
+      if (diffDays <= 7) return '7 ngày trước';
+      if (diffDays <= 30) return '30 ngày trước';
+      return 'Cũ hơn';
+    } catch(e) { return ''; }
+  }
+
+  async function histShowConversations() {
+    if (!currentDoctor) return;
+    const content = document.getElementById('hist-content');
+    content.innerHTML = '<p style="color:var(--text-02);font-size:13px;padding:4px 8px">Đang tải...</p>';
+    try {
+      const data = await fetch(`/session/doctor/${currentDoctor.id}/conversations`).then(r => r.json());
+      const convs = data.conversations || [];
+      if (!convs.length) {
+        content.innerHTML = '<p style="color:var(--text-02);font-size:13px;text-align:center;padding-top:32px">Chưa có lịch sử hội thoại</p>';
+        return;
+      }
+
+      const groupOrder = ['Hôm nay', 'Hôm qua', '7 ngày trước', '30 ngày trước', 'Cũ hơn'];
+      const groups = {};
+      for (const c of convs) {
+        const g = _convDateLabel(c.updated_at) || 'Cũ hơn';
+        (groups[g] = groups[g] || []).push(c);
+      }
+
+      let html = '';
+      for (const g of groupOrder) {
+        if (!groups[g]) continue;
+        html += `<div style="font-size:11px;font-weight:600;color:var(--text-03);text-transform:uppercase;letter-spacing:0.5px;padding:10px 8px 4px">${g}</div>`;
+        for (const c of groups[g]) {
+          const isActive = sessionDoctor === c.session_id;
+          html += `
+          <div class="hist-conv-item${isActive ? ' active' : ''}"
+               onclick="switchToConv('${c.session_id}', '${c.conv_id}')"
+               data-conv="${c.conv_id}"
+               style="padding:9px 10px;border-radius:6px;cursor:pointer;display:flex;align-items:center;gap:6px;margin-bottom:1px;${isActive ? 'background:var(--ui-04)' : ''}">
+            <div style="flex:1;min-width:0">
+              <div style="font-size:13px;color:var(--text-01);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.title}</div>
+              <div style="font-size:11px;color:var(--text-03);margin-top:1px">${c.message_count} tin nhắn</div>
+            </div>
+            <button onclick="event.stopPropagation();deleteConv('${c.conv_id}')"
+              style="opacity:0;flex-shrink:0;background:none;border:none;cursor:pointer;color:var(--text-03);font-size:15px;padding:2px 4px;border-radius:4px;transition:opacity 0.15s"
+              class="hist-del-btn">×</button>
+          </div>`;
+        }
+      }
+      content.innerHTML = html;
+    } catch(e) {
+      content.innerHTML = `<p style="color:var(--danger);font-size:13px">Lỗi: ${e.message}</p>`;
+    }
+  }
+
+  async function switchToConv(sessionId, convId) {
+    if (!currentDoctor) return;
+    closeHistory();
+    try {
+      const data = await fetch(`/session/doctor/${currentDoctor.id}/conversation/${convId}`).then(r => r.json());
+      const msgs = data.messages || [];
+      sessionDoctor = sessionId;
+      const msgsEl = document.getElementById('d-messages');
+      msgsEl.innerHTML = '';
+      if (!msgs.length) {
+        msgsEl.innerHTML = '<div class="welcome" id="d-welcome" style="padding:32px 16px;"><div class="welcome-icon" style="width:48px;height:48px;font-size:20px;">🤖</div><h2 style="font-size:16px;">Trợ lý dành cho bác sĩ</h2></div>';
+        return;
+      }
+      for (const m of msgs) {
+        const isUser = m.role === 'user';
+        const div = document.createElement('div');
+        div.className = `msg-row ${isUser ? 'user' : 'bot'}`;
+        const av = document.createElement('div');
+        av.className = `avatar ${isUser ? 'user' : 'bot'}`;
+        av.textContent = isUser ? 'BS' : 'AI';
+        const bub = document.createElement('div');
+        bub.className = 'bubble';
+        bub.innerHTML = isUser ? m.content : marked.parse(m.content);
+        div.appendChild(av); div.appendChild(bub);
+        msgsEl.appendChild(div);
+      }
+      msgsEl.scrollTop = msgsEl.scrollHeight;
+    } catch(e) { console.error(e); }
+  }
+
+  async function deleteConv(convId) {
+    if (!currentDoctor) return;
+    await fetch(`/session/doctor/${currentDoctor.id}/conversation/${convId}`, {method: 'DELETE'});
+    if (sessionDoctor === `doctor_${currentDoctor.id}_${convId}`) {
+      sessionDoctor = `doctor_${currentDoctor.id}_${_genUUID()}`;
+      _resetDocChatUI();
+    }
+    histShowConversations();
   }
 
   /* ── Shared chat logic ── */
@@ -1229,6 +1983,30 @@
           setSession: s => { sessionDoctor = s; } };
   }
 
+  function _fmtTime() {
+    const n = new Date();
+    return n.getHours().toString().padStart(2,'0') + ':' + n.getMinutes().toString().padStart(2,'0');
+  }
+
+  function _addMeta(row, time, copyText) {
+    const meta = document.createElement('div');
+    meta.className = 'msg-meta';
+    if (copyText !== undefined) {
+      const btn = document.createElement('button');
+      btn.className = 'copy-btn'; btn.textContent = 'Sao chép';
+      btn.onclick = () => {
+        navigator.clipboard.writeText(copyText).then(() => {
+          btn.textContent = 'Đã chép ✓'; btn.classList.add('copied');
+          setTimeout(() => { btn.textContent = 'Sao chép'; btn.classList.remove('copied'); }, 2000);
+        });
+      };
+      meta.appendChild(btn);
+    }
+    const ts = document.createElement('span'); ts.textContent = time;
+    meta.appendChild(ts);
+    row.appendChild(meta);
+  }
+
   function addMsg(ctx, text, msgRole) {
     document.getElementById(ctx.welcomeId)?.remove();
     const row = document.createElement('div');
@@ -1240,6 +2018,7 @@
     bub.className = 'bubble';
     bub.textContent = text;
     row.appendChild(av); row.appendChild(bub);
+    _addMeta(row, _fmtTime(), msgRole === 'bot' ? text : undefined);
     ctx.msgsEl.appendChild(row);
     ctx.msgsEl.scrollTop = ctx.msgsEl.scrollHeight;
     return bub;
@@ -1260,16 +2039,73 @@
     return bub;
   }
 
+  // ── Doctor image attachment state ──
+  let _doctorImgBase64 = '';
+  let _doctorImgMime   = 'image/jpeg';
+  let _doctorImgName   = '';
+
+  function handleDoctorFileSelect(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const mime = file.type || 'image/jpeg';
+    _doctorImgMime = mime;
+    _doctorImgName = file.name;
+    const reader = new FileReader();
+    reader.onload = e => {
+      const dataUrl = e.target.result;
+      // Strip "data:mime;base64," prefix to get raw base64
+      _doctorImgBase64 = dataUrl.split(',')[1];
+      // Show preview strip
+      document.getElementById('d-img-thumb').src = dataUrl;
+      document.getElementById('d-img-name').textContent = file.name;
+      document.getElementById('d-img-preview').style.display = 'flex';
+    };
+    reader.readAsDataURL(file);
+    input.value = ''; // reset so same file can be re-selected
+  }
+
+  function clearDoctorImage() {
+    _doctorImgBase64 = '';
+    _doctorImgName   = '';
+    document.getElementById('d-img-preview').style.display = 'none';
+    document.getElementById('d-img-thumb').src = '';
+  }
+
   async function sendMsg(r) {
     const ctx  = getCtx(r);
     const text = ctx.inputEl.value.trim();
-    if (!text || ctx.sendEl.disabled) return;
+    const hasImg = r === 'doctor' && _doctorImgBase64;
+    if (!text && !hasImg) return;
+    if (ctx.sendEl.disabled) return;
+
+    const imgBase64 = _doctorImgBase64;
+    const imgMime   = _doctorImgMime;
+    const imgName   = _doctorImgName;
 
     ctx.inputEl.value = '';
     ctx.inputEl.style.height = 'auto';
     ctx.sendEl.disabled = true;
+    if (hasImg) clearDoctorImage();
 
-    addMsg(ctx, text, 'user');
+    // Show user message — with image thumbnail if attached
+    if (hasImg) {
+      document.getElementById(ctx.welcomeId)?.remove();
+      const row = document.createElement('div');
+      row.className = 'msg-row user';
+      const av = document.createElement('div');
+      av.className = 'avatar user'; av.textContent = 'BS';
+      const bub = document.createElement('div');
+      bub.className = 'bubble';
+      bub.innerHTML = `<img src="data:${imgMime};base64,${imgBase64}"
+        style="max-width:200px;max-height:140px;display:block;margin-bottom:${text?'6px':'0'};border:1px solid var(--ui-03);">
+        ${text ? `<span>${text}</span>` : ''}`;
+      row.appendChild(av); row.appendChild(bub);
+      ctx.msgsEl.appendChild(row);
+      ctx.msgsEl.scrollTop = ctx.msgsEl.scrollHeight;
+    } else {
+      addMsg(ctx, text, 'user');
+    }
+
     const bubble = createBotBubble(ctx);
 
     let fullText = '', textStarted = false, badgesDiv = null;
@@ -1279,10 +2115,13 @@
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message: text,
+          message: text || 'Phân tích kết quả xét nghiệm này giúp tôi.',
           session_id: ctx.session,
           role: role,
           doctor_name: (role === 'doctor' && currentDoctor) ? currentDoctor.name : '',
+          doctor_id:   (role === 'doctor' && currentDoctor) ? currentDoctor.id   : '',
+          image_base64: imgBase64,
+          image_mime:   imgMime,
         }),
       });
 
@@ -1325,6 +2164,11 @@
             bubble.innerHTML = marked.parse(fullText);
             ctx.msgsEl.scrollTop = ctx.msgsEl.scrollHeight;
 
+          } else if (ev.type === 'done' && isDengueChecklist(fullText)) {
+            bubble.innerHTML = '';
+            bubble.appendChild(buildDengueForm(ctx));
+            ctx.msgsEl.scrollTop = ctx.msgsEl.scrollHeight;
+
           } else if (ev.type === 'error') {
             bubble.textContent = 'Lỗi: ' + ev.text;
 
@@ -1337,9 +2181,686 @@
       bubble.textContent = 'Lỗi kết nối. Vui lòng thử lại.';
     }
 
+    // Thêm timestamp + copy vào bot bubble sau khi xong
+    const botRow = bubble.closest('.msg-row');
+    if (botRow && !botRow.querySelector('.msg-meta')) {
+      _addMeta(botRow, _fmtTime(), fullText || bubble.textContent);
+    }
+
     ctx.sendEl.disabled = false;
     ctx.inputEl.focus();
   }
+
+  /* ── Patient slide-over panel ── */
+  function openPatientPanel(patientId) {
+    const panel    = document.getElementById('patient-panel');
+    const backdrop = document.getElementById('panel-backdrop');
+    const content  = document.getElementById('panel-content');
+
+    // Skeleton loading
+    content.innerHTML = `
+      <div class="pp-header">
+        <div class="pp-header-row">
+          <div>
+            <div style="background:rgba(255,255,255,.25);height:16px;width:140px;border-radius:2px;margin-bottom:8px;animation:pulse 1.2s infinite"></div>
+            <div style="background:rgba(255,255,255,.15);height:12px;width:100px;border-radius:2px;animation:pulse 1.2s infinite"></div>
+          </div>
+          <button class="pp-close" onclick="closePatientPanel()">✕</button>
+        </div>
+      </div>
+      <div class="pp-section">
+        ${[1,2,3].map(() => `<div class="pp-row"><span style="background:var(--ui-03);height:12px;width:80px;display:inline-block;border-radius:2px;animation:pulse 1.2s infinite"></span><span style="background:var(--ui-03);height:12px;width:60px;display:inline-block;border-radius:2px;animation:pulse 1.2s infinite"></span></div>`).join('')}
+      </div>`;
+
+    panel.classList.add('open');
+    backdrop.classList.add('open');
+
+    fetch(`/api/patient/${patientId}`)
+      .then(r => r.json())
+      .then(d => renderPatientPanel(d))
+      .catch(e => {
+        content.innerHTML = `<div class="pp-section"><p style="color:var(--danger)">Lỗi tải dữ liệu: ${e.message}</p></div>`;
+      });
+  }
+
+  function renderPatientPanel(d) {
+    const STATUS_VI = { booked: 'Đã xác nhận', fulfilled: 'Đã khám', cancelled: 'Đã hủy', noshow: 'Vắng mặt', pending: 'Chờ xác nhận' };
+    const STATUS_CL = { booked: '#198038', fulfilled: '#525252', cancelled: '#da1e28', noshow: '#b28600' };
+
+    const metaParts = [d.gender, d.age ? d.age + ' tuổi' : '', d.birth_date ? d.birth_date.split('-').reverse().join('/') : '', d.phone].filter(Boolean);
+
+    const vitalsHTML = d.vitals?.length
+      ? d.vitals.map(v => `
+          <div class="pp-row">
+            <span class="pp-row-label">${v.name}</span>
+            <span><span class="pp-row-val">${v.value} ${v.unit}</span><span class="pp-row-date">${v.date?.slice(5).replace('-','/')}</span></span>
+          </div>`).join('')
+      : `<p class="pp-empty">Chưa có dữ liệu sinh hiệu</p>`;
+
+    const labsHTML = d.labs?.length
+      ? d.labs.map(v => `
+          <div class="pp-row">
+            <span class="pp-row-label">${v.name}</span>
+            <span><span class="pp-row-val">${v.value} ${v.unit}</span><span class="pp-row-date">${v.date?.slice(5).replace('-','/')}</span></span>
+          </div>`).join('')
+      : `<p class="pp-empty">Chưa có kết quả xét nghiệm</p>`;
+
+    const apptsHTML = d.appointments?.length
+      ? d.appointments.map(a => `
+          <div class="pp-appt-row">
+            <div class="pp-appt-time">${a.start.slice(0,10).split('-').reverse().join('/')} ${a.start.slice(11,16)}</div>
+            <div class="pp-appt-dept">${a.department} · <span style="color:${STATUS_CL[a.status]||'#525252'}">${STATUS_VI[a.status]||a.status}</span></div>
+          </div>`).join('')
+      : `<p class="pp-empty">Không có lịch hẹn sắp tới</p>`;
+
+    document.getElementById('panel-content').innerHTML = `
+      <div class="pp-header">
+        <div class="pp-header-row">
+          <div>
+            <div class="pp-name">${d.name}</div>
+            <div class="pp-meta">${metaParts.join(' · ')}</div>
+          </div>
+          <button class="pp-close" onclick="closePatientPanel()">✕</button>
+        </div>
+      </div>
+      <div class="pp-section">
+        <div class="pp-section-title">Sinh hiệu</div>
+        ${vitalsHTML}
+      </div>
+      <div class="pp-section">
+        <div class="pp-section-title">Xét nghiệm</div>
+        ${labsHTML}
+      </div>
+      <div class="pp-section">
+        <div class="pp-section-title">Lịch hẹn sắp tới</div>
+        ${apptsHTML}
+      </div>`;
+  }
+
+  function closePatientPanel() {
+    document.getElementById('patient-panel').classList.remove('open');
+    document.getElementById('panel-backdrop').classList.remove('open');
+  }
+
+  /* ── Dengue screening form ── */
+  function isDengueChecklist(text) {
+    return text.includes('A. Dịch tễ') &&
+           text.includes('B. Triệu chứng') &&
+           text.includes('C. Dấu hiệu cảnh báo');
+  }
+
+  function buildDengueForm(ctx) {
+    const uid = 'df-' + Date.now();
+    const yesNo = (name, val) => `
+      <div class="dengue-toggle">
+        <input type="radio" name="${uid}-${name}" id="${uid}-${name}-y" value="có">
+        <label for="${uid}-${name}-y">Có</label>
+        <input type="radio" name="${uid}-${name}" id="${uid}-${name}-n" value="không" checked>
+        <label for="${uid}-${name}-n">Không</label>
+      </div>`;
+
+    const form = document.createElement('div');
+    form.className = 'dengue-form';
+    form.innerHTML = `
+      <div class="dengue-form-title">🦟 Phiếu sàng lọc Sốt xuất huyết</div>
+
+      <div class="dengue-section">
+        <div class="dengue-section-label">A. Dịch tễ</div>
+        <div class="dengue-q">
+          <div class="dengue-q-label">Bạn đang sống/vừa đến vùng có dịch?</div>
+          ${yesNo('epi', '')}
+        </div>
+        <div class="dengue-q">
+          <div class="dengue-q-label">Sốt mấy ngày rồi? <span>(0 = không sốt)</span></div>
+          <input type="number" class="dengue-number" id="${uid}-fever" min="0" max="30" value="0">
+        </div>
+      </div>
+
+      <div class="dengue-section">
+        <div class="dengue-section-label">B. Triệu chứng</div>
+        <div class="dengue-q">
+          <div class="dengue-q-label">Buồn nôn hoặc nôn ói</div>
+          ${yesNo('s3', '')}
+        </div>
+        <div class="dengue-q">
+          <div class="dengue-q-label">Phát ban, nổi mẩn đỏ trên da</div>
+          ${yesNo('s4', '')}
+        </div>
+        <div class="dengue-q">
+          <div class="dengue-q-label">Đau cơ, đau khớp, nhức hai hố mắt</div>
+          ${yesNo('s5', '')}
+        </div>
+        <div class="dengue-q">
+          <div class="dengue-q-label">Chấm đỏ dưới da hoặc bầm tím không rõ nguyên nhân</div>
+          ${yesNo('s6', '')}
+        </div>
+      </div>
+
+      <div class="dengue-section">
+        <div class="dengue-section-label">C. Dấu hiệu cảnh báo</div>
+        <div class="dengue-q">
+          <div class="dengue-q-label">Đau bụng nhiều hoặc đau vùng gan</div>
+          ${yesNo('w7', '')}
+        </div>
+        <div class="dengue-q">
+          <div class="dengue-q-label">Nôn ói liên tục nhiều lần</div>
+          ${yesNo('w8', '')}
+        </div>
+        <div class="dengue-q">
+          <div class="dengue-q-label">Chảy máu chân răng, mũi, phân đen</div>
+          ${yesNo('w9', '')}
+        </div>
+        <div class="dengue-q">
+          <div class="dengue-q-label">Đi tiểu ít hoặc nước tiểu sẫm màu</div>
+          ${yesNo('w10', '')}
+        </div>
+        <div class="dengue-q">
+          <div class="dengue-q-label">Vật vã, lờ đờ, mệt lả nhiều</div>
+          ${yesNo('w11', '')}
+        </div>
+      </div>
+
+      <button class="dengue-submit" onclick="submitDengueForm('${uid}', this)">
+        Gửi kết quả sàng lọc →
+      </button>`;
+    return form;
+  }
+
+  function submitDengueForm(uid, btn) {
+    const r = name => {
+      const el = document.querySelector(`input[name="${uid}-${name}"]:checked`);
+      return el ? el.value : 'không';
+    };
+    const fever = document.getElementById(`${uid}-fever`)?.value || '0';
+
+    const ans = [
+      `1.${r('epi')} ở vùng dịch`,
+      `2.sốt ${fever} ngày`,
+      `3.${r('s3')}`,
+      `4.${r('s4')}`,
+      `5.${r('s5')}`,
+      `6.${r('s6')}`,
+      `7.${r('w7')}`,
+      `8.${r('w8')}`,
+      `9.${r('w9')}`,
+      `10.${r('w10')}`,
+      `11.${r('w11')}`,
+    ].join('  ');
+
+    btn.disabled = true;
+    btn.textContent = 'Đang gửi...';
+
+    // Xác định role hiện tại
+    const ctx = getCtx(role);
+    ctx.inputEl.value = ans;
+    sendMsg(role);
+  }
+
+  /* ══════════════════════════════════════════
+     BOOKING FLOW
+  ══════════════════════════════════════════ */
+  const _DEPT_ICONS = {
+    CARDIO:'❤️', NEURO:'🧠', GASTRO:'🫁', ENDO:'💉', ENT:'👂',
+    ORTHO:'🦴', OB:'🤰', DERM:'🩹', OPHTHAL:'👁️', OPHTHO:'👁️', PEDIA:'👶', PEDS:'👶',
+    URO:'🏥', UROLOGY:'🔬', ONCO:'🔬', NEPHRO:'🩺', PULM:'🫀',
+    RHEUM:'🦾', PSYCH:'🧘', EMERG:'🚨', SURG:'🔪', ICU:'🛌', GEN:'🏥',
+    DEFAULT:'🏥',
+  };
+  const _DEPT_NAMES = {
+    CARDIO:'Tim mạch', NEURO:'Thần kinh', ORTHO:'Chỉnh hình', PEDS:'Nhi', PEDIA:'Nhi',
+    OB:'Sản phụ khoa', DERM:'Da liễu', ENT:'Tai mũi họng', OPHTHO:'Mắt', OPHTHAL:'Mắt',
+    GASTRO:'Tiêu hóa', ENDO:'Nội tiết', NEPHRO:'Thận', PULM:'Hô hấp',
+    RHEUM:'Cơ xương khớp', ONCO:'Ung bướu', URO:'Tiết niệu', UROLOGY:'Tiết niệu',
+    PSYCH:'Tâm thần', EMERG:'Cấp cứu', SURG:'Ngoại', ICU:'Hồi sức', GEN:'Đa khoa'
+  };
+
+  let _bkStep = 0;
+  let _bkData = {};
+
+  function openBooking() {
+    _bkStep = 1; _bkData = {};
+    document.getElementById('booking-overlay').classList.remove('hidden');
+    _bkRenderStep();
+  }
+  function closeBooking() {
+    document.getElementById('booking-overlay').classList.add('hidden');
+  }
+
+  function _bkUpdateSteps() {
+    const labels = ['Chọn khoa','Bác sĩ','Ngày & Giờ','Thông tin'];
+    document.getElementById('bk-steps').innerHTML = labels.map((l, i) => {
+      const n = i + 1;
+      const cls = n < _bkStep ? 'done' : n === _bkStep ? 'active' : '';
+      return `<div class="bk-step ${cls}">${n < _bkStep ? '✓ ' : ''}${l}</div>`;
+    }).join('');
+  }
+
+  function _bkRenderStep() {
+    _bkUpdateSteps();
+    if (_bkStep === 1) _bkStep1();
+    else if (_bkStep === 2) _bkStep2();
+    else if (_bkStep === 3) _bkStep3();
+    else if (_bkStep === 4) _bkStep4();
+  }
+
+  async function _bkStep1() {
+    const body = document.getElementById('bk-body');
+    body.innerHTML = '<div class="bk-loading">Đang tải danh sách khoa...</div>';
+    try {
+      const data = await fetch('/api/departments').then(r => r.json());
+      const depts = data.departments || [];
+      body.innerHTML = `
+        <div class="bk-title">Chọn khoa khám</div>
+        <div class="bk-dept-grid">
+          ${depts.map(d => `
+            <div class="bk-dept-card" onclick="_bkSelectDept('${d.code}','${d.name.replace(/'/g,"\\'")}')">
+              <div class="bk-dept-icon">${_DEPT_ICONS[d.code] || _DEPT_ICONS.DEFAULT}</div>
+              <div class="bk-dept-name">${d.name}</div>
+            </div>`).join('')}
+        </div>`;
+    } catch(e) {
+      body.innerHTML = `<p style="color:var(--danger)">Lỗi tải khoa: ${e.message}</p>`;
+    }
+  }
+
+  function _bkSelectDept(code, name) {
+    _bkData.dept_code = code; _bkData.dept_name = name;
+    _bkStep = 2; _bkRenderStep();
+  }
+
+  async function _bkStep2() {
+    const body = document.getElementById('bk-body');
+    body.innerHTML = '<div class="bk-loading">Đang tải danh sách bác sĩ...</div>';
+    try {
+      const data = await fetch(`/api/schedules?department=${_bkData.dept_code}`).then(r => r.json());
+      const schedules = data.schedules || [];
+      body.innerHTML = `
+        <div class="bk-back" onclick="_bkStep=1;_bkRenderStep()">← Quay lại</div>
+        <div class="bk-title">Chọn bác sĩ — ${_bkData.dept_name}</div>
+        <div class="bk-doc-list">
+          ${schedules.map(s => `
+            <div class="bk-doc-item" onclick="_bkSelectDoc('${s.schedule_id}','${s.doctor_name.replace(/'/g,"\\'")}','${s.practitioner_id}')">
+              <div class="bk-doc-avatar" style="background:${_avatarColor(s.doctor_name)}">${_practInitials(s.doctor_name)}</div>
+              <div>
+                <div class="bk-doc-name">${s.doctor_name}</div>
+                <div class="bk-doc-spec">${s.department}</div>
+              </div>
+              <span style="margin-left:auto;color:var(--text-03);font-size:18px">›</span>
+            </div>`).join('')}
+        </div>`;
+    } catch(e) {
+      body.innerHTML = `<p style="color:var(--danger)">Lỗi: ${e.message}</p>`;
+    }
+  }
+
+  function _bkSelectDoc(schedId, name, practId) {
+    _bkData.schedule_id = schedId;
+    _bkData.doctor_name = name;
+    _bkData.practitioner_id = practId;
+    _bkStep = 3; _bkRenderStep();
+  }
+
+  function _bkStep3() {
+    const today = new Date().toISOString().split('T')[0];
+    const body = document.getElementById('bk-body');
+    body.innerHTML = `
+      <div class="bk-back" onclick="_bkStep=2;_bkRenderStep()">← Quay lại</div>
+      <div class="bk-title">Chọn ngày & giờ</div>
+      <div class="bk-label">Ngày khám</div>
+      <input type="date" class="bk-date-input" id="bk-date" value="${today}" min="${today}"
+             onchange="_bkLoadSlots(this.value)">
+      <div id="bk-slots-area"></div>`;
+    _bkLoadSlots(today);
+  }
+
+  async function _bkLoadSlots(date) {
+    const area = document.getElementById('bk-slots-area');
+    area.innerHTML = '<div class="bk-loading" style="padding:20px 0">Đang tải slot...</div>';
+    try {
+      const data = await fetch(`/api/slots?schedule_id=${_bkData.schedule_id}&date=${date}`).then(r => r.json());
+      const slots = data.slots || [];
+      if (!slots.length) {
+        area.innerHTML = '<p style="color:var(--text-02);font-size:13px;text-align:center;padding:16px 0">Không có slot trống ngày này — thử ngày khác.</p>';
+        return;
+      }
+      area.innerHTML = `
+        <div class="bk-label">Giờ khám còn trống</div>
+        <div class="bk-slots">
+          ${slots.map(s => `
+            <button class="bk-slot" id="slot-${s.slot_id}"
+              onclick="_bkSelectSlot('${s.slot_id}','${date}','${s.start_time}','${s.end_time}',this)">
+              ${s.start_time}
+            </button>`).join('')}
+        </div>`;
+    } catch(e) {
+      area.innerHTML = `<p style="color:var(--danger);font-size:13px">Lỗi: ${e.message}</p>`;
+    }
+  }
+
+  function _bkSelectSlot(slotId, date, startTime, endTime, btn) {
+    document.querySelectorAll('.bk-slot').forEach(b => b.classList.remove('sel'));
+    btn.classList.add('sel');
+    _bkData.slot_id = slotId; _bkData.date = date;
+    _bkData.start_time = startTime; _bkData.end_time = endTime;
+    setTimeout(() => { _bkStep = 4; _bkRenderStep(); }, 250);
+  }
+
+  function _bkStep4() {
+    const body = document.getElementById('bk-body');
+    body.innerHTML = `
+      <div class="bk-back" onclick="_bkStep=3;_bkRenderStep()">← Quay lại</div>
+      <div class="bk-title">Thông tin đặt lịch</div>
+      <div class="bk-summary">
+        <strong>${_bkData.dept_name}</strong><br>
+        ${_bkData.doctor_name}<br>
+        📅 ${_bkData.date} &nbsp;⏰ ${_bkData.start_time} – ${_bkData.end_time}
+      </div>
+      <div class="bk-form">
+        <div class="bk-field">
+          <div class="bk-label">Họ và tên bệnh nhân *</div>
+          <input class="bk-input" id="bk-name" type="text" placeholder="Nguyễn Văn A">
+        </div>
+        <div class="bk-field">
+          <div class="bk-label">Số điện thoại</div>
+          <input class="bk-input" id="bk-phone" type="tel" placeholder="09xx xxx xxx">
+        </div>
+        <div class="bk-field">
+          <div class="bk-label">Lý do khám</div>
+          <input class="bk-input" id="bk-reason" type="text" placeholder="Đau ngực, khó thở...">
+        </div>
+      </div>
+      <button class="bk-submit" onclick="_bkSubmit()">Xác nhận đặt lịch →</button>`;
+    document.getElementById('bk-name').focus();
+  }
+
+  async function _bkSubmit() {
+    const name   = document.getElementById('bk-name').value.trim();
+    const phone  = document.getElementById('bk-phone').value.trim();
+    const reason = document.getElementById('bk-reason').value.trim();
+    if (!name) {
+      document.getElementById('bk-name').classList.add('err');
+      document.getElementById('bk-name').focus(); return;
+    }
+    _bkData.patient_name = name;
+
+    const body = document.getElementById('bk-body');
+    body.innerHTML = '<div class="bk-loading">Đang đặt lịch...</div>';
+
+    try {
+      const res = await fetch('/api/book-appointment', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          slot_id: _bkData.slot_id, schedule_id: _bkData.schedule_id,
+          patient_name: name, patient_phone: phone, reason,
+        }),
+      }).then(r => r.json());
+
+      _bkUpdateSteps();
+      body.innerHTML = `
+        <div style="text-align:center;padding:32px 16px">
+          <div style="font-size:52px;margin-bottom:16px">✅</div>
+          <h3 style="font-size:17px;color:var(--success);margin-bottom:20px">Đặt lịch thành công!</h3>
+          <div class="bk-summary" style="text-align:left">
+            <strong>${_bkData.dept_name}</strong><br>
+            ${_bkData.doctor_name}<br>
+            📅 ${_bkData.date} &nbsp;⏰ ${_bkData.start_time} – ${_bkData.end_time}<br>
+            👤 ${name}${phone ? ' · ' + phone : ''}
+          </div>
+          <button class="bk-submit" style="margin-top:12px" onclick="closeBooking()">Đóng</button>
+        </div>`;
+    } catch(e) {
+      body.innerHTML = `<p style="color:var(--danger);padding:20px">Lỗi đặt lịch: ${e.message}</p>
+        <button class="bk-back" onclick="_bkStep=4;_bkRenderStep()">← Thử lại</button>`;
+    }
+  }
+
+  /* ══════════════════════════════════════
+     PATIENT SEARCH MODAL
+  ══════════════════════════════════════ */
+  function openSearch() {
+    document.getElementById('search-overlay').classList.remove('hidden');
+    document.getElementById('srch-results').innerHTML = '';
+    const inp = document.getElementById('srch-input');
+    inp.value = '';
+    setTimeout(() => inp.focus(), 80);
+  }
+  function closeSearch() {
+    document.getElementById('search-overlay').classList.add('hidden');
+  }
+
+  async function _doSearch() {
+    const q = document.getElementById('srch-input').value.trim();
+    if (!q) return;
+    const area = document.getElementById('srch-results');
+    area.innerHTML = '<div class="srch-empty">Đang tìm kiếm…</div>';
+    try {
+      const data = await fetch(`/api/patients?q=${encodeURIComponent(q)}&_count=20`).then(r => r.json());
+      const pts = data.patients || [];
+      if (!pts.length) {
+        area.innerHTML = '<div class="srch-empty">Không tìm thấy bệnh nhân.</div>';
+        return;
+      }
+      area.innerHTML = pts.map(p => `
+        <div class="srch-result" onclick="_showPatient('${p.id}')">
+          <div class="srch-result-name">${p.name}</div>
+          <div class="srch-result-sub">
+            ${p.phone || ''}${p.birth_date ? ' · ' + p.birth_date : ''}${p.gender ? ' · ' + p.gender : ''}
+          </div>
+        </div>`).join('');
+    } catch(e) {
+      area.innerHTML = `<div class="srch-empty" style="color:var(--danger)">Lỗi: ${e.message}</div>`;
+    }
+  }
+
+  async function _showPatient(id) {
+    const area = document.getElementById('srch-results');
+    area.innerHTML = '<div class="srch-empty">Đang tải hồ sơ…</div>';
+    try {
+      const p = await fetch(`/api/patient/${id}`).then(r => r.json());
+      const appts = p.appointments || [];
+
+      const apptRows = appts.slice(0,5).map(a =>
+        `<tr><td style="padding:4px 8px 4px 0">${a.start||''}</td><td style="padding:4px 8px">${a.department||''}</td><td style="padding:4px 0;color:var(--text-02)">${a.status||''}</td></tr>`
+      ).join('');
+
+      area.innerHTML = `
+        <div class="pt-back" onclick="_doSearch()">← Quay lại kết quả</div>
+        <div class="pt-card">
+          <div class="pt-card-name">👤 ${p.name || 'Không rõ tên'}</div>
+          <div class="pt-card-grid">
+            <div class="pt-card-field"><label>Ngày sinh</label><span>${p.birth_date || '—'}</span></div>
+            <div class="pt-card-field"><label>Giới tính</label><span>${p.gender || '—'}</span></div>
+            <div class="pt-card-field"><label>Số điện thoại</label><span>${p.phone || '—'}</span></div>
+            <div class="pt-card-field"><label>Mã BN</label><span>${p.id || '—'}</span></div>
+          </div>
+          ${appts.length ? `
+          <div class="bk-label" style="margin-top:12px">Lịch sử khám gần đây</div>
+          <table style="width:100%;font-size:12px;border-collapse:collapse">${apptRows}</table>` : ''}
+        </div>`;
+    } catch(e) {
+      area.innerHTML = `<div class="srch-empty" style="color:var(--danger)">Lỗi: ${e.message}</div>`;
+    }
+  }
+
+  /* ══════════════════════════════════════
+     DEPARTMENTS MODAL
+  ══════════════════════════════════════ */
+  async function openDepts() {
+    document.getElementById('dept-overlay').classList.remove('hidden');
+    const body = document.getElementById('dept-body');
+    body.innerHTML = '<div class="bk-loading">Đang tải…</div>';
+    try {
+      const data = await fetch('/api/departments').then(r => r.json());
+      const depts = data.departments || [];
+      if (!depts.length) {
+        body.innerHTML = '<div class="bk-loading">Không có khoa nào.</div>';
+        return;
+      }
+      body.innerHTML = `<div class="dept-grid">${
+        depts.map(d => `
+          <div class="dept-card" onclick="closeDepts();openBooking();_bkSelectDept('${d.code}','${(d.display||d.code).replace(/'/g,"\\'")}')">
+            <div class="dept-card-icon">${_DEPT_ICONS[d.code] || '🏥'}</div>
+            <div class="dept-card-name">${d.display || _DEPT_NAMES[d.code] || d.code}</div>
+            <div class="dept-card-count">${d.schedule_count || ''} bác sĩ</div>
+          </div>`).join('')
+      }</div>`;
+    } catch(e) {
+      body.innerHTML = `<div class="bk-loading" style="color:var(--danger)">Lỗi: ${e.message}</div>`;
+    }
+  }
+  function closeDepts() {
+    document.getElementById('dept-overlay').classList.add('hidden');
+  }
+
+  /* ══════════════════════════════════════
+     REGISTER PATIENT MODAL
+  ══════════════════════════════════════ */
+  function openRegister() {
+    document.getElementById('register-overlay').classList.remove('hidden');
+    _regRenderForm();
+  }
+  function closeRegister() {
+    document.getElementById('register-overlay').classList.add('hidden');
+  }
+
+  function _regRenderForm() {
+    document.getElementById('register-body').innerHTML = `
+      <div class="reg-form">
+        <div class="reg-row">
+          <div class="reg-field">
+            <div class="reg-label">Họ và tên *</div>
+            <input id="reg-name" class="reg-input" type="text" placeholder="Nguyễn Văn A">
+          </div>
+          <div class="reg-field">
+            <div class="reg-label">Giới tính *</div>
+            <select id="reg-gender" class="reg-select">
+              <option value="">-- Chọn --</option>
+              <option value="male">Nam</option>
+              <option value="female">Nữ</option>
+              <option value="other">Khác</option>
+            </select>
+          </div>
+        </div>
+        <div class="reg-row">
+          <div class="reg-field">
+            <div class="reg-label">Ngày sinh *</div>
+            <input id="reg-dob" class="reg-input" type="date" max="${new Date().toISOString().slice(0,10)}">
+          </div>
+          <div class="reg-field">
+            <div class="reg-label">Số điện thoại</div>
+            <input id="reg-phone" class="reg-input" type="tel" placeholder="09xx xxx xxx">
+          </div>
+        </div>
+        <div class="reg-field">
+          <div class="reg-label">Địa chỉ</div>
+          <input id="reg-addr" class="reg-input" type="text" placeholder="Số nhà, đường, quận, thành phố">
+        </div>
+      </div>
+      <button class="reg-submit" id="reg-btn" onclick="_regSubmit()">Đăng ký →</button>`;
+    setTimeout(() => document.getElementById('reg-name').focus(), 80);
+  }
+
+  async function _regSubmit() {
+    const name   = document.getElementById('reg-name').value.trim();
+    const gender = document.getElementById('reg-gender').value;
+    const dob    = document.getElementById('reg-dob').value;
+    const phone  = document.getElementById('reg-phone').value.trim();
+    const addr   = document.getElementById('reg-addr').value.trim();
+
+    let ok = true;
+    ['reg-name','reg-gender','reg-dob'].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el.value.trim()) { el.classList.add('err'); ok = false; }
+      else el.classList.remove('err');
+    });
+    if (!ok) return;
+
+    const btn = document.getElementById('reg-btn');
+    btn.disabled = true; btn.textContent = 'Đang đăng ký…';
+
+    try {
+      const res = await fetch('/api/register-patient', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ name, gender, birth_date: dob, phone, address: addr }),
+      }).then(r => r.json());
+
+      document.getElementById('register-body').innerHTML = `
+        <div class="reg-success">
+          <div class="reg-success-icon">✅</div>
+          <div class="reg-success-msg">Đăng ký thành công!</div>
+          <div class="reg-success-sub">Mã bệnh nhân: <strong>${res.patient_id}</strong></div>
+          <div class="bk-summary" style="text-align:left;margin:0 auto;max-width:320px">
+            👤 ${name}<br>
+            ${dob ? '🎂 ' + dob + '<br>' : ''}
+            ${phone ? '📞 ' + phone + '<br>' : ''}
+            ${addr ? '📍 ' + addr : ''}
+          </div>
+          <button class="reg-submit" style="margin-top:20px;max-width:200px" onclick="_regRenderForm()">Đăng ký thêm</button>
+          <button class="bk-submit" style="margin-top:10px;background:var(--ui-03);color:var(--text-01);max-width:200px" onclick="closeRegister()">Đóng</button>
+        </div>`;
+    } catch(e) {
+      btn.disabled = false; btn.textContent = 'Đăng ký →';
+      alert('Lỗi đăng ký: ' + e.message);
+    }
+  }
 </script>
+
+<!-- ════ BOOKING MODAL ════ -->
+<div id="booking-overlay" class="booking-overlay hidden">
+  <div class="booking-modal">
+    <div class="bk-top">
+      <div class="bk-top-row">
+        <h2>Đặt lịch khám</h2>
+        <button class="bk-close" onclick="closeBooking()">×</button>
+      </div>
+      <div class="bk-steps" id="bk-steps"></div>
+    </div>
+    <div class="bk-body" id="bk-body"></div>
+  </div>
+</div>
+
+<!-- Patient search modal -->
+<div id="search-overlay" class="modal-overlay hidden">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h2>🔍 Tra cứu hồ sơ bệnh nhân</h2>
+      <button class="modal-close" onclick="closeSearch()">×</button>
+    </div>
+    <div class="modal-body" id="search-body">
+      <div class="srch-row">
+        <input id="srch-input" class="srch-input" placeholder="Nhập tên hoặc số điện thoại…" onkeydown="if(event.key==='Enter')_doSearch()">
+        <button class="srch-btn" onclick="_doSearch()">Tìm</button>
+      </div>
+      <div id="srch-results"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Departments modal -->
+<div id="dept-overlay" class="modal-overlay hidden">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h2>🏨 Danh sách khoa</h2>
+      <button class="modal-close" onclick="closeDepts()">×</button>
+    </div>
+    <div class="modal-body" id="dept-body">
+      <div class="bk-loading">Đang tải…</div>
+    </div>
+  </div>
+</div>
+
+<!-- Register patient modal -->
+<div id="register-overlay" class="modal-overlay hidden">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h2>➕ Đăng ký bệnh nhân mới</h2>
+      <button class="modal-close" onclick="closeRegister()">×</button>
+    </div>
+    <div class="modal-body" id="register-body"></div>
+  </div>
+</div>
+
 </body>
 </html>

@@ -93,13 +93,15 @@ def run(args: dict) -> dict:
         sched_id = sched.get("id", "")
         # Get Practitioner info once per schedule
         actor_ref = ((sched.get("actor") or [{}])[0] or {}).get("reference", "")
-        pract_name = ""
+        pract_name = "Bác sĩ phụ trách"
         if actor_ref.startswith("Practitioner/"):
             pract = fhir_get(actor_ref)
             if isinstance(pract, dict) and pract.get("resourceType") == "Practitioner":
                 name = (pract.get("name") or [{}])[0]
                 given = " ".join(name.get("given") or [])
-                pract_name = f"BS. {name.get('family','')} {given}".strip()
+                resolved = f"BS. {name.get('family','')} {given}".strip()
+                if resolved and resolved != "BS.":
+                    pract_name = resolved
 
         dept_name = ""
         stype = (sched.get("serviceType") or [{}])[0]

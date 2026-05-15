@@ -1,0 +1,16 @@
+{
+  "session_id": "doctor_a1b2c3d4-0015-4000-8000-000000000001_193b6c83-c21f-4736-8c3f-81c621bc99d9",
+  "title": "alo",
+  "created_at": "2026-05-13T23:10:17",
+  "updated_at": "2026-05-13T23:10:17",
+  "messages": [
+    {
+      "role": "user",
+      "content": "alo"
+    },
+    {
+      "role": "assistant",
+      "content": "Tôi đang sẵn sàng hỗ trợ. Cần tra cứu hồ sơ, xem xét nghiệm, kiểm tra lịch, hay phân tích CBC?"
+    }
+  ]
+}

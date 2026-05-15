@@ -6,6 +6,7 @@ wants to self-register via the AI instead of going to the front desk.
 Creates Patient with extension `registration_status: pending_verification` —
 staff at the hospital will verify CCCD + BHYT when patient physically arrives.
 """
+from __future__ import annotations
 
 TOOL_NAME = "fhir_register_new_patient"
 CATEGORY = "Healthcare"

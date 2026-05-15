@@ -1,0 +1,21 @@
+{
+  "features": [
+    "plt",
+    "wbc",
+    "hct",
+    "hgb",
+    "neutrophils",
+    "lymphocytes",
+    "monocytes",
+    "mpv",
+    "rdw"
+  ],
+  "cv_auc_mean": 0.6821,
+  "cv_auc_std": 0.0379,
+  "cv_f1_mean": 0.8456,
+  "n_samples": 1523,
+  "n_positive": 1042,
+  "n_negative": 481,
+  "dataset": "/Users/duc/Downloads/DengueFeverHematologicalDataset1523.csv",
+  "unit_note": "plt và wbc đã được chia 1000 (từ /cumm → K/mcL) trước khi train"
+}

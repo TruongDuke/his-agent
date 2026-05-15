@@ -8,8 +8,8 @@ from typing import Any, Dict, List, Tuple
 from openai import OpenAI
 from system_prompt import SYSTEM_PROMPT, SYSTEM_PROMPT_DOCTOR
 
-# Thêm thư mục tools vào path để tools tự import được nhau
-sys.path.insert(0, str(Path(__file__).parent / "tools"))
+# Thêm shared/ vào path để các tool import _aidbox_client, _rag_departments
+sys.path.insert(0, str(Path(__file__).parent / "tools" / "shared"))
 
 # Settings inject vào tools có SETTINGS_KEYS (gmail, v.v.)
 def _get_settings() -> dict:
@@ -21,15 +21,33 @@ def _get_settings() -> dict:
 
 
 def _load_tool_modules() -> dict[str, Any]:
-    """Load tất cả fhir_* tools, trả về dict name → module."""
+    """Load tất cả fhir_* và dengue_* tools, trả về dict name → module."""
     modules = {}
     tools_dir = Path(__file__).parent / "tools"
-    for path in sorted(tools_dir.glob("fhir_*.py")):
-        mod_name = f"tools.{path.stem}"
-        mod = importlib.import_module(mod_name)
-        if hasattr(mod, "TOOL_NAME") and hasattr(mod, "run"):
-            modules[mod.TOOL_NAME] = mod
+    subpackages = {"fhir": "fhir_*.py", "dengue": "dengue_*.py"}
+    seen = set()
+    for pkg, pattern in subpackages.items():
+        for path in sorted((tools_dir / pkg).glob(pattern)):
+            if path.stem in seen:
+                continue
+            seen.add(path.stem)
+            mod_name = f"tools.{pkg}.{path.stem}"
+            mod = importlib.import_module(mod_name)
+            if hasattr(mod, "TOOL_NAME") and hasattr(mod, "run"):
+                modules[mod.TOOL_NAME] = mod
     return modules
+
+
+def _infer_param_schema(desc: str) -> dict:
+    """Suy ra JSON Schema từ prefix của description."""
+    low = desc.lower().lstrip()
+    if low.startswith("array"):
+        return {"type": "array", "items": {"type": "string"}, "description": desc}
+    if low.startswith("boolean"):
+        return {"type": "boolean", "description": desc}
+    if low.startswith("number") or low.startswith("integer"):
+        return {"type": "number", "description": desc}
+    return {"type": "string", "description": desc}
 
 
 def _build_openai_tools(modules: dict) -> list[dict]:
@@ -39,7 +57,7 @@ def _build_openai_tools(modules: dict) -> list[dict]:
         schema = getattr(mod, "ARGS_SCHEMA", {})
         properties = {}
         for param, desc in schema.items():
-            properties[param] = {"type": "string", "description": desc}
+            properties[param] = _infer_param_schema(desc)
         result.append({
             "type": "function",
             "function": {
@@ -102,10 +120,43 @@ _TOOL_LABELS = {
     "fhir_register_new_patient":   "Đang đăng ký bệnh nhân mới...",
     "fhir_get_patient_history":    "Đang tra cứu lịch sử khám...",
     "fhir_get_observations":       "Đang lấy kết quả xét nghiệm...",
+    "fhir_get_doctor_schedule":    "Đang xem lịch khám...",
+    "fhir_cancel_appointment":     "Đang hủy lịch hẹn...",
+    "fhir_get_patient_appointments":  "Đang kiểm tra lịch hẹn...",
+    "dengue_symptom_assessment":      "Đang phân loại mức độ sốt xuất huyết...",
+    "dengue_cbc_predict":             "Đang phân tích chỉ số CBC...",
 }
 
 
-def chat_stream(message: str, history: list[dict], role: str = "patient", doctor_name: str = ""):
+def _find_last_slot_id(history: list) -> str | None:
+    """Tìm slot_id từ kết quả fhir_get_next_available_slot gần nhất trong history."""
+    for msg in reversed(history):
+        if msg.get("role") != "tool":
+            continue
+        try:
+            r = json.loads(msg["content"])
+            if r.get("found") and r.get("slot_id"):
+                return r["slot_id"]
+        except Exception:
+            pass
+    return None
+
+
+def _build_user_content(message: str, image_base64: str = "", image_mime: str = "image/jpeg"):
+    """Tạo user content: text-only hoặc multipart [text + image] cho vision."""
+    if not image_base64:
+        return message
+    return [
+        {"type": "text", "text": message or "Đây là kết quả xét nghiệm CBC của tôi."},
+        {"type": "image_url", "image_url": {
+            "url": f"data:{image_mime};base64,{image_base64}"
+        }},
+    ]
+
+
+def chat_stream(message: str, history: list[dict], role: str = "patient",
+                doctor_name: str = "", doctor_id: str = "",
+                image_base64: str = "", image_mime: str = "image/jpeg"):
     """
     Generator yield SSE strings. Mutates `history` in-place so caller can persist it.
     Format: "data: {json}\\n\\n"
@@ -115,18 +166,20 @@ def chat_stream(message: str, history: list[dict], role: str = "patient", doctor
         return f"data: {json.dumps(payload, ensure_ascii=False)}\n\n"
 
     if role == "doctor":
-        system = SYSTEM_PROMPT_DOCTOR.replace("{doctor_name}", doctor_name or "Bác sĩ")
+        system = (SYSTEM_PROMPT_DOCTOR
+                  .replace("{doctor_name}", doctor_name or "Bác sĩ")
+                  .replace("{doctor_id}",   doctor_id or ""))
     else:
         system = SYSTEM_PROMPT
 
-    history.append({"role": "user", "content": message})
+    history.append({"role": "user", "content": _build_user_content(message, image_base64, image_mime)})
     yield sse({"type": "status", "text": "Đang xử lý..."})
 
     # Tool-calling loop (non-streaming — cần full JSON để parse tool calls)
     while True:
         response = _CLIENT.chat.completions.create(
             model=_MODEL,
-            max_tokens=4096,
+            max_tokens=1024,
             messages=[{"role": "system", "content": system}] + history,
             tools=_TOOLS or None,
         )
@@ -146,16 +199,28 @@ def chat_stream(message: str, history: list[dict], role: str = "patient", doctor
             for tc in msg.tool_calls:
                 label = _TOOL_LABELS.get(tc.function.name, f"Gọi {tc.function.name}...")
                 yield sse({"type": "tool_call", "name": tc.function.name, "label": label})
-                args   = json.loads(tc.function.arguments)
-                result = _execute_tool(tc.function.name, args, _MODULES)
-                history.append({"role": "tool", "tool_call_id": tc.id, "content": result})
+                args = json.loads(tc.function.arguments)
+
+                # Doctor portal: inject practitioner_id vào slot lookup
+                if role == "doctor" and doctor_id:
+                    if tc.function.name == "fhir_get_next_available_slot":
+                        args.setdefault("practitioner_id", doctor_id)
+                    # Inject slot_id từ history (turn trước) vào fhir_create_appointment
+                    if tc.function.name == "fhir_create_appointment":
+                        slot_id_from_history = _find_last_slot_id(history)
+                        if slot_id_from_history:
+                            args.setdefault("slot_id", slot_id_from_history)
+
+                result_str = _execute_tool(tc.function.name, args, _MODULES)
+
+                history.append({"role": "tool", "tool_call_id": tc.id, "content": result_str})
             yield sse({"type": "status", "text": "Đang tổng hợp kết quả..."})
         else:
             # Phản hồi cuối — stream từng token
             yield sse({"type": "status", "text": ""})
             stream = _CLIENT.chat.completions.create(
                 model=_MODEL,
-                max_tokens=4096,
+                max_tokens=1024,
                 messages=[{"role": "system", "content": system}] + history,
                 tools=None,
                 stream=True,
@@ -190,23 +255,27 @@ def chat_stream(message: str, history: list[dict], role: str = "patient", doctor
             return
 
 
-def chat(message: str, history: list[dict], role: str = "patient", doctor_name: str = "") -> tuple[str, list[dict]]:
+def chat(message: str, history: list[dict], role: str = "patient",
+         doctor_name: str = "", doctor_id: str = "",
+         image_base64: str = "", image_mime: str = "image/jpeg") -> tuple[str, list[dict]]:
     """
     Xử lý 1 lượt hội thoại.
     history: list of {"role": "user"|"assistant", "content": ...}
     Trả về (reply_text, updated_history)
     """
     if role == "doctor":
-        system = SYSTEM_PROMPT_DOCTOR.replace("{doctor_name}", doctor_name or "Bác sĩ")
+        system = (SYSTEM_PROMPT_DOCTOR
+                  .replace("{doctor_name}", doctor_name or "Bác sĩ")
+                  .replace("{doctor_id}",   doctor_id or ""))
     else:
         system = SYSTEM_PROMPT
 
-    history = history + [{"role": "user", "content": message}]
+    history = history + [{"role": "user", "content": _build_user_content(message, image_base64, image_mime)}]
 
     while True:
         response = _CLIENT.chat.completions.create(
             model=_MODEL,
-            max_tokens=4096,
+            max_tokens=1024,
             messages=[{"role": "system", "content": system}] + history,
             tools=_TOOLS or None,
         )
