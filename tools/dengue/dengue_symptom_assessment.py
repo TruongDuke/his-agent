@@ -81,7 +81,16 @@ def _labels(fields):
     return [_SYMPTOM_LABEL.get(f, f) for f in fields]
 
 
+_CITATION = "Phụ lục 2 · QĐ 2760/QĐ-BYT 2023 · Bộ Y tế Việt Nam · WHO Dengue Guidelines 2009"
+
+
 def run(args: dict) -> dict:
+    result = _run(args)
+    result["_citation"] = _CITATION
+    return result
+
+
+def _run(args: dict) -> dict:
     proto = _load_protocol()
     rules = proto["classification_rules"]
     meta  = proto["meta"]

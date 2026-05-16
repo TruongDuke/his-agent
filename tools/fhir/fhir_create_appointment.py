@@ -142,10 +142,10 @@ def run(args: dict) -> dict:
         p_name = (patient.get("name") or [{}])[0]
         patient_name = f"{p_name.get('family','')} {' '.join(p_name.get('given',[]))}".strip()
 
-        # Step 4: Create Appointment
+        # Step 4: Create Appointment — status "proposed" until doctor confirms
         appointment = {
             "resourceType": "Appointment",
-            "status": "booked",
+            "status": "proposed",
             "serviceType": service_type,
             "reason": [{"concept": {"text": reason}}],
             "start": slot_start,
@@ -155,8 +155,13 @@ def run(args: dict) -> dict:
                 {"actor": {"reference": f"Patient/{pid}"}, "status": "accepted"},
             ],
         }
+        notes = []
         if clinical_note:
-            appointment["note"] = [{"text": clinical_note}]
+            notes.append({"text": clinical_note})
+        if patient_email:
+            notes.append({"text": f"__patient_email__:{patient_email}"})
+        if notes:
+            appointment["note"] = notes
         if actor_ref:
             appointment["participant"].append(
                 {"actor": {"reference": actor_ref}, "status": "accepted"}
@@ -231,62 +236,11 @@ def run(args: dict) -> dict:
     if slot_update_warning:
         result["warning"] = slot_update_warning
 
-    # Auto-send confirmation email if patient_email provided
-    if patient_email and appt_id:
-        try:
-            import smtplib
-            from email.mime.text import MIMEText
-            from email.mime.multipart import MIMEMultipart
-            cfg = args.get("_settings") or {}
-            gmail_user = (cfg.get("gmail_user") or "").strip()
-            gmail_pass = (cfg.get("gmail_app_password") or "").strip()
-            from_name = (cfg.get("gmail_from_name") or "Bệnh viện Đa khoa Hà Nội").strip()
-
-            if gmail_user and gmail_pass:
-                date_str_vi = (slot_start or "")[:10]
-                date_vi = date_str_vi[8:] + "/" + date_str_vi[5:7] + "/" + date_str_vi[:4]
-                time_vi_short = (slot_start or "")[11:16]
-                subject = f"✅ Xác nhận lịch khám - {dept_name} - {date_vi} {time_vi_short}"
-                html = f"""<html><body style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:20px">
-  <div style="background:#0f62fe;color:white;padding:20px;border-radius:8px 8px 0 0">
-    <h2 style="margin:0">🏥 Bệnh viện Đa khoa Hà Nội</h2>
-    <p style="margin:4px 0 0">Xác nhận lịch khám</p>
-  </div>
-  <div style="border:1px solid #e0e0e0;border-top:none;padding:24px;border-radius:0 0 8px 8px">
-    <p>Xin chào <strong>{patient_name}</strong>,</p>
-    <p>Lịch khám của bạn đã được xác nhận:</p>
-    <table style="width:100%;border-collapse:collapse;margin:16px 0">
-      <tr style="background:#f4f4f4"><td style="padding:10px;font-weight:bold;width:40%">📅 Ngày khám</td><td style="padding:10px">{date_vi}</td></tr>
-      <tr><td style="padding:10px;font-weight:bold">⏰ Giờ khám</td><td style="padding:10px">{time_vi_short}</td></tr>
-      <tr style="background:#f4f4f4"><td style="padding:10px;font-weight:bold">🏥 Khoa</td><td style="padding:10px">{dept_name}</td></tr>
-      <tr><td style="padding:10px;font-weight:bold">👨‍⚕️ Bác sĩ</td><td style="padding:10px">{pract_name}</td></tr>
-      <tr style="background:#f4f4f4"><td style="padding:10px;font-weight:bold">🔖 Mã lịch</td><td style="padding:10px;font-family:monospace">{booking_code}</td></tr>
-      <tr><td style="padding:10px;font-weight:bold">🔢 Số thứ tự</td><td style="padding:10px">{queue_number}</td></tr>
-    </table>
-    <div style="background:#fff3cd;border-left:4px solid #ffc107;padding:12px;margin:16px 0;border-radius:4px">
-      <strong>⚠️ Lưu ý:</strong>
-      <ul style="margin:8px 0;padding-left:20px">
-        <li>Vui lòng đến trước giờ hẹn <strong>15 phút</strong></li>
-        <li>Mang theo <strong>CCCD/BHYT</strong> và hồ sơ bệnh án (nếu có)</li>
-        <li>Hủy/đổi lịch: <strong>0243.868.6868</strong></li>
-      </ul>
-    </div>
-    <p style="color:#666;font-size:13px">Email này được gửi tự động. Vui lòng không reply.</p>
-  </div>
-</body></html>"""
-                msg = MIMEMultipart("alternative")
-                msg["From"] = f"{from_name} <{gmail_user}>"
-                msg["To"] = patient_email
-                msg["Subject"] = subject
-                msg.attach(MIMEText(html, "html", "utf-8"))
-                with smtplib.SMTP("smtp.gmail.com", 587, timeout=15) as srv:
-                    srv.ehlo(); srv.starttls()
-                    srv.login(gmail_user, gmail_pass)
-                    srv.sendmail(gmail_user, [patient_email], msg.as_string())
-                result["email_sent"] = True
-                result["email_to"] = patient_email
-        except Exception as e:
-            result["email_error"] = str(e)
+    # Email sẽ được gửi khi bác sĩ confirm (fhir_confirm_appointment)
+    if patient_email:
+        result["patient_email"] = patient_email
+        result["pending_confirmation"] = True
+        result["note_for_doctor"] = f"Lịch chờ bác sĩ xác nhận. Email xác nhận sẽ gửi đến {patient_email} sau khi bác sĩ duyệt."
 
     return result
 

@@ -1096,6 +1096,108 @@
     .reg-success-icon { font-size: 48px; margin-bottom: 12px; }
     .reg-success-msg  { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
     .reg-success-sub  { font-size: 13px; color: var(--text-02); margin-bottom: 20px; }
+
+    /* ── Notification badge on header icon ── */
+    .h-icon-btn-wrap {
+      position: relative;
+      display: inline-flex;
+    }
+    .notif-badge {
+      position: absolute;
+      top: 8px; right: 4px;
+      min-width: 16px; height: 16px;
+      background: #da1e28;
+      color: #fff;
+      font-size: 10px; font-weight: 700;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      padding: 0 4px;
+      pointer-events: none;
+      line-height: 1;
+    }
+    .notif-badge.hidden { display: none; }
+
+    /* ── Pending appointments panel ── */
+    .pending-panel {
+      background: var(--ui-02);
+      border-bottom: 1px solid var(--ui-03);
+      flex-shrink: 0;
+    }
+    .pending-panel-header {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 16px;
+      cursor: pointer;
+      user-select: none;
+      border-bottom: 1px solid transparent;
+      transition: background .1s;
+    }
+    .pending-panel-header:hover { background: var(--ui-01); }
+    .pending-panel-header.open  { border-bottom-color: var(--ui-03); }
+    .pending-panel-title {
+      font-size: 13px; font-weight: 600; color: var(--text-01); flex: 1;
+    }
+    .pending-panel-count {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 20px; height: 20px; padding: 0 5px;
+      background: #da1e28; color: #fff;
+      font-size: 11px; font-weight: 700; border-radius: 10px;
+    }
+    .pending-panel-chevron {
+      font-size: 12px; color: var(--text-03);
+      transition: transform .2s;
+    }
+    .pending-panel-chevron.open { transform: rotate(180deg); }
+    .pending-panel-body {
+      max-height: 0; overflow: hidden;
+      transition: max-height .25s ease;
+    }
+    .pending-panel-body.open { max-height: 500px; overflow-y: auto; }
+    .pending-item {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--ui-03);
+      font-size: 13px;
+    }
+    .pending-item:last-child { border-bottom: none; }
+    .pending-item-row { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 6px; }
+    .pending-item-name { font-weight: 600; color: var(--text-01); }
+    .pending-item-meta { font-size: 12px; color: var(--text-02); margin-bottom: 4px; }
+    .pending-item-note { font-size: 12px; color: var(--text-02); font-style: italic; margin-bottom: 8px; }
+    .pending-item-email { font-size: 11px; color: var(--text-03); margin-bottom: 8px; }
+    .pending-item-actions { display: flex; gap: 8px; }
+    .pending-confirm-btn {
+      background: #198038; color: #fff; border: none;
+      font-family: inherit; font-size: 12px; font-weight: 500;
+      padding: 5px 12px; cursor: pointer; border-radius: 2px;
+      transition: background .1s;
+    }
+    .pending-confirm-btn:hover { background: #0e6027; }
+    .pending-confirm-btn:disabled { background: var(--ui-03); cursor: not-allowed; }
+    .pending-reject-btn {
+      background: #da1e28; color: #fff; border: none;
+      font-family: inherit; font-size: 12px; font-weight: 500;
+      padding: 5px 12px; cursor: pointer; border-radius: 2px;
+      transition: background .1s;
+    }
+    .pending-reject-btn:hover { background: #a81922; }
+    .pending-reject-btn:disabled { background: var(--ui-03); cursor: not-allowed; }
+    .pending-empty {
+      padding: 20px 16px; text-align: center;
+      font-size: 13px; color: var(--text-03);
+    }
+
+    /* ── Toast notification ── */
+    .toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      background: #161616; color: #fff;
+      font-size: 13px; font-weight: 500;
+      padding: 10px 20px; border-radius: 4px;
+      box-shadow: 0 4px 16px rgba(0,0,0,.3);
+      z-index: 9999;
+      opacity: 0; pointer-events: none;
+      transition: opacity .2s;
+      white-space: nowrap;
+    }
+    .toast.show { opacity: 1; pointer-events: auto; }
   </style>
 </head>
 <body>
@@ -1218,7 +1320,10 @@
       </div>
     </div>
     <button class="h-icon-btn" title="Tìm kiếm">🔍</button>
-    <button class="h-icon-btn" title="Thông báo">🔔</button>
+    <div class="h-icon-btn-wrap" title="Lịch hẹn chờ xác nhận" onclick="togglePendingPanel()">
+      <button class="h-icon-btn" style="pointer-events:none">🔔</button>
+      <span class="notif-badge hidden" id="pending-badge">0</span>
+    </div>
     <button class="h-icon-btn" title="Tài khoản">👤</button>
     <button class="h-logout" onclick="logout()">← Đăng xuất</button>
   </header>
@@ -1266,6 +1371,18 @@
 
       <!-- Swappable content area -->
       <div id="doc-content" class="doc-content"></div>
+
+      <!-- Pending appointments panel -->
+      <div class="pending-panel" id="pending-panel">
+        <div class="pending-panel-header" id="pending-panel-header" onclick="togglePendingPanel()">
+          <span class="pending-panel-title">Lịch hẹn chờ xác nhận</span>
+          <span class="pending-panel-count hidden" id="pending-panel-count">0</span>
+          <span class="pending-panel-chevron" id="pending-panel-chevron">▼</span>
+        </div>
+        <div class="pending-panel-body" id="pending-panel-body">
+          <div class="pending-empty">Đang tải...</div>
+        </div>
+      </div>
 
       <!-- AI Chat panel -->
       <div class="doc-chat-section">
@@ -1357,6 +1474,7 @@
     role = null;
     currentDoctor = null;
     _resetDocChatUI();
+    _stopPendingPoll();
     sessionPatient = null;
     document.getElementById('p-messages').innerHTML = _pWelcomeHTML;
     show('screen-login');
@@ -1430,6 +1548,7 @@
     show('screen-doctor');
     docNav('dashboard');
     document.getElementById('d-input').focus();
+    _startPendingPoll();
 
     // Khôi phục hội thoại gần nhất
     try {
@@ -2805,6 +2924,149 @@
       alert('Lỗi đăng ký: ' + e.message);
     }
   }
+
+  /* ══════════════════════════════════════════
+     TOAST
+  ══════════════════════════════════════════ */
+  let _toastTimer = null;
+  function showToast(msg, durationMs = 3000) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(_toastTimer);
+    _toastTimer = setTimeout(() => el.classList.remove('show'), durationMs);
+  }
+
+  /* ══════════════════════════════════════════
+     PENDING APPOINTMENTS (doctor only)
+  ══════════════════════════════════════════ */
+  let _pendingPollInterval = null;
+  let _pendingPanelOpen    = false;
+
+  function _setPendingBadge(count) {
+    const badge       = document.getElementById('pending-badge');
+    const panelCount  = document.getElementById('pending-panel-count');
+    if (!badge || !panelCount) return;
+    if (count > 0) {
+      badge.textContent      = count > 99 ? '99+' : count;
+      panelCount.textContent = count > 99 ? '99+' : count;
+      badge.classList.remove('hidden');
+      panelCount.classList.remove('hidden');
+    } else {
+      badge.classList.add('hidden');
+      panelCount.classList.add('hidden');
+    }
+  }
+
+  async function fetchPendingAppointments() {
+    if (role !== 'doctor') return;
+    try {
+      const data = await fetch('/api/pending-appointments').then(r => r.json());
+      const appts = data.appointments || [];
+      _setPendingBadge(appts.length);
+      if (_pendingPanelOpen) {
+        _renderPendingList(appts);
+      }
+    } catch { /* silently ignore poll errors */ }
+  }
+
+  function _renderPendingList(appts) {
+    const body = document.getElementById('pending-panel-body');
+    if (!body) return;
+    if (!appts.length) {
+      body.innerHTML = '<div class="pending-empty">Không có lịch hẹn nào đang chờ xác nhận.</div>';
+      return;
+    }
+    body.innerHTML = appts.map(a => {
+      const dateStr = a.start
+        ? a.start.slice(0, 10).split('-').reverse().join('/') + ' ' + (a.start.slice(11, 16) || '')
+        : '—';
+      const safeId = (a.id || '').replace(/'/g, '');
+      return `
+        <div class="pending-item" id="pending-item-${safeId}">
+          <div class="pending-item-row">
+            <span class="pending-item-name">${a.patient_name || '—'}</span>
+            <span class="badge badge-yellow" style="margin-left:auto">Chờ xác nhận</span>
+          </div>
+          <div class="pending-item-meta">🏥 ${a.department || '—'} &nbsp;·&nbsp; 📅 ${dateStr}</div>
+          ${a.reason ? `<div class="pending-item-note">📋 ${a.reason}</div>` : ''}
+          ${a.patient_email ? `<div class="pending-item-email">✉ ${a.patient_email}</div>` : ''}
+          <div class="pending-item-actions">
+            <button class="pending-confirm-btn" onclick="confirmAppointment('${safeId}', this)">✓ Xác nhận</button>
+            <button class="pending-reject-btn"  onclick="rejectAppointment('${safeId}', this)">✗ Từ chối</button>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  function togglePendingPanel() {
+    if (role !== 'doctor') return;
+    _pendingPanelOpen = !_pendingPanelOpen;
+    const body     = document.getElementById('pending-panel-body');
+    const chevron  = document.getElementById('pending-panel-chevron');
+    const header   = document.getElementById('pending-panel-header');
+    if (!body) return;
+    body.classList.toggle('open', _pendingPanelOpen);
+    chevron?.classList.toggle('open', _pendingPanelOpen);
+    header?.classList.toggle('open', _pendingPanelOpen);
+    if (_pendingPanelOpen) {
+      fetchPendingAppointments();
+    }
+  }
+
+  async function confirmAppointment(id, btn) {
+    btn.disabled = true;
+    btn.closest('.pending-item-actions').querySelectorAll('button').forEach(b => b.disabled = true);
+    try {
+      await fetch(`/api/confirm-appointment/${id}`, { method: 'POST' });
+      showToast('Đã xác nhận và gửi mail cho bệnh nhân');
+      _refreshPendingPanel();
+    } catch(e) {
+      showToast('Lỗi xác nhận: ' + e.message);
+      btn.closest('.pending-item-actions').querySelectorAll('button').forEach(b => b.disabled = false);
+    }
+  }
+
+  async function rejectAppointment(id, btn) {
+    btn.disabled = true;
+    btn.closest('.pending-item-actions').querySelectorAll('button').forEach(b => b.disabled = true);
+    try {
+      await fetch(`/api/reject-appointment/${id}`, { method: 'POST' });
+      showToast('Đã từ chối lịch hẹn');
+      _refreshPendingPanel();
+    } catch(e) {
+      showToast('Lỗi từ chối: ' + e.message);
+      btn.closest('.pending-item-actions').querySelectorAll('button').forEach(b => b.disabled = false);
+    }
+  }
+
+  async function _refreshPendingPanel() {
+    try {
+      const data = await fetch('/api/pending-appointments').then(r => r.json());
+      const appts = data.appointments || [];
+      _setPendingBadge(appts.length);
+      if (_pendingPanelOpen) _renderPendingList(appts);
+    } catch { /* ignore */ }
+  }
+
+  function _startPendingPoll() {
+    fetchPendingAppointments();
+    clearInterval(_pendingPollInterval);
+    _pendingPollInterval = setInterval(fetchPendingAppointments, 30000);
+  }
+
+  function _stopPendingPoll() {
+    clearInterval(_pendingPollInterval);
+    _pendingPollInterval = null;
+    _setPendingBadge(0);
+    _pendingPanelOpen = false;
+    const body    = document.getElementById('pending-panel-body');
+    const chevron = document.getElementById('pending-panel-chevron');
+    const header  = document.getElementById('pending-panel-header');
+    body?.classList.remove('open');
+    chevron?.classList.remove('open');
+    header?.classList.remove('open');
+  }
 </script>
 
 <!-- ════ BOOKING MODAL ════ -->
@@ -2861,6 +3123,9 @@
     <div class="modal-body" id="register-body"></div>
   </div>
 </div>
+
+<!-- Toast notification -->
+<div class="toast" id="toast"></div>
 
 </body>
 </html>

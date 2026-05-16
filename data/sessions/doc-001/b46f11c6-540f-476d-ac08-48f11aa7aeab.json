@@ -1,0 +1,89 @@
+{
+  "session_id": "doctor_doc-001_b46f11c6-540f-476d-ac08-48f11aa7aeab",
+  "title": "tìm bệnh nhân phan hùng",
+  "created_at": "2026-05-16T10:19:40",
+  "updated_at": "2026-05-16T11:03:40",
+  "messages": [
+    {
+      "role": "user",
+      "content": "tìm bệnh nhân phan hùng"
+    },
+    {
+      "role": "assistant",
+      "content": null,
+      "tool_calls": [
+        {
+          "id": "toolu_bdrk_01SB8ZdPpscQZeba5xCcBebB",
+          "type": "function",
+          "function": {
+            "name": "fhir_search_patient",
+            "arguments": "{\"query\": \"Phan Hùng\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "toolu_bdrk_01SB8ZdPpscQZeba5xCcBebB",
+      "content": "{\"matched_by\": \"name\", \"count\": 1, \"patients\": [{\"id\": \"c0f6d7cf-bd7b-47c8-8373-b59a233435f9\", \"name\": \"Phan Hùng\", \"gender\": \"male\", \"birth_date\": \"2004-01-01\", \"age\": 22, \"bhyt\": null, \"cccd\": null, \"phone\": \"0904608777\", \"_source\": \"FHIR R5 · Aidbox · Patient/c0f6d7cf-bd7b-47c8-8373-b59a233435f9 · cập nhật 2026-05-12 07:57\"}], \"_data_source\": \"FHIR R5 · Aidbox · Bệnh viện Đa khoa Hà Nội\"}"
+    },
+    {
+      "role": "assistant",
+      "content": "**Phan Hùng** — Nam, 22 tuổi (sinh 2004-01-01)\n**Điện thoại:** 0904608777\n**ID:** c0f6d7cf-bd7b-47c8-8373-b59a233435f9\n\n📋 *Nguồn: FHIR R5 · Aidbox · Bệnh viện Đa khoa Hà Nội*"
+    },
+    {
+      "role": "user",
+      "content": "có lịch nào chờ xác nhận không"
+    },
+    {
+      "role": "assistant",
+      "content": null,
+      "tool_calls": [
+        {
+          "id": "toolu_bdrk_01DPRt9z7JGE8H4MCu8fq8Bj",
+          "type": "function",
+          "function": {
+            "name": "fhir_get_pending_appointments",
+            "arguments": "{}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "toolu_bdrk_01DPRt9z7JGE8H4MCu8fq8Bj",
+      "content": "{\"found\": true, \"count\": 1, \"pending\": [{\"appointment_id\": \"2b8fb1ca-23db-4f6d-bc4b-9e487206109d\", \"patient_name\": \"Phan Hùng\", \"patient_id\": \"c0f6d7cf-bd7b-47c8-8373-b59a233435f9\", \"patient_email\": \"duc@test.com\", \"department\": \"Khoa Thần kinh\", \"practitioner\": \"BS. Nguyễn Minh Tuấn\", \"date\": \"18/05/2026\", \"time\": \"08:00\", \"reason\": \"Khám đau đầu\", \"symptoms\": \"\"}]}"
+    },
+    {
+      "role": "assistant",
+      "content": "**Có 1 lịch chờ xác nhận:**\n\n- **Bệnh nhân:** Phan Hùng\n- **Khoa:** Khoa Thần kinh\n- **Bác sĩ:** BS. Nguyễn Minh Tuấn\n- **Ngày giờ:** 18/05/2026 — 08:00\n- **Lý do khám:** Khám đau đầu\n- **Email:** duc@test.com\n\nBác sĩ muốn **xác nhận** hay **từ chối** lịch này?"
+    },
+    {
+      "role": "user",
+      "content": "xác nhận lịch đó đi"
+    },
+    {
+      "role": "assistant",
+      "content": null,
+      "tool_calls": [
+        {
+          "id": "toolu_bdrk_01Q1J7htNC3CEpGviw5xJRSN",
+          "type": "function",
+          "function": {
+            "name": "fhir_confirm_appointment",
+            "arguments": "{\"appointment_id\": \"2b8fb1ca-23db-4f6d-bc4b-9e487206109d\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "toolu_bdrk_01Q1J7htNC3CEpGviw5xJRSN",
+      "content": "{\"success\": true, \"appointment_id\": \"2b8fb1ca-23db-4f6d-bc4b-9e487206109d\", \"status\": \"booked\", \"patient_name\": \"Phan Hùng\", \"department\": \"Khoa Thần kinh\", \"date\": \"18/05/2026\", \"time\": \"08:00\", \"message\": \"Đã xác nhận lịch khám cho Phan Hùng — Khoa Thần kinh 18/05/2026 lúc 08:00.\", \"email_sent\": true, \"email_to\": \"duc@test.com\"}"
+    },
+    {
+      "role": "assistant",
+      "content": "Đã xác nhận lịch **Phan Hùng** — Khoa Thần kinh, 18/05/2026 lúc 08:00. Email xác nhận đã gửi đến duc@test.com."
+    }
+  ]
+}

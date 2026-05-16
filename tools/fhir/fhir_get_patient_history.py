@@ -120,4 +120,5 @@ def run(args: dict) -> dict:
         "conditions": conditions,
         "medications": medications,
         "observations": observations,
+        "_data_source": "Hồ sơ bệnh án · FHIR R5 · Aidbox · Bệnh viện Đa khoa Hà Nội",
     }

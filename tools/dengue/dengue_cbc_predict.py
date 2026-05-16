@@ -520,6 +520,7 @@ def run(args: dict) -> dict:
                 "page_114_pdf": "Section 4.3.5 — Haematological tests",
             },
         },
+        "_citation": "QĐ 2760/QĐ-BYT 2023 · Bộ Y tế Việt Nam · WHO Dengue Guidelines 2009",
     }
 
 

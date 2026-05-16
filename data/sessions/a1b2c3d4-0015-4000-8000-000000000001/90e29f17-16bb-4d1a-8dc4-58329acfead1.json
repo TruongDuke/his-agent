@@ -1,0 +1,94 @@
+{
+  "session_id": "doctor_a1b2c3d4-0015-4000-8000-000000000001_90e29f17-16bb-4d1a-8dc4-58329acfead1",
+  "title": "hồ sơ khám bệnh của bệnh nhân phan hùng",
+  "created_at": "2026-05-15T14:47:11",
+  "updated_at": "2026-05-15T14:47:51",
+  "messages": [
+    {
+      "role": "user",
+      "content": "hồ sơ khám bệnh của bệnh nhân phan hùng"
+    },
+    {
+      "role": "assistant",
+      "content": "Tôi sẽ tìm kiếm bệnh nhân Phan Hùng và lấy hồ sơ khám bệnh.",
+      "tool_calls": [
+        {
+          "id": "toolu_bdrk_01WJUa5HEctDyJhMfZ9D7nxM",
+          "type": "function",
+          "function": {
+            "name": "fhir_search_patient",
+            "arguments": "{\"query\": \"Phan Hùng\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "toolu_bdrk_01WJUa5HEctDyJhMfZ9D7nxM",
+      "content": "{\"matched_by\": \"name\", \"count\": 1, \"patients\": [{\"id\": \"c0f6d7cf-bd7b-47c8-8373-b59a233435f9\", \"name\": \"Phan Hùng\", \"gender\": \"male\", \"birth_date\": \"2004-01-01\", \"age\": 22, \"bhyt\": null, \"cccd\": null, \"phone\": \"0904608777\"}]}"
+    },
+    {
+      "role": "assistant",
+      "content": "Bây giờ tôi sẽ lấy hồ sơ chi tiết và xét nghiệm của bệnh nhân.",
+      "tool_calls": [
+        {
+          "id": "toolu_bdrk_01H4g33sr97pQCqVJsqTMBEw",
+          "type": "function",
+          "function": {
+            "name": "fhir_get_patient_history",
+            "arguments": "{\"patient_id\": \"c0f6d7cf-bd7b-47c8-8373-b59a233435f9\"}"
+          }
+        },
+        {
+          "id": "toolu_bdrk_01EScTbhqey1mvZosyyNzDHb",
+          "type": "function",
+          "function": {
+            "name": "fhir_get_observations",
+            "arguments": "{\"patient_id\": \"c0f6d7cf-bd7b-47c8-8373-b59a233435f9\", \"category\": \"all\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "toolu_bdrk_01H4g33sr97pQCqVJsqTMBEw",
+      "content": "{\"patient\": {\"id\": \"c0f6d7cf-bd7b-47c8-8373-b59a233435f9\", \"name\": \"Phan Hùng\", \"gender\": \"male\", \"birth_date\": \"2004-01-01\", \"age\": 22, \"bhyt\": null, \"cccd\": null, \"phone\": \"0904608777\"}, \"summary\": {\"visits_count\": 0, \"active_conditions\": [], \"current_medications\": []}, \"encounters\": [], \"conditions\": [], \"medications\": [], \"observations\": [{\"date\": \"2026-05-13\", \"measure\": \"CBC panel\", \"value\": \"Platelets: 133.0 10*3/uL; WBC: 3.9 10*3/uL; Hematocrit: 47.9 %; Hemoglobin: 16.3 g/dL\"}, {\"date\": \"2026-05-15\", \"measure\": \"CBC panel\", \"value\": \"Platelets: 133.0 10*3/uL; WBC: 3.9 10*3/uL; Hematocrit: 47.9 %; Hemoglobin: 16.3 g/dL\"}]}"
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "toolu_bdrk_01EScTbhqey1mvZosyyNzDHb",
+      "content": "{\"patient_id\": \"c0f6d7cf-bd7b-47c8-8373-b59a233435f9\", \"count\": 2, \"observations\": [{\"date\": \"2026-05-15\", \"name\": \"CBC panel\", \"value\": \"Platelets: 133.0 10*3/uL | WBC: 3.9 10*3/uL | Hematocrit: 47.9 % | Hemoglobin: 16.3 g/dL\", \"unit\": null, \"status\": \"final\"}, {\"date\": \"2026-05-13\", \"name\": \"CBC panel\", \"value\": \"Platelets: 133.0 10*3/uL | WBC: 3.9 10*3/uL | Hematocrit: 47.9 % | Hemoglobin: 16.3 g/dL\", \"unit\": null, \"status\": \"final\"}], \"summary\": \"Chỉ số gần nhất:\\n- CBC panel: Platelets: 133.0 10*3/uL | WBC: 3.9 10*3/uL | Hematocrit: 47.9 % | Hemoglobin: 16.3 g/dL (ngày 2026-05-15)\"}"
+    },
+    {
+      "role": "assistant",
+      "content": "**Phan Hùng** — Nam, 22 tuổi (sinh 01/01/2004)\n**Số điện thoại:** 0904608777\n\n**Tiền sử:** Không có bệnh nền, không có điều kiện bệnh lý hoạt động\n**Thuốc hiện tại:** Không có\n**Lần khám:** Chưa có lịch sử khám bệnh tại bệnh viện\n\n**Xét nghiệm gần nhất (CBC panel — 15/05/2026):**\n- Tiểu cầu (PLT): 133.0 K/μL\n- Bạch cầu (WBC): 3.9 K/μL\n- Hematocrit (HCT): 47.9%\n- Hemoglobin (HGB): 16.3 g/dL\n\nTất cả chỉ số CBC nằm trong giới hạn bình thường."
+    },
+    {
+      "role": "user",
+      "content": "tôi có lịch khám gì trong ngày hôm nay 15/5 không"
+    },
+    {
+      "role": "assistant",
+      "content": "Tôi sẽ kiểm tra lịch khám của bác sĩ hôm nay.",
+      "tool_calls": [
+        {
+          "id": "toolu_bdrk_015FMWPexR9wqUDQfRXm3p3s",
+          "type": "function",
+          "function": {
+            "name": "fhir_get_doctor_schedule",
+            "arguments": "{\"practitioner_id\": \"a1b2c3d4-0015-4000-8000-000000000001\", \"date_from\": \"2026-05-15\", \"date_to\": \"2026-05-15\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "toolu_bdrk_015FMWPexR9wqUDQfRXm3p3s",
+      "content": "{\"total\": 0, \"appointments\": [], \"message\": \"Không có lịch hẹn từ 2026-05-15 đến 2026-05-15.\"}"
+    },
+    {
+      "role": "assistant",
+      "content": "Bác sĩ không có lịch khám nào trong ngày hôm nay (15/05/2026)."
+    }
+  ]
+}
