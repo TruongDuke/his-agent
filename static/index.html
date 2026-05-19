@@ -71,6 +71,41 @@
       margin-bottom: 20px;
       text-align: center;
     }
+    .login-field-wrap { width: 100%; max-width: 320px; }
+    .login-input {
+      width: 100%; padding: 10px 14px;
+      border: 1px solid var(--ui-03); border-radius: 8px;
+      font-size: 14px; background: #fff; color: var(--text-01);
+      box-sizing: border-box;
+    }
+    .login-input:focus { outline: none; border-color: var(--brand-01); }
+    .login-submit-btn {
+      width: 100%; margin-top: 16px; padding: 11px;
+      background: var(--brand-01); color: #fff;
+      border: none; border-radius: 8px;
+      font-size: 15px; font-weight: 600; cursor: pointer;
+    }
+    .login-submit-btn:hover { background: var(--brand-02); }
+    .login-error { font-size: 13px; color: #da1e28; margin-top: 8px; }
+    .login-info  { font-size: 13px; color: #0f62fe; margin-top: 8px; }
+    .login-register-link { font-size: 13px; color: var(--text-02); text-align: center; margin-top: 14px; }
+    .login-register-link a { color: var(--brand-01); text-decoration: none; }
+    .login-password-box {
+      background: #f0f4ff; border: 1px solid #b0c4ff;
+      border-radius: 8px; padding: 12px 16px;
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 15px;
+    }
+    .login-password-box strong { font-size: 20px; letter-spacing: 2px; color: var(--brand-01); }
+    .login-divider { display: flex; align-items: center; gap: 10px; margin: 16px 0 0; color: var(--text-03); font-size: 12px; }
+    .login-divider::before, .login-divider::after { content: ''; flex: 1; height: 1px; background: var(--ui-03); }
+    .login-guest-btn {
+      width: 100%; margin-top: 10px; padding: 10px;
+      background: transparent; color: var(--text-02);
+      border: 1px solid var(--ui-03); border-radius: 8px;
+      font-size: 14px; cursor: pointer;
+    }
+    .login-guest-btn:hover { background: var(--ui-01); color: var(--text-01); }
 
     .role-cards {
       display: flex; gap: 20px;
@@ -554,10 +589,7 @@
 
     /* ── Doctor page content area ── */
     .doc-content {
-      flex-shrink: 0;
-      padding: 20px 24px 0;
-      max-height: 280px;
-      overflow-y: auto;
+      padding: 16px 20px;
     }
     .doc-content:empty { display: none; }
 
@@ -1185,6 +1217,262 @@
       font-size: 13px; color: var(--text-03);
     }
 
+    /* ══════════════════════════════════
+       OPENM RS O3 STYLE COMPONENTS
+    ══════════════════════════════════ */
+
+    /* ── Workspace sidebar (AI Chat) ── */
+    .workspace {
+      width: 340px;
+      flex-shrink: 0;
+      background: var(--ui-02);
+      border-left: 1px solid var(--ui-03);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .workspace-header {
+      padding: 11px 16px 10px;
+      border-bottom: 1px solid var(--ui-03);
+      display: flex; align-items: center; gap: 8px;
+      flex-shrink: 0;
+      background: var(--ui-02);
+    }
+    .workspace-header h3 {
+      font-size: 14px; font-weight: 600;
+      color: var(--text-01); flex: 1;
+    }
+    .workspace-header h3::after {
+      content: '';
+      display: block;
+      width: 28px; margin-top: 3px;
+      border-bottom: 3px solid var(--brand-03);
+    }
+
+    /* ── Patient Banner ── */
+    .patient-banner {
+      background: var(--ui-02);
+      border-bottom: 2px solid var(--brand-01);
+      padding: 10px 20px;
+      display: flex; align-items: center; gap: 16px;
+      flex-shrink: 0;
+    }
+    .pb-avatar {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: var(--brand-01); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 700; flex-shrink: 0;
+    }
+    .pb-info { flex: 1; min-width: 0; }
+    .pb-name {
+      font-size: 15px; font-weight: 600; color: var(--text-01);
+      margin-bottom: 2px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .pb-meta { font-size: 12px; color: var(--text-02); }
+    .pb-vitals {
+      display: flex; gap: 20px; flex-shrink: 0;
+      border-left: 1px solid var(--ui-03);
+      padding-left: 20px;
+    }
+    .pb-vital {
+      font-size: 12px; color: var(--text-02);
+      display: flex; flex-direction: column; align-items: center;
+    }
+    .pb-vital strong {
+      font-size: 16px; font-weight: 600;
+      color: var(--text-01); line-height: 1.2;
+    }
+    .pb-vital span { font-size: 10px; color: var(--text-03); margin-top: 2px; }
+    .pb-close-patient {
+      background: none; border: 1px solid var(--ui-03);
+      font-family: inherit; font-size: 12px; color: var(--text-02);
+      padding: 5px 10px; cursor: pointer; transition: all .1s; flex-shrink: 0;
+    }
+    .pb-close-patient:hover { border-color: var(--brand-01); color: var(--brand-01); }
+
+    /* ── Widget grid ── */
+    .widget-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: var(--ui-03);
+      border: 1px solid var(--ui-03);
+      margin-top: 16px;
+    }
+    .widget { background: var(--ui-02); }
+    .widget-head {
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--ui-03);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .widget-head h4 {
+      font-size: 12px; font-weight: 600; flex: 1;
+      color: var(--text-02); text-transform: uppercase; letter-spacing: .06em;
+    }
+    .widget-add-btn {
+      background: none; border: none; color: var(--brand-01);
+      font-size: 18px; cursor: pointer; line-height: 1; padding: 0 2px;
+    }
+    .widget-body { padding: 12px 16px; min-height: 80px; }
+    .widget-empty { font-size: 12px; color: var(--text-03); font-style: italic; }
+    .widget-row {
+      display: flex; justify-content: space-between; align-items: baseline;
+      padding: 5px 0; border-bottom: 1px solid var(--ui-01); font-size: 13px;
+    }
+    .widget-row:last-child { border-bottom: none; }
+    .widget-row-label { color: var(--text-02); }
+    .widget-row-val { font-weight: 600; color: var(--text-01); }
+    .widget-row-val.normal { color: var(--success); }
+    .widget-row-val.warning { color: #b28600; }
+    .widget-row-val.danger  { color: var(--danger); }
+
+    /* ── Scrollable main content area ── */
+    .doc-scroll {
+      flex: 1; overflow-y: auto;
+    }
+    .doc-scroll::-webkit-scrollbar { width: 4px; }
+    .doc-scroll::-webkit-scrollbar-thumb { background: var(--ui-03); }
+
+    /* ── Value status badges (normal / warning / danger) ── */
+    .val-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 700;
+      padding: 1px 5px; border-radius: 2px; flex-shrink: 0;
+    }
+    .val-normal  { background: #defbe6; color: #198038; }
+    .val-warning { background: #fdf6dd; color: #b28600; }
+    .val-danger  { background: #fff1f1; color: #da1e28; }
+    .val-text-normal  { color: #198038; }
+    .val-text-warning { color: #b28600; }
+    .val-text-danger  { color: #da1e28; font-weight: 600; }
+
+    /* ── CBC Widget (OpenMRS O3 Vitals style) ── */
+    .cbc-header {
+      padding: 10px 16px 8px;
+      display: flex; align-items: center; gap: 6px;
+      border-bottom: 1px solid var(--ui-03);
+    }
+    .cbc-view-btn {
+      width: 26px; height: 26px; background: none;
+      border: 1px solid var(--ui-03); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; color: var(--text-03); transition: all .1s;
+    }
+    .cbc-view-btn.active { background: var(--brand-01); border-color: var(--brand-01); color: #fff; }
+    .cbc-tbl-wrap { overflow-x: auto; }
+    .cbc-tbl { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .cbc-tbl th {
+      background: var(--ui-01); padding: 5px 8px; text-align: center;
+      font-weight: 600; color: var(--text-02); border-bottom: 1px solid var(--ui-03);
+      white-space: nowrap; font-size: 11px;
+    }
+    .cbc-tbl th:first-child { text-align: left; }
+    .cbc-tbl td {
+      padding: 6px 8px; text-align: center;
+      border-bottom: 1px solid var(--ui-01); white-space: nowrap;
+    }
+    .cbc-tbl td:first-child { text-align: left; color: var(--text-02); font-size: 11px; }
+    .cbc-tbl tbody tr:last-child td { border-bottom: none; }
+    .cbc-tbl tbody tr:hover td { background: var(--ui-01) !important; }
+    .cbc-n { color: var(--text-01); }
+    .cbc-w { background: rgba(242,194,0,.18) !important; color: #b28600; font-weight: 600; }
+    .cbc-d { background: rgba(218,30,40,.13)  !important; color: #da1e28; font-weight: 600; }
+    .cbc-chart-layout { display: flex; min-height: 190px; }
+    .cbc-param-list {
+      width: 86px; flex-shrink: 0;
+      border-right: 1px solid var(--ui-03); overflow-y: auto;
+    }
+    .cbc-param-item {
+      padding: 7px 10px; font-size: 11px; cursor: pointer;
+      color: var(--text-02); border-left: 3px solid transparent;
+      transition: all .1s; line-height: 1.3;
+    }
+    .cbc-param-item:hover { background: var(--ui-01); }
+    .cbc-param-item.active {
+      background: #e6f4f4; border-left-color: var(--brand-01);
+      color: var(--brand-01); font-weight: 600;
+    }
+    .cbc-chart-area { flex: 1; padding: 8px; min-width: 0; }
+
+    /* ── CBC Input Modal ── */
+    .cbc-modal-overlay {
+      position: fixed; inset: 0; z-index: 400;
+      background: rgba(22,22,22,.5);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .cbc-modal {
+      background: var(--ui-02); width: 420px; max-width: 96vw;
+      max-height: 90vh; display: flex; flex-direction: column;
+      border: 1px solid var(--ui-03);
+      box-shadow: 0 12px 40px rgba(0,0,0,.25); overflow: hidden;
+    }
+    .cbc-modal-head {
+      background: var(--brand-01); color: #fff;
+      padding: 14px 18px; display: flex; align-items: center; flex-shrink: 0;
+    }
+    .cbc-modal-head h2 { font-size: 14px; font-weight: 600; flex: 1; }
+    .cbc-modal-close {
+      background: none; border: none; color: rgba(255,255,255,.8);
+      font-size: 20px; cursor: pointer; line-height: 1; padding: 0 2px;
+    }
+    .cbc-modal-body { flex: 1; overflow-y: auto; padding: 18px; }
+    .cbc-field-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+      margin-bottom: 14px;
+    }
+    .cbc-field { display: flex; flex-direction: column; gap: 4px; }
+    .cbc-field label {
+      font-size: 11px; font-weight: 600; color: var(--text-02);
+      text-transform: uppercase; letter-spacing: .04em;
+    }
+    .cbc-field input {
+      border: 1px solid var(--ui-03); background: var(--ui-01);
+      font-family: inherit; font-size: 14px; padding: 8px 10px;
+      outline: none; transition: border-color .15s;
+    }
+    .cbc-field input:focus { border-color: var(--brand-01); background: #fff; }
+    .cbc-field input.err   { border-color: var(--danger); }
+    .cbc-field-full { grid-column: 1 / -1; }
+    .cbc-divider {
+      grid-column: 1 / -1;
+      border: none; border-top: 1px solid var(--ui-03); margin: 2px 0;
+    }
+    .cbc-required { color: var(--danger); }
+    .cbc-submit {
+      width: 100%; background: var(--brand-01); color: #fff; border: none;
+      font-family: inherit; font-size: 14px; font-weight: 600;
+      padding: 12px; cursor: pointer; transition: background .15s; margin-top: 4px;
+    }
+    .cbc-submit:hover { background: var(--brand-02); }
+    .cbc-submit:disabled { background: var(--ui-03); cursor: not-allowed; }
+    .cbc-result {
+      background: var(--ui-01); border-left: 3px solid var(--brand-01);
+      padding: 12px 14px; margin-top: 14px; font-size: 13px; line-height: 1.7;
+    }
+    .cbc-result-risk-low    { color: var(--success); font-weight: 700; }
+    .cbc-result-risk-medium { color: #b28600;        font-weight: 700; }
+    .cbc-result-risk-high   { color: var(--danger);  font-weight: 700; }
+
+    /* ── Dengue screening banner (CBC widget) ── */
+    .dengue-banner {
+      margin: 0 16px 8px;
+      border-radius: 4px;
+      padding: 8px 12px;
+      font-size: 12px;
+      display: flex; align-items: flex-start; gap: 8px;
+      border-left: 3px solid;
+    }
+    .dengue-banner-icon { font-size: 16px; flex-shrink: 0; line-height: 1.4; }
+    .dengue-banner-body { flex: 1; min-width: 0; }
+    .dengue-banner-label { font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
+    .dengue-banner-detail { color: var(--text-02); margin-top: 2px; line-height: 1.5; }
+    .dengue-banner-date { color: var(--text-03); font-size: 11px; margin-top: 2px; }
+    .dengue-banner.unlikely  { background:#f0faf4; border-color:#198038; color:#198038; }
+    .dengue-banner.possible  { background:#fff8e1; border-color:#b28600; color:#b28600; }
+    .dengue-banner.likely    { background:#fff3e0; border-color:#e67300; color:#e67300; }
+    .dengue-banner.very_likely { background:#fff1f1; border-color:#da1e28; color:#da1e28; }
+
     /* ── Toast notification ── */
     .toast {
       position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
@@ -1212,25 +1500,30 @@
     </div>
   </div>
 
-  <p class="login-prompt">Bạn đang đăng nhập với tư cách:</p>
-
-  <div class="role-cards">
-    <div class="role-card" onclick="enterRole('patient')">
-      <span class="role-icon">🧑‍💼</span>
-      <h2>Bệnh nhân</h2>
-      <p>Đặt lịch khám, tư vấn triệu chứng, tra cứu thông tin</p>
-      <button class="role-btn">Tiếp tục →</button>
-    </div>
-    <div class="role-card" onclick="enterRole('doctor')">
-      <span class="role-icon">👨‍⚕️</span>
-      <h2>Bác sĩ / Nhân viên</h2>
-      <p>Xem lịch hẹn, tra cứu hồ sơ, quản lý bệnh nhân</p>
-      <button class="role-btn">Tiếp tục →</button>
+  <div id="login-form-wrap">
+    <p class="login-prompt">Đăng nhập bằng số điện thoại</p>
+    <div class="login-field-wrap">
+      <!-- Bước 1: nhập SĐT -->
+      <div id="login-step1">
+        <input id="login-phone" type="tel" class="login-input" placeholder="Số điện thoại (VD: 0912345678)" maxlength="11">
+        <p id="login-error" class="login-error hidden"></p>
+        <button class="login-submit-btn" onclick="_doCheckPhone()">Tiếp tục</button>
+      </div>
+      <!-- Bước 2: nhập mật khẩu (chỉ hiện khi đã có tài khoản) -->
+      <div id="login-step2" class="hidden">
+        <p id="login-greeting" class="login-info" style="margin-bottom:10px"></p>
+        <input id="login-password" type="password" class="login-input" placeholder="Mật khẩu">
+        <p id="login-error2" class="login-error hidden"></p>
+        <button class="login-submit-btn" onclick="_doLoginStep2()">Đăng nhập</button>
+        <p class="login-register-link"><a href="#" onclick="_backToStep1()">← Đổi số điện thoại</a></p>
+      </div>
+      <div class="login-divider"><span>hoặc</span></div>
+      <button class="login-guest-btn" onclick="_enterAsGuest()">Tiếp tục với tư cách khách</button>
     </div>
   </div>
 </div>
 
-<!-- ════ MÀNG 1b: CHỌN BÁC SĨ ════ -->
+<!-- ════ MÀNG 1b: CHỌN BÁC SĨ (giữ lại cho compatibility) ════ -->
 <div id="screen-select-doctor" class="hidden">
   <div class="select-doc-header">
     <h2>Chọn bác sĩ / Nhân viên</h2>
@@ -1363,76 +1656,89 @@
 
     <!-- Main content -->
     <main class="doc-main">
+      <!-- Patient Banner (hiện khi chọn bệnh nhân) -->
+      <div id="patient-banner" class="patient-banner hidden">
+        <div class="pb-avatar" id="pb-avatar">BN</div>
+        <div class="pb-info">
+          <div class="pb-name" id="pb-name">—</div>
+          <div class="pb-meta" id="pb-meta">—</div>
+        </div>
+        <div class="pb-vitals">
+          <div class="pb-vital"><strong id="pb-bp">—</strong><span>Huyết áp</span></div>
+          <div class="pb-vital"><strong id="pb-pulse">—</strong><span>Mạch</span></div>
+          <div class="pb-vital"><strong id="pb-spo2">—</strong><span>SpO₂</span></div>
+        </div>
+        <button class="pb-close-patient"
+          onclick="document.getElementById('patient-banner').classList.add('hidden')">✕ Đóng hồ sơ</button>
+      </div>
+
       <!-- Page header -->
       <div class="doc-page-header">
         <div class="page-label">Phòng khám</div>
         <h2 id="doc-page-title">Dashboard</h2>
       </div>
 
-      <!-- Swappable content area -->
-      <div id="doc-content" class="doc-content"></div>
-
-      <!-- Pending appointments panel -->
-      <div class="pending-panel" id="pending-panel">
-        <div class="pending-panel-header" id="pending-panel-header" onclick="togglePendingPanel()">
-          <span class="pending-panel-title">Lịch hẹn chờ xác nhận</span>
-          <span class="pending-panel-count hidden" id="pending-panel-count">0</span>
-          <span class="pending-panel-chevron" id="pending-panel-chevron">▼</span>
-        </div>
-        <div class="pending-panel-body" id="pending-panel-body">
-          <div class="pending-empty">Đang tải...</div>
-        </div>
-      </div>
-
-      <!-- AI Chat panel -->
-      <div class="doc-chat-section">
-        <div class="doc-chat-header">
-          <h3>Trợ lý AI</h3>
-          <div style="display:flex;gap:8px">
-            <button class="clear-btn" onclick="toggleHistory()" style="background:var(--brand-03)">☰ Lịch sử</button>
-            <button class="clear-btn" onclick="clearDocChat()">Hội thoại mới</button>
+      <!-- Scrollable content -->
+      <div class="doc-scroll">
+        <div id="doc-content" class="doc-content"></div>
+        <div class="pending-panel" id="pending-panel">
+          <div class="pending-panel-header" id="pending-panel-header" onclick="togglePendingPanel()">
+            <span class="pending-panel-title">Lịch hẹn chờ xác nhận</span>
+            <span class="pending-panel-count hidden" id="pending-panel-count">0</span>
+            <span class="pending-panel-chevron" id="pending-panel-chevron">▼</span>
           </div>
-        </div>
-
-
-        <div class="doc-messages" id="d-messages">
-          <div class="welcome" id="d-welcome" style="padding:32px 16px;">
-            <div class="welcome-icon" style="width:48px;height:48px;font-size:20px;">🤖</div>
-            <h2 style="font-size:16px;">Trợ lý dành cho bác sĩ</h2>
-            <p style="font-size:13px;">Tra cứu hồ sơ, xem xét nghiệm, kiểm tra lịch hẹn bệnh nhân.</p>
-            <div class="chips">
-              <button class="chip" onclick="fillD('Tìm hồ sơ bệnh nhân Nguyễn Văn An')">Tìm hồ sơ bệnh nhân</button>
-              <button class="chip" onclick="fillD('Xem kết quả xét nghiệm bệnh nhân')">Kết quả xét nghiệm</button>
-              <button class="chip" onclick="fillD('Lịch hẹn còn trống khoa Tim Mạch hôm nay')">Lịch trống Tim Mạch</button>
-              <button class="chip" onclick="fillD('Danh sách khoa khám bệnh')">Danh sách khoa</button>
-            </div>
+          <div class="pending-panel-body" id="pending-panel-body">
+            <div class="pending-empty">Đang tải...</div>
           </div>
-        </div>
-
-        <div class="doc-input-bar">
-          <input type="file" id="d-file-input" accept="image/*,.pdf" style="display:none"
-            onchange="handleDoctorFileSelect(this)">
-          <div id="d-img-preview" class="img-preview-strip" style="display:none">
-            <img id="d-img-thumb" src="" alt="preview">
-            <span class="img-name" id="d-img-name"></span>
-            <button class="img-remove" onclick="clearDoctorImage()" title="Xóa ảnh">×</button>
-          </div>
-          <div class="input-wrap">
-            <button class="attach-btn" onclick="document.getElementById('d-file-input').click()" title="Đính kèm ảnh xét nghiệm">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66L9.41 17.41a2 2 0 01-2.83-2.83l8.49-8.48"/>
-              </svg>
-            </button>
-            <textarea id="d-input" class="chat-input" rows="1"
-              placeholder="Nhập tên bệnh nhân, hỏi xét nghiệm, hoặc đính kèm ảnh CBC..."></textarea>
-            <button id="d-send" class="send-btn" onclick="sendMsg('doctor')">
-              <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
-            </button>
-          </div>
-          <div class="input-hint">Enter gửi · Shift+Enter xuống dòng · 📎 đính kèm ảnh xét nghiệm</div>
         </div>
       </div>
     </main>
+
+    <!-- Workspace: Trợ lý AI (OpenMRS O3 style — cột phải cố định) -->
+    <aside class="workspace">
+      <div class="workspace-header">
+        <h3>Trợ lý AI</h3>
+        <div style="display:flex;gap:6px">
+          <button class="clear-btn" onclick="toggleHistory()">☰</button>
+          <button class="clear-btn" onclick="clearDocChat()">Mới</button>
+        </div>
+      </div>
+      <div class="doc-messages" id="d-messages">
+        <div class="welcome" id="d-welcome" style="padding:32px 16px;">
+          <div class="welcome-icon" style="width:48px;height:48px;font-size:20px;">🤖</div>
+          <h2 style="font-size:16px;">Trợ lý dành cho bác sĩ</h2>
+          <p style="font-size:13px;">Tra cứu hồ sơ, xem xét nghiệm, kiểm tra lịch hẹn bệnh nhân.</p>
+          <div class="chips">
+            <button class="chip" onclick="fillD('Tìm hồ sơ bệnh nhân Nguyễn Văn An')">Tìm hồ sơ bệnh nhân</button>
+            <button class="chip" onclick="fillD('Xem kết quả xét nghiệm bệnh nhân')">Kết quả xét nghiệm</button>
+            <button class="chip" onclick="fillD('Lịch hẹn còn trống khoa Tim Mạch hôm nay')">Lịch trống Tim Mạch</button>
+            <button class="chip" onclick="fillD('Danh sách khoa khám bệnh')">Danh sách khoa</button>
+          </div>
+        </div>
+      </div>
+      <div class="doc-input-bar">
+        <input type="file" id="d-file-input" accept="image/*,.pdf" style="display:none"
+          onchange="handleDoctorFileSelect(this)">
+        <div id="d-img-preview" class="img-preview-strip" style="display:none">
+          <img id="d-img-thumb" src="" alt="preview">
+          <span class="img-name" id="d-img-name"></span>
+          <button class="img-remove" onclick="clearDoctorImage()" title="Xóa ảnh">×</button>
+        </div>
+        <div class="input-wrap">
+          <button class="attach-btn" onclick="document.getElementById('d-file-input').click()" title="Đính kèm ảnh xét nghiệm">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66L9.41 17.41a2 2 0 01-2.83-2.83l8.49-8.48"/>
+            </svg>
+          </button>
+          <textarea id="d-input" class="chat-input" rows="1"
+            placeholder="Nhập tên bệnh nhân, hỏi xét nghiệm, hoặc đính kèm ảnh CBC..."></textarea>
+          <button id="d-send" class="send-btn" onclick="sendMsg('doctor')">
+            <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+          </button>
+        </div>
+        <div class="input-hint">Enter gửi · Shift+Enter xuống dòng · 📎 ảnh xét nghiệm</div>
+      </div>
+    </aside>
   </div>
 
   <!-- Patient slide-over -->
@@ -1469,6 +1775,127 @@
       loadPractitioners();
     }
   }
+
+  // ── Login 2 bước ──
+  let _loginPhone = '';
+  let _loginData  = null;
+
+  function _backToStep1() {
+    document.getElementById('login-step1').classList.remove('hidden');
+    document.getElementById('login-step2').classList.add('hidden');
+    document.getElementById('login-first-time')?.classList.add('hidden');
+    document.getElementById('login-error').classList.add('hidden');
+    document.getElementById('login-phone').focus();
+  }
+
+  async function _doCheckPhone() {
+    const phone = document.getElementById('login-phone').value.trim();
+    const errEl = document.getElementById('login-error');
+    errEl.classList.add('hidden');
+    if (!phone) { errEl.textContent = 'Vui lòng nhập số điện thoại.'; errEl.classList.remove('hidden'); return; }
+
+    try {
+      const res  = await fetch('/api/login', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ phone, password: '' }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        errEl.textContent = data.detail || 'Không tìm thấy số điện thoại.';
+        errEl.classList.remove('hidden'); return;
+      }
+
+      _loginPhone = phone;
+      _loginData  = data;
+
+      if (data.status === 'ok') {
+        // Lần đầu — vào luôn
+        _enterPortal(data);
+      } else if (data.status === 'need_password') {
+        // Đã có tài khoản — yêu cầu mật khẩu
+        document.getElementById('login-step1').classList.add('hidden');
+        document.getElementById('login-greeting').textContent = `Xin chào, ${data.name}!`;
+        document.getElementById('login-step2').classList.remove('hidden');
+        document.getElementById('login-password').value = '';
+        document.getElementById('login-password').focus();
+      }
+    } catch(e) {
+      errEl.textContent = 'Lỗi: ' + (e && e.message ? e.message : String(e));
+      errEl.classList.remove('hidden');
+      console.error('[login step1]', e);
+    }
+  }
+
+  async function _doLoginStep2() {
+    const password = document.getElementById('login-password').value;
+    const errEl    = document.getElementById('login-error2');
+    errEl.classList.add('hidden');
+    if (!password) { errEl.textContent = 'Vui lòng nhập mật khẩu.'; errEl.classList.remove('hidden'); return; }
+
+    try {
+      const res  = await fetch('/api/login', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ phone: _loginPhone, password }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        errEl.textContent = data.detail || 'Mật khẩu không đúng.';
+        errEl.classList.remove('hidden'); return;
+      }
+      _enterPortal(data);
+    } catch(e) {
+      errEl.textContent = 'Lỗi: ' + (e && e.message ? e.message : String(e));
+      errEl.classList.remove('hidden');
+      console.error('[login]', e);
+    }
+  }
+
+  function _enterAfterFirstLogin() {
+    _enterPortal(_loginData);
+  }
+
+  function _enterPortal(data) {
+    document.getElementById('login-phone').value = '';
+    document.getElementById('login-step1').classList.remove('hidden');
+    document.getElementById('login-step2').classList.add('hidden');
+    document.getElementById('login-first-time')?.classList.add('hidden');
+    if (data.role === 'doctor') {
+      role = 'doctor';
+      currentDoctor = { id: data.id, name: data.name };
+      show('screen-doctor');
+      _initDoctorSession();
+      _startPendingPoll();
+    } else {
+      role = 'patient';
+      show('screen-patient');
+      document.getElementById('p-input').focus();
+    }
+  }
+
+  function _initDoctorSession() {
+    if (currentDoctor) {
+      const nameEl = document.getElementById('doc-name');
+      if (nameEl) nameEl.textContent = currentDoctor.name || '';
+    }
+  }
+
+  function _enterAsGuest() {
+    role = 'patient';
+    show('screen-patient');
+    document.getElementById('p-input').focus();
+  }
+
+  // Enter key để submit login
+  document.addEventListener('keydown', function(e) {
+    if (e.key !== 'Enter') return;
+    const step1 = document.getElementById('login-step1');
+    const step2 = document.getElementById('login-step2');
+    if (step1 && !step1.classList.contains('hidden')) _doCheckPhone();
+    else if (step2 && !step2.classList.contains('hidden')) _doLoginStep2();
+  });
 
   function logout() {
     role = null;
@@ -1659,7 +2086,7 @@
         <div class="data-table-wrap">
           <table class="data-table">
             <thead><tr><th>Giờ</th><th>Bệnh nhân</th><th>Khoa</th>
-              <th>Bác sĩ</th><th>Trạng thái</th><th>Lý do</th></tr></thead>
+              <th>Bác sĩ</th><th>Trạng thái</th><th>Lý do</th><th>Hành động</th></tr></thead>
             <tbody id="appt-tbody">${skeletonRows(6)}</tbody>
           </table>
         </div>`;
@@ -1832,7 +2259,7 @@
       window._apptData = data.appointments || [];
       renderAppointmentRows(window._apptData);
     } catch (e) {
-      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--danger);padding:16px">Lỗi tải dữ liệu: ${e.message}</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--danger);padding:16px">Lỗi tải dữ liệu: ${e.message}</td></tr>`;
     }
   }
 
@@ -1843,15 +2270,22 @@
       tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-03);padding:20px">Không có lịch hẹn</td></tr>';
       return;
     }
-    tbody.innerHTML = rows.map(a => `
-      <tr>
-        <td>${a.start.slice(11, 16) || '--'}</td>
+    tbody.innerHTML = rows.map(a => {
+      const safeId = (a.id || '').replace(/'/g, '');
+      const actions = (a.status === 'proposed' || a.status === 'PROPOSED')
+        ? `<button class="pending-confirm-btn" style="padding:4px 10px;font-size:12px;" onclick="confirmAppointment('${safeId}', this)">✓ Duyệt</button>
+           <button class="pending-reject-btn"  style="padding:4px 10px;font-size:12px;margin-left:4px;" onclick="rejectAppointment('${safeId}', this)">✗ Từ chối</button>`
+        : `<button class="tb-btn" style="padding:4px 10px;font-size:12px;" onclick="openApptDetail('${safeId}')">Chi tiết</button>`;
+      return `<tr>
+        <td>${a.start ? a.start.slice(11,16) : '--'}</td>
         <td>${a.patient_name || '—'}</td>
         <td>${a.department || '—'}</td>
         <td>${a.practitioner || '—'}</td>
         <td>${statusBadge(a.status)}</td>
         <td style="color:var(--text-02)">${a.reason || ''}</td>
-      </tr>`).join('');
+        <td>${actions}</td>
+      </tr>`;
+    }).join('');
   }
 
   function filterAppointments() {
@@ -2311,6 +2745,318 @@
   }
 
   /* ── Patient slide-over panel ── */
+  /* ══════════════════════════════════
+     CBC WIDGET
+  ══════════════════════════════════ */
+  const CBC_PARAMS = [
+    'Bạch cầu (WBC)','Hồng cầu (RBC)','Hemoglobin',
+    'Hematocrit','Tiểu cầu (PLT)','MCV','MCH','MCHC',
+    'Neutrophil %','Lymphocyte %',
+  ];
+  const CBC_SHORT = {
+    'Bạch cầu (WBC)':'WBC', 'Hồng cầu (RBC)':'RBC',
+    'Hemoglobin':'HGB',      'Hematocrit':'HCT',
+    'Tiểu cầu (PLT)':'PLT',  'MCV':'MCV',
+    'MCH':'MCH',              'MCHC':'MCHC',
+    'Neutrophil %':'Neu%',   'Lymphocyte %':'Lym%',
+  };
+
+  let _cbcChart = null;
+  let _cbcData  = { byDate:{}, byParam:{}, dates:[], params:[] };
+  let _cbcGender = 'Nam';
+  let _cbcViewMode = 'table';
+  let _cbcCurrentPatientId = '';
+
+  async function _loadCbc(patientId, gender) {
+    _cbcGender           = gender;
+    _cbcViewMode         = 'table';
+    _cbcCurrentPatientId = patientId;
+    const body = document.getElementById('cbc-body');
+    if (!body) return;
+    try {
+      const [obsRes, dengueRes] = await Promise.all([
+        fetch(`/api/observations?patient_id=${patientId}&category=laboratory&_count=100`).then(r => r.json()),
+        fetch(`/api/dengue/${patientId}`).then(r => r.json()).catch(() => null),
+      ]);
+      _cbcProcess(obsRes.observations || []);
+      _cbcRender();
+      _renderDengueBanner(dengueRes);
+    } catch(e) {
+      if (document.getElementById('cbc-body'))
+        document.getElementById('cbc-body').innerHTML =
+          `<p class="pp-empty" style="padding:12px 16px">Không tải được dữ liệu CBC</p>`;
+    }
+  }
+
+  function _renderDengueBanner(data) {
+    const el = document.getElementById('dengue-banner');
+    if (!el) return;
+    if (!data || !data.available) { el.style.display = 'none'; return; }
+    const s = data.screening || {};
+    const likelihood = s.dengue_likelihood || '';
+    if (!likelihood || likelihood === 'unknown') { el.style.display = 'none'; return; }
+
+    const icons = { very_likely: '🔴', likely: '🟠', possible: '🟡', unlikely: '🟢' };
+    const labels = {
+      very_likely: 'Rất có thể SXHD',
+      likely:      'Có thể SXHD',
+      possible:    'Nghi ngờ SXHD',
+      unlikely:    'Ít khả năng SXHD',
+    };
+    const cbc = data.cbc_used || {};
+    const cbcText = [
+      cbc.plt != null ? `PLT ${cbc.plt}` : '',
+      cbc.wbc != null ? `WBC ${cbc.wbc}` : '',
+      cbc.hct != null ? `HCT ${cbc.hct}%` : '',
+    ].filter(Boolean).join(' · ');
+
+    const findings = (s.findings || []).slice(0, 2).join('; ');
+    const detail   = findings || s.interpretation || '';
+
+    el.className  = `dengue-banner ${likelihood}`;
+    el.style.display = '';
+    el.innerHTML  = `
+      <span class="dengue-banner-icon">${icons[likelihood] || '🦟'}</span>
+      <div class="dengue-banner-body">
+        <div class="dengue-banner-label">Sàng lọc SXHD · ${labels[likelihood] || likelihood}</div>
+        ${detail ? `<div class="dengue-banner-detail">${detail}</div>` : ''}
+        <div class="dengue-banner-date">${cbcText}${data.obs_date ? ' · ' + data.obs_date : ''}</div>
+      </div>`;
+  }
+
+  function _cbcProcess(obs) {
+    const byDate = {}, byParam = {};
+    for (const o of obs) {
+      if (!CBC_PARAMS.includes(o.name)) continue;
+      if (!byDate[o.date]) byDate[o.date] = {};
+      byDate[o.date][o.name] = { value: o.value, unit: o.unit };
+      if (!byParam[o.name]) byParam[o.name] = [];
+      byParam[o.name].push({ date: o.date, value: o.value });
+    }
+    const dates  = Object.keys(byDate).sort((a,b) => b.localeCompare(a));
+    const params = CBC_PARAMS.filter(p => byParam[p]?.length);
+    _cbcData = { byDate, byParam, dates, params };
+  }
+
+  function _cbcCls(name, value) {
+    const s = valStatus(name, value, _cbcGender);
+    if (!s) return 'cbc-n';
+    return s.cls === 'danger' ? 'cbc-d' : s.cls === 'warning' ? 'cbc-w' : 'cbc-n';
+  }
+  function _cbcArrow(name, value) {
+    const s = valStatus(name, value, _cbcGender);
+    return (!s || s.cls === 'normal') ? '' : ' ' + s.arrow;
+  }
+
+  function _cbcToggle(view) {
+    _cbcViewMode = view;
+    document.getElementById('cbc-btn-tbl')?.classList.toggle('active', view === 'table');
+    document.getElementById('cbc-btn-cht')?.classList.toggle('active', view === 'chart');
+    _cbcRender();
+  }
+
+  function _cbcRender() {
+    const body = document.getElementById('cbc-body');
+    if (!body) return;
+    if (!_cbcData.dates.length) {
+      body.innerHTML = `<p class="pp-empty" style="padding:12px 16px">Không có dữ liệu CBC</p>`;
+      return;
+    }
+    _cbcViewMode === 'table' ? _cbcRenderTable(body) : _cbcRenderChartView(body);
+  }
+
+  function _cbcRenderTable(body, showAll = false) {
+    const { dates, params, byDate } = _cbcData;
+    const LIMIT = 5;
+    const visibleDates = showAll ? dates : dates.slice(0, LIMIT);
+    const heads = params.map(p => `<th title="${p}">${CBC_SHORT[p]||p}</th>`).join('');
+    const rows  = visibleDates.map(d => {
+      const dateFmt = d.slice(5).replace('-','/') + ' <span style="color:var(--text-03)">' + d.slice(2,4) + '</span>';
+      const cells = params.map(p => {
+        const e = byDate[d]?.[p];
+        if (!e || e.value === '') return `<td>—</td>`;
+        const cls = _cbcCls(p, e.value);
+        return `<td class="${cls}">${e.value}${_cbcArrow(p, e.value)}</td>`;
+      }).join('');
+      return `<tr><td>${dateFmt}</td>${cells}</tr>`;
+    }).join('');
+    const footer = (!showAll && dates.length > LIMIT)
+      ? `<tr><td colspan="${params.length+1}" style="text-align:center;padding:6px">
+           <a href="#" onclick="event.preventDefault();_cbcRenderTable(document.getElementById('cbc-body'),true)"
+             style="font-size:11px;color:var(--brand-01)">
+             Xem tất cả ${dates.length} kết quả →
+           </a></td></tr>`
+      : '';
+    body.innerHTML = `
+      <div class="cbc-tbl-wrap">
+        <table class="cbc-tbl">
+          <thead><tr><th>Ngày</th>${heads}</tr></thead>
+          <tbody>${rows}${footer}</tbody>
+        </table>
+      </div>`;
+  }
+
+  function _cbcRenderChartView(body) {
+    const { params } = _cbcData;
+    const items = params.map((p,i) =>
+      `<div class="cbc-param-item${i===0?' active':''}"
+        onclick="_cbcParamClick(this,'${p}')">${CBC_SHORT[p]||p}</div>`
+    ).join('');
+    body.innerHTML = `
+      <div class="cbc-chart-layout">
+        <div class="cbc-param-list">${items}</div>
+        <div class="cbc-chart-area">
+          <canvas id="cbc-canvas" style="max-height:190px"></canvas>
+        </div>
+      </div>`;
+    if (params[0]) _cbcDrawChart(params[0]);
+  }
+
+  function _cbcParamClick(el, name) {
+    el.closest('.cbc-param-list').querySelectorAll('.cbc-param-item')
+      .forEach(e => e.classList.remove('active'));
+    el.classList.add('active');
+    _cbcDrawChart(name);
+  }
+
+  function _cbcDrawChart(name) {
+    const canvas = document.getElementById('cbc-canvas');
+    if (!canvas) return;
+    if (_cbcChart) { _cbcChart.destroy(); _cbcChart = null; }
+    const entries = (_cbcData.byParam[name] || []).slice().sort((a,b) => a.date.localeCompare(b.date));
+    const labels  = entries.map(e => e.date.slice(5).replace('-','/'));
+    const values  = entries.map(e => parseFloat(e.value));
+    const ref     = REFS[name] || REFS[name+'_'+_cbcGender] || {};
+    _cbcChart = new Chart(canvas.getContext('2d'), {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          label: CBC_SHORT[name] || name,
+          data: values,
+          borderColor: '#005d5d',
+          backgroundColor: 'rgba(0,93,93,.06)',
+          tension: 0.3, fill: false,
+          pointRadius: 5, pointHoverRadius: 7,
+          pointBackgroundColor: values.map(v => {
+            const s = valStatus(name, String(v), _cbcGender);
+            if (!s) return '#005d5d';
+            return s.cls==='danger'?'#da1e28':s.cls==='warning'?'#b28600':'#198038';
+          }),
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { font:{size:10} } },
+          y: {
+            ticks: { font:{size:10} },
+            suggestedMin: ref.low  ? ref.low  * 0.85 : undefined,
+            suggestedMax: ref.high ? ref.high * 1.15 : undefined,
+          }
+        }
+      }
+    });
+  }
+
+  /* ── CBC Input Modal ── */
+  let _cbcModalPatientId   = '';
+  let _cbcModalPatientName = '';
+
+  function openCbcModal(patientId, patientName) {
+    _cbcModalPatientId   = patientId;
+    _cbcModalPatientName = patientName;
+    document.getElementById('cbc-modal-pname').textContent = patientName;
+    document.getElementById('cbc-modal-result').style.display = 'none';
+    document.getElementById('cbc-modal-result').innerHTML = '';
+    // Reset form
+    ['plt','wbc','hct','hgb','ast','alt','fever-day'].forEach(id => {
+      const el = document.getElementById('cbc-' + id);
+      if (el) { el.value = ''; el.classList.remove('err'); }
+    });
+    // Default datetime = now (local)
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    document.getElementById('cbc-collected-at').value = now.toISOString().slice(0,16);
+    document.getElementById('cbc-submit-btn').disabled = false;
+    document.getElementById('cbc-submit-btn').textContent = 'Lưu kết quả CBC';
+    document.getElementById('cbc-modal-overlay').classList.remove('hidden');
+  }
+
+  function closeCbcModal() {
+    document.getElementById('cbc-modal-overlay').classList.add('hidden');
+  }
+
+  async function submitCbc() {
+    const pltEl = document.getElementById('cbc-plt');
+    pltEl.classList.remove('err');
+    const plt = parseFloat(pltEl.value);
+    if (isNaN(plt)) { pltEl.classList.add('err'); pltEl.focus(); return; }
+
+    const btn = document.getElementById('cbc-submit-btn');
+    btn.disabled = true;
+    btn.textContent = 'Đang lưu...';
+
+    const body = { patient_id: _cbcModalPatientId, plt };
+    const fields = { wbc:'cbc-wbc', hct:'cbc-hct', hgb:'cbc-hgb',
+                     ast:'cbc-ast', alt:'cbc-alt', fever_day:'cbc-fever-day' };
+    for (const [key, id] of Object.entries(fields)) {
+      const v = parseFloat(document.getElementById(id).value);
+      if (!isNaN(v)) body[key] = v;
+    }
+    const ca = document.getElementById('cbc-collected-at').value;
+    if (ca) body.collected_at = ca + ':00+07:00';
+
+    try {
+      const r   = await fetch('/api/cbc', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const res = await r.json();
+      if (!r.ok) throw new Error(res.detail || 'Lỗi lưu CBC');
+
+      btn.textContent = '✓ Đã lưu';
+      _showCbcResult(res);
+      _loadCbc(_cbcModalPatientId, _cbcGender);
+    } catch(e) {
+      btn.disabled = false;
+      btn.textContent = 'Lưu kết quả CBC';
+      const rd = document.getElementById('cbc-modal-result');
+      rd.style.display = 'block';
+      rd.innerHTML = `<div style="color:var(--danger);font-size:13px">⚠ ${e.message}</div>`;
+    }
+  }
+
+  function _showCbcResult(res) {
+    const rd = document.getElementById('cbc-modal-result');
+    rd.style.display = 'block';
+    const ds = res.dengue_screening || {};
+    const risk = (ds.risk_level || '').toLowerCase();
+    const riskCls = risk === 'high' ? 'cbc-result-risk-high'
+                  : risk === 'medium' ? 'cbc-result-risk-medium'
+                  : 'cbc-result-risk-low';
+    const riskVI  = risk === 'high' ? 'NGUY CƠ CAO'
+                  : risk === 'medium' ? 'NGUY CƠ TRUNG BÌNH'
+                  : risk === 'low' ? 'NGUY CƠ THẤP' : '';
+
+    const saved = Object.entries(res.cbc_saved || {})
+      .map(([k,v]) => `<span style="margin-right:10px"><strong>${k}</strong> ${v}</span>`).join('');
+
+    rd.innerHTML = `
+      <div class="cbc-result">
+        <div style="font-size:12px;color:var(--text-03);margin-bottom:4px">
+          ✓ Đã lưu CBC — ${res.observation_date || ''}
+        </div>
+        <div style="margin-bottom:8px;flex-wrap:wrap;display:flex;gap:4px">${saved}</div>
+        ${riskVI ? `<div style="font-size:13px">Sàng lọc SXHD:
+          <span class="${riskCls}">${riskVI}</span>
+          ${ds.recommendation ? `<div style="font-size:12px;color:var(--text-02);margin-top:4px">${ds.recommendation}</div>` : ''}
+        </div>` : ''}
+      </div>`;
+  }
+
   function openPatientPanel(patientId) {
     const panel    = document.getElementById('patient-panel');
     const backdrop = document.getElementById('panel-backdrop');
@@ -2342,26 +3088,86 @@
       });
   }
 
+  // ── Ngưỡng tham chiếu (tên theo _LOINC_VI) ──
+  const REFS = {
+    // Sinh hiệu
+    'HA tâm thu':       { low:90,  high:120, warnHigh:139, dangerHigh:180 },
+    'HA tâm trương':    { low:60,  high:80,  warnHigh:89,  dangerHigh:120 },
+    'Nhịp tim':         { low:60,  high:100, dangerLow:40,  dangerHigh:150 },
+    'Nhịp thở':         { low:12,  high:20,  warnHigh:24 },
+    'Nhiệt độ':         { low:36.1,high:37.2,warnHigh:38,  dangerHigh:39 },
+    'SpO2':             { low:95,  high:100, warnLow:91,   dangerLow:90 },
+    'BMI':              { low:18.5,high:22.9,warnHigh:27.5 },
+    // Sinh hóa
+    'Glucose máu':      { low:3.9, high:6.1, warnHigh:6.9, dangerLow:3.0, dangerHigh:11 },
+    'HbA1c':            { low:0,   high:5.6, warnHigh:6.4 },
+    'Cholesterol TP':   { low:0,   high:5.2, warnHigh:6.2 },
+    'Ure':              { low:2.5, high:7.5 },
+    'Creatinine_Nam':   { low:62,  high:115 },
+    'Creatinine_Nữ':    { low:44,  high:97  },
+    // CBC — phân biệt giới tính cho RBC, HGB, HCT
+    'Bạch cầu (WBC)':   { low:4.5, high:11.0, dangerLow:2.0, dangerHigh:30 },
+    'Hồng cầu (RBC)_Nam':{ low:4.5,high:5.9,  dangerLow:3.0 },
+    'Hồng cầu (RBC)_Nữ': { low:4.0,high:5.2,  dangerLow:2.5 },
+    'Hemoglobin_Nam':   { low:13.5,high:17.5, dangerLow:7.0,  dangerHigh:20 },
+    'Hemoglobin_Nữ':    { low:12.0,high:15.5, dangerLow:7.0,  dangerHigh:20 },
+    'Hematocrit_Nam':   { low:41,  high:53 },
+    'Hematocrit_Nữ':    { low:36,  high:46 },
+    'Tiểu cầu (PLT)':   { low:150, high:400, dangerLow:50,   dangerHigh:1000 },
+    'MCV':              { low:80,  high:100 },
+    'MCH':              { low:27,  high:33 },
+    'MCHC':             { low:32,  high:36 },
+    'Neutrophil %':     { low:50,  high:70 },
+    'Lymphocyte %':     { low:20,  high:40 },
+  };
+
+  const GENDER_SPLIT = ['Creatinine','Hồng cầu (RBC)','Hemoglobin','Hematocrit'];
+  function valStatus(name, value, gender) {
+    const base = GENDER_SPLIT.find(n => name.startsWith(n));
+    const key  = base ? `${base}_${gender}` : name;
+    const ref = REFS[key];
+    if (!ref) return null;
+    const v = parseFloat(value);
+    if (isNaN(v)) return null;
+    if (ref.dangerLow  !== undefined && v <= ref.dangerLow)  return { cls:'danger',  arrow:'↓↓' };
+    if (ref.dangerHigh !== undefined && v >= ref.dangerHigh) return { cls:'danger',  arrow:'↑↑' };
+    if (ref.warnLow    !== undefined && v <  ref.warnLow)    return { cls:'warning', arrow:'↓' };
+    if (ref.warnHigh   !== undefined && v >  ref.warnHigh)   return { cls:'warning', arrow:'↑' };
+    if (ref.low        !== undefined && v <  ref.low)        return { cls:'warning', arrow:'↓' };
+    if (ref.high       !== undefined && v >  ref.high)       return { cls:'warning', arrow:'↑' };
+    return { cls:'normal', arrow:'✓' };
+  }
+
   function renderPatientPanel(d) {
     const STATUS_VI = { booked: 'Đã xác nhận', fulfilled: 'Đã khám', cancelled: 'Đã hủy', noshow: 'Vắng mặt', pending: 'Chờ xác nhận' };
     const STATUS_CL = { booked: '#198038', fulfilled: '#525252', cancelled: '#da1e28', noshow: '#b28600' };
 
+    const initials = d.name
+      ? d.name.trim().split(/\s+/).slice(-2).map(w => w[0]).join('').toUpperCase()
+      : '?';
     const metaParts = [d.gender, d.age ? d.age + ' tuổi' : '', d.birth_date ? d.birth_date.split('-').reverse().join('/') : '', d.phone].filter(Boolean);
 
+    function obsRow(v) {
+      const s = valStatus(v.name, v.value, d.gender);
+      const badge = s ? `<span class="val-badge val-${s.cls}">${s.arrow}</span>` : '';
+      const valCls = s ? `val-text-${s.cls}` : '';
+      return `
+        <div class="pp-row">
+          <span class="pp-row-label">${v.name}</span>
+          <span style="display:flex;align-items:center;gap:5px">
+            ${badge}
+            <span class="pp-row-val ${valCls}">${v.value} ${v.unit}</span>
+            <span class="pp-row-date">${v.date?.slice(5).replace('-','/')}</span>
+          </span>
+        </div>`;
+    }
+
     const vitalsHTML = d.vitals?.length
-      ? d.vitals.map(v => `
-          <div class="pp-row">
-            <span class="pp-row-label">${v.name}</span>
-            <span><span class="pp-row-val">${v.value} ${v.unit}</span><span class="pp-row-date">${v.date?.slice(5).replace('-','/')}</span></span>
-          </div>`).join('')
+      ? d.vitals.map(obsRow).join('')
       : `<p class="pp-empty">Chưa có dữ liệu sinh hiệu</p>`;
 
     const labsHTML = d.labs?.length
-      ? d.labs.map(v => `
-          <div class="pp-row">
-            <span class="pp-row-label">${v.name}</span>
-            <span><span class="pp-row-val">${v.value} ${v.unit}</span><span class="pp-row-date">${v.date?.slice(5).replace('-','/')}</span></span>
-          </div>`).join('')
+      ? d.labs.map(obsRow).join('')
       : `<p class="pp-empty">Chưa có kết quả xét nghiệm</p>`;
 
     const apptsHTML = d.appointments?.length
@@ -2375,25 +3181,55 @@
     document.getElementById('panel-content').innerHTML = `
       <div class="pp-header">
         <div class="pp-header-row">
-          <div>
-            <div class="pp-name">${d.name}</div>
-            <div class="pp-meta">${metaParts.join(' · ')}</div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="width:36px;height:36px;border-radius:50%;
+              background:rgba(255,255,255,.2);border:2px solid rgba(255,255,255,.4);
+              display:flex;align-items:center;justify-content:center;
+              font-size:13px;font-weight:700;flex-shrink:0">${initials}</div>
+            <div>
+              <div class="pp-name">${d.name}</div>
+              <div class="pp-meta">${metaParts.join(' · ')}</div>
+            </div>
           </div>
           <button class="pp-close" onclick="closePatientPanel()">✕</button>
+        </div>
+        <div style="padding:8px 0 4px">
+          <button onclick="closePatientPanel();fillD('Tóm tắt hồ sơ bệnh nhân ${d.name.replace(/'/g,"&#39;")}')"
+            style="width:100%;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);
+              color:#fff;font-family:inherit;font-size:12px;font-weight:500;
+              padding:6px 12px;cursor:pointer;text-align:left;transition:background .1s"
+            onmouseover="this.style.background='rgba(255,255,255,.22)'"
+            onmouseout="this.style.background='rgba(255,255,255,.12)'">
+            🤖 Hỏi AI về bệnh nhân này
+          </button>
         </div>
       </div>
       <div class="pp-section">
         <div class="pp-section-title">Sinh hiệu</div>
         ${vitalsHTML}
       </div>
-      <div class="pp-section">
-        <div class="pp-section-title">Xét nghiệm</div>
-        ${labsHTML}
+      <div class="pp-section" style="padding:0">
+        <div class="cbc-header">
+          <span class="pp-section-title" style="margin:0;flex:1">XÉT NGHIỆM — CBC</span>
+          <button class="cbc-view-btn active" id="cbc-btn-tbl" onclick="_cbcToggle('table')" title="Bảng">☰</button>
+          <button class="cbc-view-btn" id="cbc-btn-cht" onclick="_cbcToggle('chart')" title="Biểu đồ">〜</button>
+          <button onclick="openCbcModal('${d.id}','${d.name.replace(/'/g,"&#39;")}')"
+            style="margin-left:6px;background:var(--brand-01);border:none;color:#fff;
+              font-family:inherit;font-size:11px;font-weight:600;
+              padding:4px 8px;cursor:pointer;white-space:nowrap">
+            ＋ Nhập CBC
+          </button>
+        </div>
+        <div id="dengue-banner" style="display:none"></div>
+        <div id="cbc-body" style="padding:8px 16px">
+          <p class="pp-empty">Đang tải...</p>
+        </div>
       </div>
       <div class="pp-section">
         <div class="pp-section-title">Lịch hẹn sắp tới</div>
         ${apptsHTML}
       </div>`;
+    _loadCbc(d.id, d.gender);
   }
 
   function closePatientPanel() {
@@ -3014,30 +3850,52 @@
     }
   }
 
+  function _disableRowBtns(btn) {
+    const row = btn.closest('tr') || btn.closest('.pending-item-actions');
+    if (row) row.querySelectorAll('button').forEach(b => b.disabled = true);
+    else btn.disabled = true;
+  }
+  function _enableRowBtns(btn) {
+    const row = btn.closest('tr') || btn.closest('.pending-item-actions');
+    if (row) row.querySelectorAll('button').forEach(b => b.disabled = false);
+    else btn.disabled = false;
+  }
+
   async function confirmAppointment(id, btn) {
-    btn.disabled = true;
-    btn.closest('.pending-item-actions').querySelectorAll('button').forEach(b => b.disabled = true);
+    _disableRowBtns(btn);
     try {
-      await fetch(`/api/confirm-appointment/${id}`, { method: 'POST' });
+      const res = await fetch(`/api/confirm-appointment/${id}`, { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok) { showToast('Lỗi: ' + (data.detail || res.status)); _enableRowBtns(btn); return; }
       showToast('Đã xác nhận và gửi mail cho bệnh nhân');
       _refreshPendingPanel();
+      await loadAppointments();
     } catch(e) {
       showToast('Lỗi xác nhận: ' + e.message);
-      btn.closest('.pending-item-actions').querySelectorAll('button').forEach(b => b.disabled = false);
+      _enableRowBtns(btn);
     }
   }
 
   async function rejectAppointment(id, btn) {
-    btn.disabled = true;
-    btn.closest('.pending-item-actions').querySelectorAll('button').forEach(b => b.disabled = true);
+    _disableRowBtns(btn);
     try {
-      await fetch(`/api/reject-appointment/${id}`, { method: 'POST' });
+      const res = await fetch(`/api/reject-appointment/${id}`, { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok) { showToast('Lỗi: ' + (data.detail || res.status)); _enableRowBtns(btn); return; }
       showToast('Đã từ chối lịch hẹn');
       _refreshPendingPanel();
+      await loadAppointments();
     } catch(e) {
       showToast('Lỗi từ chối: ' + e.message);
-      btn.closest('.pending-item-actions').querySelectorAll('button').forEach(b => b.disabled = false);
+      _enableRowBtns(btn);
     }
+  }
+
+  function openApptDetail(id) {
+    const appt = (window._apptData || []).find(a => a.id === id);
+    if (!appt) { showToast('Không tìm thấy lịch hẹn'); return; }
+    const time = appt.start ? appt.start.replace('T', ' ').slice(0, 16) : '—';
+    alert(`Lịch hẹn: ${appt.patient_name || '—'}\nGiờ: ${time}\nKhoa: ${appt.department || '—'}\nBác sĩ: ${appt.practitioner || '—'}\nTrạng thái: ${appt.status}\nLý do: ${appt.reason || '—'}`);
   }
 
   async function _refreshPendingPanel() {
@@ -3126,6 +3984,55 @@
 
 <!-- Toast notification -->
 <div class="toast" id="toast"></div>
+
+<!-- ════ CBC INPUT MODAL ════ -->
+<div id="cbc-modal-overlay" class="cbc-modal-overlay hidden">
+  <div class="cbc-modal">
+    <div class="cbc-modal-head">
+      <h2>Nhập kết quả CBC — <span id="cbc-modal-pname"></span></h2>
+      <button class="cbc-modal-close" onclick="closeCbcModal()">✕</button>
+    </div>
+    <div class="cbc-modal-body">
+      <div class="cbc-field-grid">
+        <div class="cbc-field cbc-field-full">
+          <label>Thời điểm lấy mẫu</label>
+          <input type="datetime-local" id="cbc-collected-at">
+        </div>
+        <div class="cbc-field cbc-field-full">
+          <label>Ngày sốt thứ <span style="color:var(--text-03);font-weight:400">(để trống nếu không sốt)</span></label>
+          <input type="number" id="cbc-fever-day" min="1" max="14" placeholder="VD: 3">
+        </div>
+        <hr class="cbc-divider">
+        <div class="cbc-field">
+          <label>PLT — Tiểu cầu (K/μL) <span class="cbc-required">*</span></label>
+          <input type="number" id="cbc-plt" step="0.1" placeholder="VD: 85" required>
+        </div>
+        <div class="cbc-field">
+          <label>WBC — Bạch cầu (K/μL)</label>
+          <input type="number" id="cbc-wbc" step="0.1" placeholder="VD: 3.2">
+        </div>
+        <div class="cbc-field">
+          <label>HCT — Hematocrit (%)</label>
+          <input type="number" id="cbc-hct" step="0.1" placeholder="VD: 44.5">
+        </div>
+        <div class="cbc-field">
+          <label>HGB — Hemoglobin (g/dL)</label>
+          <input type="number" id="cbc-hgb" step="0.1" placeholder="VD: 13.5">
+        </div>
+        <div class="cbc-field">
+          <label>AST / SGOT (U/L)</label>
+          <input type="number" id="cbc-ast" step="0.1" placeholder="VD: 45">
+        </div>
+        <div class="cbc-field">
+          <label>ALT / SGPT (U/L)</label>
+          <input type="number" id="cbc-alt" step="0.1" placeholder="VD: 38">
+        </div>
+      </div>
+      <button class="cbc-submit" id="cbc-submit-btn" onclick="submitCbc()">Lưu kết quả CBC</button>
+      <div id="cbc-modal-result" style="display:none"></div>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>

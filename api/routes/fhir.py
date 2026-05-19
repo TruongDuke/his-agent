@@ -162,6 +162,7 @@ async def api_appointments(date_str: str = "", practitioner_id: str = "",
         reason = (reason_list[0].get("concept") or {}).get("text", "") if reason_list else ""
 
         rows.append({
+            "id":           appt.get("id", ""),
             "patient_name": patient_name,
             "practitioner": pract_name,
             "department":   dept,
@@ -213,43 +214,62 @@ async def api_observations(patient_id: str = "", category: str = "all",
                 p_names[p["id"]] = _patient_name(p)
 
     _LOINC_VI = {
-        "8480-6": "HA tâm thu", "8462-4": "HA tâm trương",
-        "29463-7": "Cân nặng", "8302-2": "Chiều cao", "39156-5": "BMI",
-        "8867-4": "Nhịp tim", "9279-1": "Nhịp thở", "8310-5": "Nhiệt độ",
-        "59408-5": "SpO2", "2339-0": "Glucose máu", "4548-4": "HbA1c",
-        "2093-3": "Cholesterol TP", "2160-0": "Creatinine", "3094-0": "Ure",
+        # Sinh hiệu
+        "8480-6": "HA tâm thu",      "8462-4": "HA tâm trương",
+        "29463-7": "Cân nặng",        "8302-2": "Chiều cao",
+        "39156-5": "BMI",             "8867-4": "Nhịp tim",
+        "9279-1":  "Nhịp thở",        "8310-5": "Nhiệt độ",
+        "59408-5": "SpO2",
+        # Sinh hóa
+        "2339-0": "Glucose máu",      "4548-4": "HbA1c",
+        "2093-3": "Cholesterol TP",   "2160-0": "Creatinine",
+        "3094-0": "Ure",
+        # CBC
+        "6690-2": "Bạch cầu (WBC)",   "789-8":  "Hồng cầu (RBC)",
+        "718-7":  "Hemoglobin",        "4544-3": "Hematocrit",
+        "777-3":  "Tiểu cầu (PLT)",    "787-2":  "MCV",
+        "785-6":  "MCH",               "786-4":  "MCHC",
+        "736-9":  "Lymphocyte %",      "4650-8": "Neutrophil %",
     }
+
+    def _node_val(node):
+        if "valueQuantity" in node:
+            vq = node["valueQuantity"]
+            return str(vq.get("value", "")), vq.get("unit", vq.get("code", ""))
+        if "valueString" in node:
+            return node["valueString"], ""
+        if "valueCodeableConcept" in node:
+            return (node["valueCodeableConcept"].get("text") or
+                    ((node["valueCodeableConcept"].get("coding") or [{}])[0]).get("display", "")), ""
+        return "", ""
 
     rows = []
     for obs in observations:
-        ref = (obs.get("subject") or {}).get("reference", "")
-        pid = ref.split("/")[1] if ref.startswith("Patient/") else ""
+        ref   = (obs.get("subject") or {}).get("reference", "")
+        pid   = ref.split("/")[1] if ref.startswith("Patient/") else ""
+        date  = (obs.get("effectiveDateTime") or obs.get("issued") or "")[:10]
+        pname = p_names.get(pid, "")
+        status = obs.get("status", "")
+
+        # CBC panel lưu từng chỉ số trong component → bung ra
+        if obs.get("component"):
+            for comp in obs["component"]:
+                c_coding = ((comp.get("code") or {}).get("coding") or [{}])[0]
+                c_name   = _LOINC_VI.get(c_coding.get("code","")) or c_coding.get("display","")
+                if not c_name:
+                    continue
+                val, unit = _node_val(comp)
+                rows.append({"patient_name": pname, "name": c_name,
+                             "value": val, "unit": unit, "status": status, "date": date})
+            continue
 
         coding = ((obs.get("code") or {}).get("coding") or [{}])[0]
-        loinc  = coding.get("code", "")
-        name   = _LOINC_VI.get(loinc) or coding.get("display") or (obs.get("code") or {}).get("text", "")
+        name   = _LOINC_VI.get(coding.get("code","")) or coding.get("display") or \
+                 (obs.get("code") or {}).get("text", "")
+        value, unit = _node_val(obs)
 
-        # Extract value
-        value = ""
-        unit  = ""
-        if "valueQuantity" in obs:
-            vq    = obs["valueQuantity"]
-            value = str(vq.get("value", ""))
-            unit  = vq.get("unit", vq.get("code", ""))
-        elif "valueString" in obs:
-            value = obs["valueString"]
-        elif "valueCodeableConcept" in obs:
-            value = (obs["valueCodeableConcept"].get("text") or
-                     ((obs["valueCodeableConcept"].get("coding") or [{}])[0]).get("display", ""))
-
-        rows.append({
-            "patient_name": p_names.get(pid, ""),
-            "name":         name,
-            "value":        value,
-            "unit":         unit,
-            "status":       obs.get("status", ""),
-            "date":         (obs.get("effectiveDateTime") or obs.get("issued") or "")[:10],
-        })
+        rows.append({"patient_name": pname, "name": name,
+                     "value": value, "unit": unit, "status": status, "date": date})
 
     return {"total": bundle.get("total", len(rows)), "observations": rows}
 
@@ -293,37 +313,64 @@ async def api_patient_detail(patient_id: str):
 
     # ── Observations → split vital-signs / laboratory ──
     _LOINC_VI = {
-        "8480-6": ("HA tâm thu",     "vital"), "8462-4": ("HA tâm trương", "vital"),
-        "29463-7": ("Cân nặng",       "vital"), "8302-2": ("Chiều cao",      "vital"),
-        "39156-5": ("BMI",            "vital"), "8867-4": ("Nhịp tim",       "vital"),
-        "9279-1":  ("Nhịp thở",       "vital"), "8310-5": ("Nhiệt độ",       "vital"),
-        "59408-5": ("SpO2",           "vital"), "2339-0": ("Glucose máu",    "lab"),
-        "4548-4":  ("HbA1c",          "lab"),   "2093-3": ("Cholesterol TP", "lab"),
-        "2160-0":  ("Creatinine",     "lab"),   "3094-0": ("Ure",            "lab"),
+        # Sinh hiệu
+        "8480-6":  ("HA tâm thu",     "vital"), "8462-4":  ("HA tâm trương", "vital"),
+        "29463-7": ("Cân nặng",       "vital"), "8302-2":  ("Chiều cao",     "vital"),
+        "39156-5": ("BMI",            "vital"), "8867-4":  ("Nhịp tim",      "vital"),
+        "9279-1":  ("Nhịp thở",       "vital"), "8310-5":  ("Nhiệt độ",      "vital"),
+        "59408-5": ("SpO2",           "vital"),
+        # Sinh hóa
+        "2339-0":  ("Glucose máu",    "lab"),   "4548-4":  ("HbA1c",         "lab"),
+        "2093-3":  ("Cholesterol TP", "lab"),   "2160-0":  ("Creatinine",    "lab"),
+        "3094-0":  ("Ure",            "lab"),
+        # CBC
+        "6690-2":  ("Bạch cầu (WBC)", "lab"),   "789-8":   ("Hồng cầu (RBC)","lab"),
+        "718-7":   ("Hemoglobin",     "lab"),   "4544-3":  ("Hematocrit",    "lab"),
+        "777-3":   ("Tiểu cầu (PLT)", "lab"),   "787-2":   ("MCV",           "lab"),
+        "785-6":   ("MCH",            "lab"),   "786-4":   ("MCHC",          "lab"),
+        "736-9":   ("Lymphocyte %",   "lab"),   "4650-8":  ("Neutrophil %",  "lab"),
     }
     vitals, labs = [], []
     seen = set()
+
+    def _extract_val(obs_node):
+        """Trả về (value_str, unit) từ một node observation hoặc component."""
+        if "valueQuantity" in obs_node:
+            vq = obs_node["valueQuantity"]
+            return str(vq.get("value", "")), vq.get("unit", vq.get("code", ""))
+        if "valueString" in obs_node:
+            return obs_node["valueString"], ""
+        return "", ""
+
     for obs in _entries(obs_r.json(), "Observation"):
         coding = ((obs.get("code") or {}).get("coding") or [{}])[0]
         loinc  = coding.get("code", "")
-        meta   = _LOINC_VI.get(loinc)
-        label  = (meta[0] if meta else None) or coding.get("display") or (obs.get("code") or {}).get("text", "")
+        date   = (obs.get("effectiveDateTime") or obs.get("issued") or "")[:10]
+        cat_raw = ((obs.get("category") or [{}])[0].get("coding") or [{}])[0].get("code", "lab")
+
+        # CBC panel lưu từng chỉ số trong component → bung ra
+        if obs.get("component"):
+            for comp in obs["component"]:
+                c_coding = ((comp.get("code") or {}).get("coding") or [{}])[0]
+                c_loinc  = c_coding.get("code", "")
+                c_meta   = _LOINC_VI.get(c_loinc)
+                c_label  = (c_meta[0] if c_meta else None) or c_coding.get("display", "")
+                if not c_label or c_label in seen:
+                    continue
+                seen.add(c_label)
+                val, unit = _extract_val(comp)
+                labs.append({"name": c_label, "value": val, "unit": unit, "date": date})
+            continue
+
+        meta  = _LOINC_VI.get(loinc)
+        label = (meta[0] if meta else None) or coding.get("display") or (obs.get("code") or {}).get("text", "")
         if not label or label in seen:
             continue
         seen.add(label)
-        cat = (meta[1] if meta else None) or \
-              ((obs.get("category") or [{}])[0].get("coding") or [{}])[0].get("code", "lab")
+        cat = (meta[1] if meta else None) or cat_raw
 
-        val, unit = "", ""
-        if "valueQuantity" in obs:
-            vq = obs["valueQuantity"]
-            val  = str(vq.get("value", ""))
-            unit = vq.get("unit", vq.get("code", ""))
-        elif "valueString" in obs:
-            val = obs["valueString"]
-
-        row = {"name": label, "value": val, "unit": unit,
-               "date": (obs.get("effectiveDateTime") or obs.get("issued") or "")[:10]}
+        val, unit = _extract_val(obs)
+        row = {"name": label, "value": val, "unit": unit, "date": date}
         (vitals if cat == "vital" else labs).append(row)
 
     # ── Upcoming appointments ──
@@ -354,7 +401,107 @@ async def api_patient_detail(patient_id: str):
     }
 
 
+# ── /api/dengue/{patient_id} — GET: sàng lọc SXHD từ CBC mới nhất ──
+@router.get("/api/dengue/{patient_id}")
+async def api_dengue_screening(patient_id: str):
+    url, auth = _aidbox()
+    if not url:
+        raise HTTPException(503, "AIDBOX_URL not configured")
+
+    async with httpx.AsyncClient(timeout=15, auth=auth) as client:
+        pt_r, obs_r = await _asyncio.gather(
+            client.get(f"{url}/fhir/Patient/{patient_id}"),
+            client.get(f"{url}/fhir/Observation", params={
+                "subject": f"Patient/{patient_id}",
+                "code":    "http://loinc.org|58410-2",
+                "_sort":   "-date",
+                "_count":  "2",
+            }),
+        )
+
+    gender = ""
+    if pt_r.status_code < 400:
+        gender_fhir = (pt_r.json().get("gender") or "").lower()
+        gender = "male" if gender_fhir == "male" else ("female" if gender_fhir == "female" else "")
+
+    if obs_r.status_code >= 400:
+        raise HTTPException(obs_r.status_code, "Không tải được Observation")
+
+    obs_list = _entries(obs_r.json(), "Observation")
+    if not obs_list:
+        return {"available": False, "reason": "Chưa có kết quả CBC"}
+
+    latest   = obs_list[0]
+    obs_date = (latest.get("effectiveDateTime") or latest.get("issued") or "")[:10]
+
+    _COMP_MAP = {
+        "777-3": "plt", "6690-2": "wbc", "4544-3": "hct",
+        "718-7": "hgb", "1920-8": "ast", "1742-6": "alt",
+    }
+    values: dict = {}
+    for comp in (latest.get("component") or []):
+        c_code = ((comp.get("code") or {}).get("coding") or [{}])[0].get("code", "")
+        key = _COMP_MAP.get(c_code)
+        if key:
+            vq  = comp.get("valueQuantity") or {}
+            val = vq.get("value")
+            if val is not None:
+                values[key] = float(val)
+
+    if "plt" not in values:
+        return {"available": False, "reason": "CBC không có chỉ số PLT"}
+
+    # PLT trước để tính xu hướng
+    if len(obs_list) > 1:
+        for comp in (obs_list[1].get("component") or []):
+            c_code = ((comp.get("code") or {}).get("coding") or [{}])[0].get("code", "")
+            if c_code == "777-3":
+                vq  = comp.get("valueQuantity") or {}
+                val = vq.get("value")
+                if val is not None:
+                    values["plt_previous"] = float(val)
+                break
+
+    import sys as _sys
+    from pathlib import Path as _Path
+    _dengue_dir = str(_Path(__file__).parent.parent.parent / "tools" / "dengue")
+    if _dengue_dir not in _sys.path:
+        _sys.path.insert(0, _dengue_dir)
+    from dengue_cbc_predict import run as _dengue_run  # type: ignore
+
+    result = _dengue_run({**values, "gender": gender})
+    cbc_used = {k: values[k] for k in ("plt", "wbc", "hct", "hgb") if k in values}
+    return {"available": True, "obs_date": obs_date, "cbc_used": cbc_used, "screening": result}
+
+
 # ── /api/register-patient ─────────────────────────────────────
+# ── /api/cbc — POST: lưu kết quả CBC thủ công từ UI ─────────────
+class CbcRequest(BaseModel):
+    patient_id:   str
+    plt:          float
+    wbc:          float | None = None
+    hct:          float | None = None
+    hgb:          float | None = None
+    ast:          float | None = None
+    alt:          float | None = None
+    fever_day:    float | None = None
+    collected_at: str   | None = None
+
+@router.post("/api/cbc")
+async def api_create_cbc(body: CbcRequest):
+    import sys as _sys
+    from pathlib import Path as _Path
+    _tool = str(_Path(__file__).parent.parent.parent / "tools" / "fhir")
+    if _tool not in _sys.path:
+        _sys.path.insert(0, _tool)
+    from fhir_create_cbc import run  # type: ignore
+    args = {k: v for k, v in body.dict().items() if v is not None}
+    result = run(args)
+    if "error" in result:
+        raise HTTPException(status_code=400, detail=result["error"])
+    return result
+
+
 class RegisterPatientRequest(BaseModel):
     name: str
     gender: str

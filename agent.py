@@ -6,7 +6,13 @@ from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
 from openai import OpenAI
-from system_prompt import SYSTEM_PROMPT, SYSTEM_PROMPT_DOCTOR
+from system_prompt import (
+    SYSTEM_PROMPT,
+    SYSTEM_PROMPT_DOCTOR,
+    SYSTEM_PROMPT_DOCTOR_RECORDS,
+    SYSTEM_PROMPT_DOCTOR_CBC,
+    SYSTEM_PROMPT_DOCTOR_APPOINTMENTS,
+)
 
 # Thêm shared/ vào path để các tool import _aidbox_client, _rag_departments
 sys.path.insert(0, str(Path(__file__).parent / "tools" / "shared"))
@@ -95,6 +101,37 @@ def _execute_tool(name: str, args: dict, modules: dict) -> str:
 _MODULES = _load_tool_modules()
 _TOOLS   = _build_openai_tools(_MODULES)
 
+# Tool set cho từng role — None = dùng tất cả
+_TOOLS_BY_ROLE: dict[str, list[str] | None] = {
+    "patient": [
+        "fhir_triage_assessment", "fhir_suggest_department", "fhir_search_patient",
+        "fhir_register_new_patient", "fhir_get_next_available_slot", "fhir_get_available_slots",
+        "fhir_create_appointment", "fhir_cancel_appointment", "fhir_get_patient_appointments",
+        "dengue_symptom_assessment", "dengue_cbc_predict",
+    ],
+    "doctor": None,
+    "doctor_records": [
+        "fhir_search_patient", "fhir_get_patient_history", "fhir_get_observations",
+        "fhir_get_doctor_schedule", "fhir_suggest_doctor", "fhir_get_available_slots",
+        "fhir_get_patient_appointments",
+    ],
+    "doctor_cbc": [
+        "fhir_search_patient", "fhir_create_cbc", "fhir_get_cbc",
+        "fhir_get_next_available_slot", "fhir_create_appointment",
+    ],
+    "doctor_appointments": [
+        "fhir_get_pending_appointments", "fhir_confirm_appointment",
+        "fhir_reject_appointment", "fhir_get_doctor_schedule",
+    ],
+}
+
+
+def _get_tools_for_role(role: str) -> list[dict]:
+    allowed = _TOOLS_BY_ROLE.get(role)
+    if allowed is None:
+        return _TOOLS
+    return [t for t in _TOOLS if t["function"]["name"] in allowed]
+
 _OPENROUTER_KEY = os.getenv("OPENROUTER_API_KEY", "")
 if _OPENROUTER_KEY:
     _CLIENT = OpenAI(
@@ -165,12 +202,20 @@ def chat_stream(message: str, history: list[dict], role: str = "patient",
     def sse(payload: dict) -> str:
         return f"data: {json.dumps(payload, ensure_ascii=False)}\n\n"
 
-    if role == "doctor":
-        system = (SYSTEM_PROMPT_DOCTOR
+    _DOCTOR_PROMPTS = {
+        "doctor":              SYSTEM_PROMPT_DOCTOR,
+        "doctor_records":      SYSTEM_PROMPT_DOCTOR_RECORDS,
+        "doctor_cbc":          SYSTEM_PROMPT_DOCTOR_CBC,
+        "doctor_appointments": SYSTEM_PROMPT_DOCTOR_APPOINTMENTS,
+    }
+    if role in _DOCTOR_PROMPTS:
+        system = (_DOCTOR_PROMPTS[role]
                   .replace("{doctor_name}", doctor_name or "Bác sĩ")
                   .replace("{doctor_id}",   doctor_id or ""))
     else:
         system = SYSTEM_PROMPT
+
+    role_tools = _get_tools_for_role(role)
 
     history.append({"role": "user", "content": _build_user_content(message, image_base64, image_mime)})
     yield sse({"type": "status", "text": "Đang xử lý..."})
@@ -181,7 +226,7 @@ def chat_stream(message: str, history: list[dict], role: str = "patient",
             model=_MODEL,
             max_tokens=1024,
             messages=[{"role": "system", "content": system}] + history,
-            tools=_TOOLS or None,
+            tools=role_tools or None,
         )
         choice = response.choices[0]
         msg    = choice.message
@@ -263,13 +308,20 @@ def chat(message: str, history: list[dict], role: str = "patient",
     history: list of {"role": "user"|"assistant", "content": ...}
     Trả về (reply_text, updated_history)
     """
-    if role == "doctor":
-        system = (SYSTEM_PROMPT_DOCTOR
+    _DOCTOR_PROMPTS = {
+        "doctor":              SYSTEM_PROMPT_DOCTOR,
+        "doctor_records":      SYSTEM_PROMPT_DOCTOR_RECORDS,
+        "doctor_cbc":          SYSTEM_PROMPT_DOCTOR_CBC,
+        "doctor_appointments": SYSTEM_PROMPT_DOCTOR_APPOINTMENTS,
+    }
+    if role in _DOCTOR_PROMPTS:
+        system = (_DOCTOR_PROMPTS[role]
                   .replace("{doctor_name}", doctor_name or "Bác sĩ")
                   .replace("{doctor_id}",   doctor_id or ""))
     else:
         system = SYSTEM_PROMPT
 
+    role_tools = _get_tools_for_role(role)
     history = history + [{"role": "user", "content": _build_user_content(message, image_base64, image_mime)}]
 
     while True:
@@ -277,7 +329,7 @@ def chat(message: str, history: list[dict], role: str = "patient",
             model=_MODEL,
             max_tokens=1024,
             messages=[{"role": "system", "content": system}] + history,
-            tools=_TOOLS or None,
+            tools=role_tools or None,
         )
 
         choice = response.choices[0]

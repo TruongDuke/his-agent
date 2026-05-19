@@ -5,7 +5,7 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from api.routes import chat, scheduling, fhir, appointments, ui
+from api.routes import chat, scheduling, fhir, appointments, ui, auth
 
 app = FastAPI(title="HIS Agent API", version="1.0.0")
 
@@ -40,3 +40,4 @@ app.include_router(scheduling.router)
 app.include_router(fhir.router)
 app.include_router(appointments.router)
 app.include_router(ui.router)
+app.include_router(auth.router)
