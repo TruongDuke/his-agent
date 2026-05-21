@@ -3329,18 +3329,18 @@
     const fever = document.getElementById(`${uid}-fever`)?.value || '0';
 
     const ans = [
-      `1.${r('epi')} ở vùng dịch`,
-      `2.sốt ${fever} ngày`,
-      `3.${r('s3')}`,
-      `4.${r('s4')}`,
-      `5.${r('s5')}`,
-      `6.${r('s6')}`,
-      `7.${r('w7')}`,
-      `8.${r('w8')}`,
-      `9.${r('w9')}`,
-      `10.${r('w10')}`,
-      `11.${r('w11')}`,
-    ].join('  ');
+      `1. Vùng dịch: ${r('epi')}`,
+      `2. Số ngày sốt: ${fever}`,
+      `3. Buồn nôn/nôn ói: ${r('s3')}`,
+      `4. Phát ban/nổi mẩn: ${r('s4')}`,
+      `5. Đau cơ, khớp, nhức hố mắt: ${r('s5')}`,
+      `6. Chấm đỏ dưới da/bầm tím: ${r('s6')}`,
+      `7. Đau bụng nhiều/đau vùng gan: ${r('w7')}`,
+      `8. Nôn ói liên tục: ${r('w8')}`,
+      `9. Chảy máu chân răng, mũi, phân đen: ${r('w9')}`,
+      `10. Tiểu ít/nước tiểu sẫm: ${r('w10')}`,
+      `11. Vật vã, lờ đờ, mệt lả: ${r('w11')}`,
+    ].join('\n');
 
     btn.disabled = true;
     btn.textContent = 'Đang gửi...';

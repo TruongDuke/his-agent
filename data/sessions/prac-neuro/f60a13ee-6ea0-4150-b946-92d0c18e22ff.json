@@ -1,0 +1,94 @@
+{
+  "session_id": "doctor_prac-neuro_f60a13ee-6ea0-4150-b946-92d0c18e22ff",
+  "title": "Tìm hồ sơ bệnh nhân: phanphan",
+  "created_at": "2026-05-19T14:15:20",
+  "updated_at": "2026-05-19T14:15:44",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Tìm hồ sơ bệnh nhân: phanphan"
+    },
+    {
+      "role": "assistant",
+      "content": "Tôi sẽ tìm hồ sơ bệnh nhân \"phanphan\" trong hệ thống.",
+      "tool_calls": [
+        {
+          "id": "toolu_bdrk_01KFePXTdoEN34bhqwSefk5T",
+          "type": "function",
+          "function": {
+            "name": "fhir_search_patient",
+            "arguments": "{\"query\": \"phanphan\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "toolu_bdrk_01KFePXTdoEN34bhqwSefk5T",
+      "content": "{\"matched_by\": \"name\", \"count\": 0, \"patients\": [], \"_data_source\": \"FHIR R5 · Aidbox · Bệnh viện Đa khoa Hà Nội\"}"
+    },
+    {
+      "role": "assistant",
+      "content": "Không tìm thấy bệnh nhân với tên/mã \"phanphan\" trong hệ thống. \n\nĐể tìm chính xác, bác sĩ có thể cung cấp thêm:\n- Họ tên đầy đủ\n- Số BHYT hoặc CCCD\n- Số điện thoại liên hệ\n\nHoặc kiểm tra lại chính tả từ khoá tìm kiếm."
+    },
+    {
+      "role": "user",
+      "content": "Tìm hồ sơ bệnh nhân: phan hùng"
+    },
+    {
+      "role": "assistant",
+      "content": "Tôi sẽ tìm hồ sơ bệnh nhân \"phan hùng\" trong hệ thống.",
+      "tool_calls": [
+        {
+          "id": "toolu_bdrk_01U6aFwYH5NgQyyc5YZr6G6H",
+          "type": "function",
+          "function": {
+            "name": "fhir_search_patient",
+            "arguments": "{\"query\": \"phan hùng\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "toolu_bdrk_01U6aFwYH5NgQyyc5YZr6G6H",
+      "content": "{\"matched_by\": \"name\", \"count\": 1, \"patients\": [{\"id\": \"c0f6d7cf-bd7b-47c8-8373-b59a233435f9\", \"name\": \"Phan Hùng\", \"gender\": \"male\", \"birth_date\": \"2004-01-01\", \"age\": 22, \"bhyt\": null, \"cccd\": null, \"phone\": \"0904608777\", \"_source\": \"FHIR R5 · Aidbox · Patient/c0f6d7cf-bd7b-47c8-8373-b59a233435f9 · cập nhật 2026-05-12 07:57\"}], \"_data_source\": \"FHIR R5 · Aidbox · Bệnh viện Đa khoa Hà Nội\"}"
+    },
+    {
+      "role": "assistant",
+      "content": "Tìm thấy 1 bệnh nhân. Đang lấy hồ sơ chi tiết...",
+      "tool_calls": [
+        {
+          "id": "toolu_bdrk_01LnN6YZasdFduFReoZx53c7",
+          "type": "function",
+          "function": {
+            "name": "fhir_get_patient_history",
+            "arguments": "{\"patient_id\": \"c0f6d7cf-bd7b-47c8-8373-b59a233435f9\"}"
+          }
+        },
+        {
+          "id": "toolu_bdrk_01N887L1mz8mfSv6AfbcAUYY",
+          "type": "function",
+          "function": {
+            "name": "fhir_get_observations",
+            "arguments": "{\"patient_id\": \"c0f6d7cf-bd7b-47c8-8373-b59a233435f9\", \"category\": \"all\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "toolu_bdrk_01LnN6YZasdFduFReoZx53c7",
+      "content": "{\"patient\": {\"id\": \"c0f6d7cf-bd7b-47c8-8373-b59a233435f9\", \"name\": \"Phan Hùng\", \"gender\": \"male\", \"birth_date\": \"2004-01-01\", \"age\": 22, \"bhyt\": null, \"cccd\": null, \"phone\": \"0904608777\", \"_source\": \"FHIR R5 · Aidbox · Patient/c0f6d7cf-bd7b-47c8-8373-b59a233435f9 · cập nhật 2026-05-12 07:57\"}, \"summary\": {\"visits_count\": 0, \"active_conditions\": [], \"current_medications\": []}, \"encounters\": [], \"conditions\": [], \"medications\": [], \"observations\": [{\"date\": \"2026-05-13\", \"measure\": \"CBC panel\", \"value\": \"Platelets: 133.0 10*3/uL; WBC: 3.9 10*3/uL; Hematocrit: 47.9 %; Hemoglobin: 16.3 g/dL\"}, {\"date\": \"2026-05-15\", \"measure\": \"CBC panel\", \"value\": \"Platelets: 133.0 10*3/uL; WBC: 3.9 10*3/uL; Hematocrit: 47.9 %; Hemoglobin: 16.3 g/dL\"}], \"_data_source\": \"Hồ sơ bệnh án · FHIR R5 · Aidbox · Bệnh viện Đa khoa Hà Nội\"}"
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "toolu_bdrk_01N887L1mz8mfSv6AfbcAUYY",
+      "content": "{\"patient_id\": \"c0f6d7cf-bd7b-47c8-8373-b59a233435f9\", \"count\": 2, \"observations\": [{\"date\": \"2026-05-15\", \"name\": \"CBC panel\", \"value\": \"Platelets: 133.0 10*3/uL | WBC: 3.9 10*3/uL | Hematocrit: 47.9 % | Hemoglobin: 16.3 g/dL\", \"unit\": null, \"status\": \"final\"}, {\"date\": \"2026-05-13\", \"name\": \"CBC panel\", \"value\": \"Platelets: 133.0 10*3/uL | WBC: 3.9 10*3/uL | Hematocrit: 47.9 % | Hemoglobin: 16.3 g/dL\", \"unit\": null, \"status\": \"final\"}], \"summary\": \"Chỉ số gần nhất:\\n- CBC panel: Platelets: 133.0 10*3/uL | WBC: 3.9 10*3/uL | Hematocrit: 47.9 % | Hemoglobin: 16.3 g/dL (ngày 2026-05-15)\"}"
+    },
+    {
+      "role": "assistant",
+      "content": "**Phan Hùng** — Nam, 22 tuổi (sinh 2004)  \nĐiện thoại: 0904608777\n\n**Tiền sử:** Chưa ghi nhận bệnh nền hay dị ứng  \n**Thuốc hiện tại:** Không\n\n**Xét nghiệm gần nhất:**\n- **CBC panel** — 15/05/2026:\n  - PLT: 133.0 K/μL *(bình thường)*\n  - WBC: 3.9 K/μL *(bình thường)*\n  - HCT: 47.9% *(bình thường)*\n  - HGB: 16.3 g/dL *(bình thường)*\n\n**Lần khám:** Chưa có lịch sử khám tại bệnh viện\n\n📋 *Nguồn: FHIR R5 · Aidbox · Bệnh viện Đa khoa Hà Nội*"
+    }
+  ]
+}
