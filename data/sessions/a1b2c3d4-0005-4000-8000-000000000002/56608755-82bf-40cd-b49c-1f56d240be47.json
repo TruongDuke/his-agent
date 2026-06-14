@@ -1,0 +1,121 @@
+{
+  "session_id": "doctor_a1b2c3d4-0005-4000-8000-000000000002_56608755-82bf-40cd-b49c-1f56d240be47",
+  "title": "tuần tới có lịch hẹn nào chờ duyệt không",
+  "created_at": "2026-06-13T18:09:19",
+  "updated_at": "2026-06-13T18:11:30",
+  "messages": [
+    {
+      "role": "user",
+      "content": "tuần tới có lịch hẹn nào chờ duyệt không"
+    },
+    {
+      "role": "assistant",
+      "content": "",
+      "tool_calls": [
+        {
+          "id": "call_9e22f61f3e524954af064d42",
+          "type": "function",
+          "function": {
+            "name": "fhir_get_pending_appointments",
+            "arguments": "{\"date_from\": \"2026-06-14\", \"date_to\": \"2026-06-21\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "call_9e22f61f3e524954af064d42",
+      "content": "{\"found\": true, \"count\": 2, \"pending\": [{\"appointment_id\": \"4680b3c1-8550-494e-9e16-e5f231d22b47\", \"patient_name\": \"Phan Hùng\", \"patient_id\": \"c0f6d7cf-bd7b-47c8-8373-b59a233435f9\", \"patient_email\": \"thaiduc200427@gmail.com\", \"department\": \"Khoa Tiêu Hóa\", \"practitioner\": \"BS. Trịnh Văn Long\", \"date\": \"15/06/2026\", \"time\": \"08:00\", \"reason\": \"Khám đau bụng dữ dội\", \"symptoms\": \"Triệu chứng: đau bụng dữ dội — đánh giá SEMI_URGENT, đặt lịch theo pre-triage.\"}, {\"appointment_id\": \"ec9421b4-7453-438f-a4ce-8af2e45101a3\", \"patient_name\": \"Quang Linh\", \"patient_id\": \"4fb1b34d-520c-48f5-b6b4-e8ac857b9b94\", \"patient_email\": \"thaiduc200427@gmail.com\", \"department\": \"Khoa Nội Tổng Quát\", \"practitioner\": \"BS. Lê Văn Quân\", \"date\": \"16/06/2026\", \"time\": \"08:00\", \"reason\": \"Tái khám nội tổng quát — theo dõi tiểu cầu thấp sau CBC 12/06/2026\", \"symptoms\": \"Tái khám sau kết quả CBC: PLT 133 ×10³/μL (giảm nhẹ), cần đánh giá nguyên nhân.\"}]}"
+    },
+    {
+      "role": "assistant",
+      "content": "Tuần tới có 2 lịch hẹn chờ duyệt:\n\n1. **Phan Hùng** — Khoa Tiêu Hóa  \n   - Ngày: 15/06/2026 — 08:00  \n   - Lý do: Khám đau bụng dữ dội  \n   - Triệu chứng: Đau bụng dữ dội — đánh giá SEMI_URGENT (pre-triage)  \n   - Email: thaiduc200427@gmail.com  \n\n2. **Quang Linh** — Khoa Nội Tổng Quát  \n   - Ngày: 16/06/2026 — 08:00  \n   - Lý do: Tái khám nội tổng quát — theo dõi tiểu cầu thấp sau CBC 12/06/2026  \n   - Triệu chứng: PLT 133 ×10³/μL (giảm nhẹ), cần đánh giá nguyên nhân  \n   - Email: thaiduc200427@gmail.com  \n\nBác sĩ muốn xác nhận hay từ chối lịch nào?  \n📋 *Nguồn: fhir_get_pending_appointments()*"
+    },
+    {
+      "role": "user",
+      "content": "xem hồ sơ bệnh nhân phan hùng"
+    },
+    {
+      "role": "assistant",
+      "content": "",
+      "tool_calls": [
+        {
+          "id": "call_becd6d81425948eebc35b9f8",
+          "type": "function",
+          "function": {
+            "name": "fhir_search_patient",
+            "arguments": "{\"query\": \"Phan Hùng\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "call_becd6d81425948eebc35b9f8",
+      "content": "{\"matched_by\": \"name\", \"count\": 1, \"patients\": [{\"id\": \"c0f6d7cf-bd7b-47c8-8373-b59a233435f9\", \"name\": \"Phan Hùng\", \"gender\": \"male\", \"birth_date\": \"2004-01-01\", \"age\": 22, \"bhyt\": null, \"cccd\": null, \"phone\": \"0904608777\", \"_source\": \"FHIR R5 · Aidbox · Patient/c0f6d7cf-bd7b-47c8-8373-b59a233435f9 · cập nhật 2026-05-12 07:57\"}], \"_data_source\": \"FHIR R5 · Aidbox · Bệnh viện Đa khoa Hà Nội\"}"
+    },
+    {
+      "role": "assistant",
+      "content": "",
+      "tool_calls": [
+        {
+          "id": "call_c364d29fb1b64cdfbdd2994b",
+          "type": "function",
+          "function": {
+            "name": "fhir_get_patient_history",
+            "arguments": "{\"patient_id\": \"c0f6d7cf-bd7b-47c8-8373-b59a233435f9\"}"
+          }
+        },
+        {
+          "id": "call_c9c2def530ff4b6ab67a5272",
+          "type": "function",
+          "function": {
+            "name": "fhir_get_observations",
+            "arguments": "{\"patient_id\": \"c0f6d7cf-bd7b-47c8-8373-b59a233435f9\", \"category\": \"all\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "call_c364d29fb1b64cdfbdd2994b",
+      "content": "{\"patient\": {\"id\": \"c0f6d7cf-bd7b-47c8-8373-b59a233435f9\", \"name\": \"Phan Hùng\", \"gender\": \"male\", \"birth_date\": \"2004-01-01\", \"age\": 22, \"bhyt\": null, \"cccd\": null, \"phone\": \"0904608777\", \"_source\": \"FHIR R5 · Aidbox · Patient/c0f6d7cf-bd7b-47c8-8373-b59a233435f9 · cập nhật 2026-05-12 07:57\"}, \"summary\": {\"visits_count\": 0, \"active_conditions\": [], \"current_medications\": [\"Amoxicillin 500mg\", \"Ciprofloxacin 500mg\"]}, \"encounters\": [], \"conditions\": [], \"medications\": [{\"date\": \"2026-06-13T10:57:20+07:00\", \"name\": \"Amoxicillin 500mg\", \"dosage\": \"1 viên × 2 lần/ngày × 5 ngày\", \"status\": \"active\"}, {\"date\": \"2026-06-13T10:57:20+07:00\", \"name\": \"Ciprofloxacin 500mg\", \"dosage\": \"1 viên × 2 lần/ngày × 5 ngày\", \"status\": \"active\"}], \"observations\": [{\"date\": \"2026-05-13\", \"measure\": \"CBC panel\", \"value\": \"Platelets: 133.0 10*3/uL; WBC: 3.9 10*3/uL; Hematocrit: 47.9 %; Hemoglobin: 16.3 g/dL\"}, {\"date\": \"2026-05-15\", \"measure\": \"CBC panel\", \"value\": \"Platelets: 133.0 10*3/uL; WBC: 3.9 10*3/uL; Hematocrit: 47.9 %; Hemoglobin: 16.3 g/dL\"}, {\"date\": \"2026-05-19\", \"measure\": \"CBC panel\", \"value\": \"Platelets: 120.0 10*3/uL; WBC: 4.5 10*3/uL; Hematocrit: 42.0 %; Hemoglobin: 14.0 g/dL\"}, {\"date\": \"2026-06-05\", \"measure\": \"CBC panel\", \"value\": \"Platelets: 120.0 10*3/uL; WBC: 4.5 10*3/uL; Hematocrit: 42.0 %; Hemoglobin: 14.0 g/dL\"}, {\"date\": \"2026-06-06\", \"measure\": \"CBC panel\", \"value\": \"Platelets: 133.0 10*3/uL; WBC: 3.8 10*3/uL; Hematocrit: 47.9 %; Hemoglobin: 16.3 g/dL\"}, {\"date\": \"2026-06-11\", \"measure\": \"CBC panel\", \"value\": \"Platelets: 133.0 10*3/uL; WBC: 3.2 10*3/uL; Hematocrit: 47.9 %; Hemoglobin: 16.3 g/dL\"}, {\"date\": \"2026-06-11\", \"measure\": \"CBC panel\", \"value\": \"Platelets: 133.0 10*3/uL; WBC: 3.8 10*3/uL; Hematocrit: 47.9 %; Hemoglobin: 16.3 g/dL\"}], \"_data_source\": \"Hồ sơ bệnh án · FHIR R5 · Aidbox · Bệnh viện Đa khoa Hà Nội\"}"
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "call_c9c2def530ff4b6ab67a5272",
+      "content": "{\"patient_id\": \"c0f6d7cf-bd7b-47c8-8373-b59a233435f9\", \"count\": 7, \"observations\": [{\"date\": \"2026-06-11\", \"name\": \"CBC panel\", \"value\": \"Platelets: 133.0 10*3/uL | WBC: 3.8 10*3/uL | Hematocrit: 47.9 % | Hemoglobin: 16.3 g/dL\", \"unit\": null, \"status\": \"final\"}, {\"date\": \"2026-06-11\", \"name\": \"CBC panel\", \"value\": \"Platelets: 133.0 10*3/uL | WBC: 3.2 10*3/uL | Hematocrit: 47.9 % | Hemoglobin: 16.3 g/dL\", \"unit\": null, \"status\": \"final\"}, {\"date\": \"2026-06-06\", \"name\": \"CBC panel\", \"value\": \"Platelets: 133.0 10*3/uL | WBC: 3.8 10*3/uL | Hematocrit: 47.9 % | Hemoglobin: 16.3 g/dL\", \"unit\": null, \"status\": \"final\"}, {\"date\": \"2026-06-05\", \"name\": \"CBC panel\", \"value\": \"Platelets: 120.0 10*3/uL | WBC: 4.5 10*3/uL | Hematocrit: 42.0 % | Hemoglobin: 14.0 g/dL\", \"unit\": null, \"status\": \"final\"}, {\"date\": \"2026-05-19\", \"name\": \"CBC panel\", \"value\": \"Platelets: 120.0 10*3/uL | WBC: 4.5 10*3/uL | Hematocrit: 42.0 % | Hemoglobin: 14.0 g/dL\", \"unit\": null, \"status\": \"final\"}, {\"date\": \"2026-05-15\", \"name\": \"CBC panel\", \"value\": \"Platelets: 133.0 10*3/uL | WBC: 3.9 10*3/uL | Hematocrit: 47.9 % | Hemoglobin: 16.3 g/dL\", \"unit\": null, \"status\": \"final\"}, {\"date\": \"2026-05-13\", \"name\": \"CBC panel\", \"value\": \"Platelets: 133.0 10*3/uL | WBC: 3.9 10*3/uL | Hematocrit: 47.9 % | Hemoglobin: 16.3 g/dL\", \"unit\": null, \"status\": \"final\"}], \"summary\": \"Chỉ số gần nhất:\\n- CBC panel: Platelets: 133.0 10*3/uL | WBC: 3.8 10*3/uL | Hematocrit: 47.9 % | Hemoglobin: 16.3 g/dL (ngày 2026-06-11)\"}"
+    },
+    {
+      "role": "assistant",
+      "content": "**Phan Hùng** — Nam, 22 tuổi (sinh 01/01/2004)  \nSĐT: 0904 608 777  \n\n**Tiền sử:** Không ghi nhận bệnh nền  \n**Thuốc hiện tại:**  \n- Amoxicillin 500 mg — 1 viên × 2 lần/ngày × 5 ngày (bắt đầu 13/06/2026)  \n- Ciprofloxacin 500 mg — 1 viên × 2 lần/ngày × 5 ngày (bắt đầu 13/06/2026)  \n\n**Xét nghiệm gần nhất (11/06/2026):**  \n- PLT: **133 ×10³/μL** *(giảm nhẹ — ngưỡng bình thường: 150–400)*  \n- WBC: **3.8 K/μL** *(thấp nhẹ — ngưỡng: 4.0–11.0)*  \n- HGB: 16.3 g/dL | HCT: 47.9% *(bình thường)*  \n\nCác lần CBC trước đó cho thấy dao động PLT từ 120–133 ×10³/μL, WBC giảm nhẹ trong vài lần gần đây.  \n\n📋 *Nguồn: fhir_search_patient + fhir_get_patient_history + fhir_get_observations*"
+    },
+    {
+      "role": "user",
+      "content": "đây là cbc của bệnh nhân phan hùng khám ngày hôm nay\n\n[Nội dung ảnh xét nghiệm]\nTÊN XÉT NGHIỆM KẾT QUẢ CSBT ĐƠN VỊ\nHuyết học * Tổng phân tích TB máu ( Laser)\nWBc 3.8 (4 - 10) 10^9/L\nNEU% 63.2 (50 - 75) % \nNEU# 2.4 (1.7 - 7.5) 10^9/L\nLYM% 24.9 (20 - 45) %\nLYM# 1.0 (0.4 - 4.5) 10^9/L\nMONO% 7.1 (0.0 - 9.0) %\nMONO# 0.3 (0.0 - 0.9) %\nEOS% 2.2 (0.0 - 6.0) %\nEOS# 0.1 (0.0 - 0.7) %\nBASO% 0.4 (0.0 - 2.5) %\nBASO# 0 (0.0 - 0.2) %\nRBC 5.37 (4.0 - 5.0) 10^12/L\nHGB 163 (120 - 160) g/L\nHCT 47.9 (35 - 55) %\nMCV 89.3 (80 - 97) fl\nMCH 30.5 (26 - 32) pg\nMCHC 341 (360 - 360) g/L\nRDW 13.3 (10 - 15) %\nPLT 133 (150 - 450) 10^9/L\nMPV 7.9 (5 - 11) fl\nPCT 0.11 (0.0 - 9.98) %\nPDW 45.6"
+    },
+    {
+      "role": "assistant",
+      "content": "",
+      "tool_calls": [
+        {
+          "id": "call_b7999e11125b4b89850808cd",
+          "type": "function",
+          "function": {
+            "name": "fhir_create_cbc",
+            "arguments": "{\"patient_id\": \"c0f6d7cf-bd7b-47c8-8373-b59a233435f9\", \"plt\": 133, \"wbc\": 3.8, \"hct\": 47.9, \"hgb\": 16.3}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "call_b7999e11125b4b89850808cd",
+      "content": "{\"saved\": true, \"observation_id\": \"8676b0d9-9124-4581-a558-3fb214f62f1a\", \"observation_date\": \"2026-06-13\", \"patient_id\": \"c0f6d7cf-bd7b-47c8-8373-b59a233435f9\", \"patient_name\": \"Phan Hùng\", \"cbc_saved\": {\"PLT\": \"133.0 K/μL\", \"WBC\": \"3.8 K/μL\", \"HCT\": \"47.9 %\", \"HGB\": \"16.3 g/dL\"}, \"dengue_screening\": {\"dengue_likelihood\": \"possible\", \"likelihood_label\": \"Có thể là SXHD — cần xác chẩn\", \"color\": \"yellow\", \"cbc_score\": 1, \"warning_score\": 0, \"input\": {\"plt\": 133.0, \"wbc\": 3.8, \"hct\": 47.9, \"hct_baseline\": 43.0, \"gender\": \"male\", \"ast\": null, \"alt\": null, \"hgb\": 16.3, \"plt_previous\": 133.0, \"fever_day\": null}, \"findings\": [\"🟢 Tiểu cầu thấp-bình thường: 133.0 K/μL (100–150)\", \"🟡 Bạch cầu giảm: 3.8 K/μL — leukopenia, dấu hiệu sớm điển hình của SXHD\", \"ℹ️ Dùng Hct baseline TB nam giới: 43.0% (QĐ 2760 trang 28)\", \"ℹ️ Hematocrit: 47.9% — không có baseline thực để đánh giá xu hướng.\"], \"citations\": {\"🟡 Bạch cầu giảm: 3.8 K/μL — leukopenia, dấu hiệu sớm điển hình của SXHD\": \"QĐ 2760 trang 5 mục II.1.2; ngưỡng số là thực hành\"}, \"clinical_red_flags\": [], \"interpretation\": \"Phát hiện 2/3 tiêu chí cận lâm sàng SXHD theo QĐ 2760 (Phụ lục 2 trang 23): bạch cầu giảm, Hct tăng so với baseline dân số.\", \"recommended_next_tests\": [\"🔬 NS1 (test nhanh) — ưu tiên trong 5 ngày đầu của sốt (QĐ 2760 trang 6)\", \"🔬 IgM/IgG (ELISA hoặc test nhanh) — từ ngày 5 trở đi, đặc biệt nếu NS1 âm tính (QĐ 2760 trang 6)\"], \"next_action\": \"Đến phòng khám làm NS1 (test nhanh) trong ngày\", \"aspirin_warning\": \"⛔ KHÔNG dùng aspirin (acetylsalicylic acid), analgin, ibuprofen để hạ sốt vì có thể gây xuất huyết, toan máu (QĐ 2760 trang 7). Chỉ dùng paracetamol đơn chất, 10–15 mg/kg/lần, cách 4–6 giờ, tối đa 60 mg/kg/ngày.\", \"dangerous_phase\": false, \"fever_phase\": null, \"disclaimer\": \"Đây là TOOL SÀNG LỌC dựa trên CBC theo WHO 2009 và QĐ 2760/QĐ-BYT ngày 04/7/2023. KHÔNG thay thế khám lâm sàng. Chẩn đoán xác định SXHD CHỈ qua xét nghiệm NS1/IgM/IgG/PCR (QĐ 2760 trang 6).\", \"source_references\": {\"QĐ_2760_QD_BYT_2023\": {\"trang_5\": \"Giai đoạn lâm sàng & cận lâm sàng (PLT<100, Hct>20% baseline, BC giảm)\", \"trang_6\": \"Chẩn đoán căn nguyên: NS1, IgM/IgG, PCR\", \"trang_7\": \"Khuyến cáo điều trị, cấm aspirin/ibuprofen/analgin\", \"trang_23\": \"Phụ lục 2 — Phân độ SXHD (Hct↑+PLT↓, AST/ALT≥400 = cảnh báo; ≥1000 = nặng); C.1.5 tổn thương gan nhẹ (120–400)\", \"trang_28\": \"Giá trị Hct TB theo giới: nam 43%, nữ 38%\"}, \"WHO_2009\": {\"page_23_pdf\": \"Figure 1.4 — Probable dengue criteria\", \"page_38_pdf\": \"Section 2.1.2 — Critical phase days 3–7\", \"page_114_pdf\": \"Section 4.3.5 — Haematological tests\"}}, \"_citation\": \"QĐ 2760/QĐ-BYT 2023 · Bộ Y tế Việt Nam · WHO Dengue Guidelines 2009\"}, \"plt_previous_used\": {\"plt\": 133.0, \"date\": \"2026-06-11\"}}"
+    },
+    {
+      "role": "assistant",
+      "content": "**Bệnh nhân:** Phan Hùng — ngày xét nghiệm: 13/06/2026  \n**Chỉ số CBC:**  \n- PLT: **133 K/μL** | WBC: **3.8 K/μL** | HCT: **47.9%** | HGB: **16.3 g/dL**  \n- RBC: 5.37 ×10¹²/L *(cao)* | HGB (g/L): 163 *(cao — chuyển sang g/dL = 16.3)*  \n\n**Sàng lọc SXHD:** Có thể là SXHD — cần xác chẩn *(màu vàng)*  \n\n**Phát hiện:**  \n- 🟢 Tiểu cầu thấp-bình thường: 133 K/μL (giới hạn 100–150)  \n- 🟡 Bạch cầu giảm: 3.8 K/μL — leukopenia, dấu hiệu sớm điển hình của SXHD  \n- ℹ️ Hematocrit 47.9% so với baseline dân số nam (43%) → tăng nhẹ, nhưng không có baseline cá nhân để đánh giá xu hướng  \n\n**Khuyến nghị tiếp theo:**  \n- 🔬 Làm **NS1 (test nhanh)** trong ngày — ưu tiên nếu sốt <5 ngày  \n- 🔬 Nếu NS1 âm tính hoặc sốt ≥5 ngày: xét nghiệm **IgM/IgG**  \n- ⛔ **Không dùng aspirin, ibuprofen, analgin** — chỉ dùng paracetamol đơn chất (10–15 mg/kg/lần, cách 4–6h, tối đa 60 mg/kg/ngày)  \n\n_(Công cụ sàng lọc theo QĐ 2760/QĐ-BYT 2023. Không thay thế chẩn đoán lâm sàng.)_  \n📖 *Theo: QĐ 2760/QĐ-BYT 2023 · Bộ Y tế Việt Nam · WHO Dengue Guidelines 2009*"
+    }
+  ]
+}

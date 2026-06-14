@@ -9,6 +9,8 @@ class ChatRequest(BaseModel):
     role: str = "patient"
     doctor_name: str = ""
     doctor_id: str = ""
+    patient_id: str = ""
+    patient_name: str = ""
     image_base64: str = ""
     image_mime: str = "image/jpeg"
 

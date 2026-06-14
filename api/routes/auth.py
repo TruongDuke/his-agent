@@ -5,6 +5,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
 from api.deps import _aidbox
+from api.tokens import create_token
 from db import get_user, create_user, verify_password
 
 router = APIRouter()
@@ -56,11 +57,13 @@ async def login(body: LoginRequest):
             return {"status": "need_password", "name": user["name"]}
         if not verify_password(body.password, user["password"]):
             raise HTTPException(401, "Mật khẩu không đúng.")
+        token = create_token(user["fhir_id"], user["name"], user["role"])
         return {
             "status": "ok",
             "role":   user["role"],
             "id":     user["fhir_id"],
             "name":   user["name"],
+            "token":  token,
         }
 
     # Chưa có tài khoản — tìm trong Aidbox
@@ -70,9 +73,11 @@ async def login(body: LoginRequest):
 
     # Tự tạo tài khoản với mật khẩu mặc định
     create_user(phone, DEFAULT_PASSWORD, fhir["fhir_id"], fhir["role"], fhir["name"])
+    token = create_token(fhir["fhir_id"], fhir["name"], fhir["role"])
     return {
         "status": "ok",
         "role":   fhir["role"],
         "id":     fhir["fhir_id"],
         "name":   fhir["name"],
+        "token":  token,
     }

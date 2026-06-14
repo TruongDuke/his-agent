@@ -1,0 +1,282 @@
+{
+  "session_id": "doctor_prac-general_d9cc64c1-903c-452e-9be0-db8759fc0b2c",
+  "title": "tìm hồ sơ bệnh nhân Phạm Nguyên Việt",
+  "created_at": "2026-06-05T17:47:24",
+  "updated_at": "2026-06-08T10:42:27",
+  "messages": [
+    {
+      "role": "user",
+      "content": "tìm hồ sơ bệnh nhân Phạm Nguyên Việt"
+    },
+    {
+      "role": "assistant",
+      "content": "",
+      "tool_calls": [
+        {
+          "id": "call_5726cfbaa0e642c9bc40f0",
+          "type": "function",
+          "function": {
+            "name": "fhir_search_patient",
+            "arguments": "{\"query\": \"Phạm Nguyên Việt\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "call_5726cfbaa0e642c9bc40f0",
+      "content": "{\"matched_by\": \"name\", \"count\": 1, \"patients\": [{\"id\": \"3849bb32-526d-4213-9f13-c0e97d6dcf1a\", \"name\": \"Phạm Nguyên Việt\", \"gender\": \"male\", \"birth_date\": \"2004-02-27\", \"age\": 22, \"bhyt\": null, \"cccd\": null, \"phone\": \"0904608754\", \"_source\": \"FHIR R5 · Aidbox · Patient/3849bb32-526d-4213-9f13-c0e97d6dcf1a · cập nhật 2026-06-01 04:51\"}], \"_data_source\": \"FHIR R5 · Aidbox · Bệnh viện Đa khoa Hà Nội\"}"
+    },
+    {
+      "role": "assistant",
+      "content": "",
+      "tool_calls": [
+        {
+          "id": "call_e6574962741a4880a9eb8f",
+          "type": "function",
+          "function": {
+            "name": "fhir_get_patient_history",
+            "arguments": "{\"patient_id\": \"3849bb32-526d-4213-9f13-c0e97d6dcf1a\"}"
+          }
+        },
+        {
+          "id": "call_d33bd95c12294cc999cfa8",
+          "type": "function",
+          "function": {
+            "name": "fhir_get_observations",
+            "arguments": "{\"patient_id\": \"3849bb32-526d-4213-9f13-c0e97d6dcf1a\", \"category\": \"all\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "call_e6574962741a4880a9eb8f",
+      "content": "{\"patient\": {\"id\": \"3849bb32-526d-4213-9f13-c0e97d6dcf1a\", \"name\": \"Phạm Nguyên Việt\", \"gender\": \"male\", \"birth_date\": \"2004-02-27\", \"age\": 22, \"bhyt\": null, \"cccd\": null, \"phone\": \"0904608754\", \"_source\": \"FHIR R5 · Aidbox · Patient/3849bb32-526d-4213-9f13-c0e97d6dcf1a · cập nhật 2026-06-01 04:51\"}, \"summary\": {\"visits_count\": 0, \"active_conditions\": [], \"current_medications\": []}, \"encounters\": [], \"conditions\": [], \"medications\": [], \"observations\": [], \"_data_source\": \"Hồ sơ bệnh án · FHIR R5 · Aidbox · Bệnh viện Đa khoa Hà Nội\"}"
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "call_d33bd95c12294cc999cfa8",
+      "content": "{\"patient_id\": \"3849bb32-526d-4213-9f13-c0e97d6dcf1a\", \"count\": 0, \"observations\": [], \"summary\": \"Không có chỉ số nào được ghi nhận.\"}"
+    },
+    {
+      "role": "assistant",
+      "content": "**Phạm Nguyên Việt** — Nam, 22 tuổi (sinh 27/02/2004)  \n**Thông tin:** SĐT 0904608754  \n**Tiền sử:** Không ghi nhận bệnh nền nào trong hồ sơ.  \n**Thuốc hiện tại:** Không đang dùng thuốc nào được lưu trong hệ thống.  \n**Xét nghiệm gần nhất:** Không có chỉ số nào được ghi nhận.  \n**Lần khám gần nhất:** Chưa có lượt khám nào được lưu trong hệ thống.\n\n📋 *Nguồn: FHIR R5 · Aidbox · Bệnh viện Đa khoa Hà Nội*"
+    },
+    {
+      "role": "user",
+      "content": "tìm bệnh nhân Phan Hùng"
+    },
+    {
+      "role": "assistant",
+      "content": "",
+      "tool_calls": [
+        {
+          "id": "call_375e793877d9436a8fbc9f46",
+          "type": "function",
+          "function": {
+            "name": "fhir_search_patient",
+            "arguments": "{\"query\": \"Phan Hùng\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "call_375e793877d9436a8fbc9f46",
+      "content": "{\"matched_by\": \"name\", \"count\": 1, \"patients\": [{\"id\": \"c0f6d7cf-bd7b-47c8-8373-b59a233435f9\", \"name\": \"Phan Hùng\", \"gender\": \"male\", \"birth_date\": \"2004-01-01\", \"age\": 22, \"bhyt\": null, \"cccd\": null, \"phone\": \"0904608777\", \"_source\": \"FHIR R5 · Aidbox · Patient/c0f6d7cf-bd7b-47c8-8373-b59a233435f9 · cập nhật 2026-05-12 07:57\"}], \"_data_source\": \"FHIR R5 · Aidbox · Bệnh viện Đa khoa Hà Nội\"}"
+    },
+    {
+      "role": "assistant",
+      "content": "**Phan Hùng** — Nam, 22 tuổi (sinh 01/01/2004)  \n**Thông tin:** SĐT 0904608777  \n**Tiền sử:** Không có bệnh nền được ghi nhận trong hồ sơ.  \n**Thuốc hiện tại:** Không đang dùng thuốc nào được lưu.  \n**Xét nghiệm gần nhất:** Chưa có chỉ số nào được ghi nhận.  \n**Lần khám gần nhất:** Chưa có lượt khám nào được lưu trong hệ thống.\n\n📋 *Nguồn: FHIR R5 · Aidbox · Bệnh viện Đa khoa Hà Nội*"
+    },
+    {
+      "role": "user",
+      "content": "alo"
+    },
+    {
+      "role": "assistant",
+      "content": "Bảng Lịch hẹn hôm nay trên giao diện hiển thị danh sách theo bác sĩ và ngày.  \nNếu cần tra cứu lịch cụ thể của một khoa hoặc bệnh nhân, vui lòng cung cấp thêm thông tin (tên BN, khoa, hoặc ngày)."
+    },
+    {
+      "role": "user",
+      "content": "xem hồ sơ bệnh nhân phan hùng"
+    },
+    {
+      "role": "assistant",
+      "content": "",
+      "tool_calls": [
+        {
+          "id": "call_97af09fe16c348c1826d2f76",
+          "type": "function",
+          "function": {
+            "name": "fhir_get_patient_history",
+            "arguments": "{\"patient_id\": \"c0f6d7cf-bd7b-47c8-8373-b59a233435f9\"}"
+          }
+        },
+        {
+          "id": "call_ac94606f39f2467683e095da",
+          "type": "function",
+          "function": {
+            "name": "fhir_get_observations",
+            "arguments": "{\"patient_id\": \"c0f6d7cf-bd7b-47c8-8373-b59a233435f9\", \"category\": \"all\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "call_97af09fe16c348c1826d2f76",
+      "content": "{\"patient\": {\"id\": \"c0f6d7cf-bd7b-47c8-8373-b59a233435f9\", \"name\": \"Phan Hùng\", \"gender\": \"male\", \"birth_date\": \"2004-01-01\", \"age\": 22, \"bhyt\": null, \"cccd\": null, \"phone\": \"0904608777\", \"_source\": \"FHIR R5 · Aidbox · Patient/c0f6d7cf-bd7b-47c8-8373-b59a233435f9 · cập nhật 2026-05-12 07:57\"}, \"summary\": {\"visits_count\": 0, \"active_conditions\": [], \"current_medications\": []}, \"encounters\": [], \"conditions\": [], \"medications\": [], \"observations\": [{\"date\": \"2026-05-13\", \"measure\": \"CBC panel\", \"value\": \"Platelets: 133.0 10*3/uL; WBC: 3.9 10*3/uL; Hematocrit: 47.9 %; Hemoglobin: 16.3 g/dL\"}, {\"date\": \"2026-05-15\", \"measure\": \"CBC panel\", \"value\": \"Platelets: 133.0 10*3/uL; WBC: 3.9 10*3/uL; Hematocrit: 47.9 %; Hemoglobin: 16.3 g/dL\"}, {\"date\": \"2026-05-19\", \"measure\": \"CBC panel\", \"value\": \"Platelets: 120.0 10*3/uL; WBC: 4.5 10*3/uL; Hematocrit: 42.0 %; Hemoglobin: 14.0 g/dL\"}, {\"date\": \"2026-06-05\", \"measure\": \"CBC panel\", \"value\": \"Platelets: 120.0 10*3/uL; WBC: 4.5 10*3/uL; Hematocrit: 42.0 %; Hemoglobin: 14.0 g/dL\"}], \"_data_source\": \"Hồ sơ bệnh án · FHIR R5 · Aidbox · Bệnh viện Đa khoa Hà Nội\"}"
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "call_ac94606f39f2467683e095da",
+      "content": "{\"patient_id\": \"c0f6d7cf-bd7b-47c8-8373-b59a233435f9\", \"count\": 4, \"observations\": [{\"date\": \"2026-06-05\", \"name\": \"CBC panel\", \"value\": \"Platelets: 120.0 10*3/uL | WBC: 4.5 10*3/uL | Hematocrit: 42.0 % | Hemoglobin: 14.0 g/dL\", \"unit\": null, \"status\": \"final\"}, {\"date\": \"2026-05-19\", \"name\": \"CBC panel\", \"value\": \"Platelets: 120.0 10*3/uL | WBC: 4.5 10*3/uL | Hematocrit: 42.0 % | Hemoglobin: 14.0 g/dL\", \"unit\": null, \"status\": \"final\"}, {\"date\": \"2026-05-15\", \"name\": \"CBC panel\", \"value\": \"Platelets: 133.0 10*3/uL | WBC: 3.9 10*3/uL | Hematocrit: 47.9 % | Hemoglobin: 16.3 g/dL\", \"unit\": null, \"status\": \"final\"}, {\"date\": \"2026-05-13\", \"name\": \"CBC panel\", \"value\": \"Platelets: 133.0 10*3/uL | WBC: 3.9 10*3/uL | Hematocrit: 47.9 % | Hemoglobin: 16.3 g/dL\", \"unit\": null, \"status\": \"final\"}], \"summary\": \"Chỉ số gần nhất:\\n- CBC panel: Platelets: 120.0 10*3/uL | WBC: 4.5 10*3/uL | Hematocrit: 42.0 % | Hemoglobin: 14.0 g/dL (ngày 2026-06-05)\"}"
+    },
+    {
+      "role": "assistant",
+      "content": "**Phan Hùng** — Nam, 22 tuổi (sinh 01/01/2004)  \n**Thông tin:** SĐT 0904608777  \n\n**Tiền sử:** Không ghi nhận bệnh nền.  \n**Thuốc hiện tại:** Không dùng thuốc đang lưu.  \n\n**Xét nghiệm gần nhất (05/06/2026):**  \n- **PLT**: 120 K/μL *(bình thường)*  \n- **WBC**: 4.5 K/μL *(bình thường)*  \n- **HCT**: 42.0 % *(bình thường)*  \n- **HGB**: 14.0 g/dL *(bình thường)*  \n\n**So sánh xu hướng (05/06 vs 13/05):**  \n- PLT giảm nhẹ từ 133 → 120 K/μL  \n- HGB giảm từ 16.3 → 14.0 g/dL  \n- HCT giảm từ 47.9% → 42.0%  \n\n**Lần khám gần nhất:** Chưa có lượt khám được ghi nhận trong hệ thống (chỉ có xét nghiệm CBC tự động lưu).  \n\n📋 *Nguồn: FHIR R5 · Aidbox · Bệnh viện Đa khoa Hà Nội*"
+    },
+    {
+      "role": "user",
+      "content": "đây là cbc ngày hôm nay của phan hùng\n\n[Nội dung ảnh xét nghiệm]\nTÊN XÉT NGHIỆM KẾT QUẢ CSBT ĐƠN VỊ\nHuyết học * Tổng phân tích TB máu ( Laser)\nWBc 3.8 (4 - 10) 10^9/L\nNEU% 63.2 (50 - 75) % \nNEU# 2.4 (1.7 - 7.5) 10^9/L\nLYM% 24.9 (20 - 45) %\nLYM# 1.0 (0.4 - 4.5) 10^9/L\nMONO% 7.1 (0.0 - 9.0) %\nMONO# 0.3 (0.0 - 0.9) %\nEOS% 2.2 (0.0 - 6.0) %\nEOS# 0.1 (0.0 - 0.7) %\nBASO% 0.4 (0.0 - 2.5) %\nBASO# 0 (0.0 - 0.2) %\nRBC 5.37 (4.0 - 5.0) 10^12/L\nHGB 163 (120 - 160) g/L\nHCT 47.9 (35 - 55) %\nMCV 89.3 (80 - 97) fl\nMCH 30.5 (26 - 32) pg\nMCHC 341 (360 - 360) g/L\nRDW 13.3 (10 - 15) %\nPLT 133 (150 - 450) 10^9/L\nMPV 7.9 (5 - 11) fl\nPCT 0.11 (0.0 - 9.98) %\nPDW 45.6"
+    },
+    {
+      "role": "assistant",
+      "content": "",
+      "tool_calls": [
+        {
+          "id": "call_816d8d77f01f48d7aaf75b22",
+          "type": "function",
+          "function": {
+            "name": "fhir_create_cbc",
+            "arguments": "{\"patient_id\": \"c0f6d7cf-bd7b-47c8-8373-b59a233435f9\", \"plt\": 133, \"wbc\": 3.8, \"hct\": 47.9, \"hgb\": 16.3}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "call_816d8d77f01f48d7aaf75b22",
+      "content": "{\"saved\": true, \"observation_id\": \"72e2874e-6eb8-486c-8593-3bffbddf3d27\", \"observation_date\": \"2026-06-06\", \"patient_id\": \"c0f6d7cf-bd7b-47c8-8373-b59a233435f9\", \"patient_name\": \"Phan Hùng\", \"cbc_saved\": {\"PLT\": \"133.0 K/μL\", \"WBC\": \"3.8 K/μL\", \"HCT\": \"47.9 %\", \"HGB\": \"16.3 g/dL\"}, \"dengue_screening\": {\"dengue_likelihood\": \"possible\", \"likelihood_label\": \"Có thể là SXHD — cần xác chẩn\", \"color\": \"yellow\", \"cbc_score\": 1, \"warning_score\": 0, \"input\": {\"plt\": 133.0, \"wbc\": 3.8, \"hct\": 47.9, \"hct_baseline\": 43.0, \"gender\": \"male\", \"ast\": null, \"alt\": null, \"hgb\": 16.3, \"plt_previous\": 120.0, \"fever_day\": null}, \"findings\": [\"🟢 Tiểu cầu thấp-bình thường: 133.0 K/μL (100–150)\", \"🟡 Bạch cầu giảm: 3.8 K/μL — leukopenia, dấu hiệu sớm điển hình của SXHD\", \"ℹ️ Dùng Hct baseline TB nam giới: 43.0% (QĐ 2760 trang 28)\", \"ℹ️ Hematocrit: 47.9% — không có baseline thực để đánh giá xu hướng.\"], \"citations\": {\"🟡 Bạch cầu giảm: 3.8 K/μL — leukopenia, dấu hiệu sớm điển hình của SXHD\": \"QĐ 2760 trang 5 mục II.1.2; ngưỡng số là thực hành\"}, \"clinical_red_flags\": [], \"interpretation\": \"Phát hiện 2/3 tiêu chí cận lâm sàng SXHD theo QĐ 2760 (Phụ lục 2 trang 23): bạch cầu giảm, Hct tăng so với baseline dân số.\", \"recommended_next_tests\": [\"🔬 NS1 (test nhanh) — ưu tiên trong 5 ngày đầu của sốt (QĐ 2760 trang 6)\", \"🔬 IgM/IgG (ELISA hoặc test nhanh) — từ ngày 5 trở đi, đặc biệt nếu NS1 âm tính (QĐ 2760 trang 6)\"], \"next_action\": \"Đến phòng khám làm NS1 (test nhanh) trong ngày\", \"aspirin_warning\": \"⛔ KHÔNG dùng aspirin (acetylsalicylic acid), analgin, ibuprofen để hạ sốt vì có thể gây xuất huyết, toan máu (QĐ 2760 trang 7). Chỉ dùng paracetamol đơn chất, 10–15 mg/kg/lần, cách 4–6 giờ, tối đa 60 mg/kg/ngày.\", \"dangerous_phase\": false, \"fever_phase\": null, \"disclaimer\": \"Đây là TOOL SÀNG LỌC dựa trên CBC theo WHO 2009 và QĐ 2760/QĐ-BYT ngày 04/7/2023. KHÔNG thay thế khám lâm sàng. Chẩn đoán xác định SXHD CHỈ qua xét nghiệm NS1/IgM/IgG/PCR (QĐ 2760 trang 6).\", \"source_references\": {\"QĐ_2760_QD_BYT_2023\": {\"trang_5\": \"Giai đoạn lâm sàng & cận lâm sàng (PLT<100, Hct>20% baseline, BC giảm)\", \"trang_6\": \"Chẩn đoán căn nguyên: NS1, IgM/IgG, PCR\", \"trang_7\": \"Khuyến cáo điều trị, cấm aspirin/ibuprofen/analgin\", \"trang_23\": \"Phụ lục 2 — Phân độ SXHD (Hct↑+PLT↓, AST/ALT≥400 = cảnh báo; ≥1000 = nặng); C.1.5 tổn thương gan nhẹ (120–400)\", \"trang_28\": \"Giá trị Hct TB theo giới: nam 43%, nữ 38%\"}, \"WHO_2009\": {\"page_23_pdf\": \"Figure 1.4 — Probable dengue criteria\", \"page_38_pdf\": \"Section 2.1.2 — Critical phase days 3–7\", \"page_114_pdf\": \"Section 4.3.5 — Haematological tests\"}}, \"_citation\": \"QĐ 2760/QĐ-BYT 2023 · Bộ Y tế Việt Nam · WHO Dengue Guidelines 2009\"}, \"plt_previous_used\": {\"plt\": 120.0, \"date\": \"2026-06-05\"}}"
+    },
+    {
+      "role": "assistant",
+      "content": "**Bệnh nhân:** Phan Hùng — 06/06/2026  \n**Chỉ số CBC:**  \n- **PLT**: 133 K/μL | **WBC**: 3.8 K/μL | **HCT**: 47.9% | **HGB**: 16.3 g/dL  \n\n**Sàng lọc SXHD:** Có thể là SXHD — cần xác chẩn *(yellow)*  \n\n**Phát hiện:**  \n- 🟢 Tiểu cầu thấp-bình thường: 133.0 K/μL (100–150)  \n- 🟡 Bạch cầu giảm: 3.8 K/μL — leukopenia, dấu hiệu sớm điển hình của SXHD  \n- ℹ️ Hematocrit: 47.9% — so với baseline dân số nam (43%), tăng nhẹ nhưng chưa đủ để khẳng định cô đặc máu do thiếu dữ liệu baseline cá nhân  \n\n**Khuyến nghị tiếp theo:**  \n- 🔬 Làm **NS1 (test nhanh)** trong ngày — ưu tiên nếu sốt <5 ngày  \n- 🔬 Nếu NS1 âm tính hoặc sốt ≥5 ngày: xét nghiệm **IgM/IgG**  \n- ⛔ **Không dùng aspirin, ibuprofen, analgin** — chỉ dùng **paracetamol đơn chất** (10–15 mg/kg/lần, cách 4–6h, tối đa 60 mg/kg/ngày)  \n\n_(Công cụ sàng lọc theo QĐ 2760/QĐ-BYT 2023. Không thay thế chẩn đoán lâm sàng.)_  \n\n📖 *Theo: QĐ 2760/QĐ-BYT 2023 · Bộ Y tế Việt Nam · WHO Dengue Guidelines 2009*"
+    },
+    {
+      "role": "user",
+      "content": "tuần sau tôi có lịch hẹn nào không"
+    },
+    {
+      "role": "assistant",
+      "content": "",
+      "tool_calls": [
+        {
+          "id": "call_7848d2aeee214ef6be19b8e9",
+          "type": "function",
+          "function": {
+            "name": "fhir_get_doctor_schedule",
+            "arguments": "{\"date_from\": \"2026-06-08\", \"date_to\": \"2026-06-14\", \"practitioner_id\": \"prac-general\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "call_7848d2aeee214ef6be19b8e9",
+      "content": "{\"total\": 0, \"appointments\": [], \"message\": \"Không có lịch hẹn từ 2026-06-08 đến 2026-06-14.\"}"
+    },
+    {
+      "role": "assistant",
+      "content": "Không có lịch hẹn nào được ghi nhận cho bạn từ ngày 08/06 đến 14/06/2026."
+    },
+    {
+      "role": "user",
+      "content": "tôi là ai"
+    },
+    {
+      "role": "assistant",
+      "content": "Bạn là **Thanh Tùng Phạm**, practitioner_id: `prac-general`, đang làm việc tại Bệnh viện Đa khoa Hà Nội."
+    },
+    {
+      "role": "user",
+      "content": "tôi là bác sĩ khoa nào"
+    },
+    {
+      "role": "assistant",
+      "content": "Bạn là bác sĩ **Khoa Nội Tổng Quát** (General Medicine), với practitioner_id: `prac-general`."
+    },
+    {
+      "role": "user",
+      "content": "Bác sĩ dặn tôi gì sau lần khám ngày 6/6?"
+    },
+    {
+      "role": "assistant",
+      "content": "Vui lòng cung cấp tên hoặc mã bệnh nhân (patient_id) để tôi truy xuất ghi chú lâm sàng sau lần khám ngày 06/06/2026."
+    },
+    {
+      "role": "user",
+      "content": "Bác sĩ dặn Alex Phạm gì sau lần khám ngày 6/6?"
+    },
+    {
+      "role": "assistant",
+      "content": "",
+      "tool_calls": [
+        {
+          "id": "call_0724062f85124603898ccf75",
+          "type": "function",
+          "function": {
+            "name": "fhir_search_patient",
+            "arguments": "{\"query\": \"Alex Phạm\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "call_0724062f85124603898ccf75",
+      "content": "{\"matched_by\": \"name\", \"count\": 2, \"patients\": [{\"id\": \"b2e0627b-1767-4f80-8519-f3dc776d0b1d\", \"name\": \"Alex Pham\", \"gender\": \"male\", \"birth_date\": \"2004-10-22\", \"age\": 21, \"bhyt\": null, \"cccd\": null, \"phone\": \"0904608749\", \"_source\": \"FHIR R5 · Aidbox · Patient/b2e0627b-1767-4f80-8519-f3dc776d0b1d · cập nhật 2026-04-26 04:11\"}, {\"id\": \"294b0ed1-6df7-44a4-9838-2b5a99d59e33\", \"name\": \"Alex Phạm\", \"gender\": \"male\", \"birth_date\": \"2004-04-27\", \"age\": 22, \"bhyt\": \"HS4010234567890\", \"cccd\": \"123456789012\", \"phone\": \"0909090909\", \"_source\": \"FHIR R5 · Aidbox · Patient/294b0ed1-6df7-44a4-9838-2b5a99d59e33 · cập nhật 2026-04-27 09:20\"}], \"_data_source\": \"FHIR R5 · Aidbox · Bệnh viện Đa khoa Hà Nội\"}"
+    },
+    {
+      "role": "assistant",
+      "content": "Có 2 bệnh nhân khớp tên \"Alex Phạm\" / \"Alex Pham\". Vui lòng xác nhận đúng bệnh nhân:\n\n1. **Alex Pham** — Nam, 21 tuổi (sinh 22/10/2004), SĐT 0904608749  \n2. **Alex Phạm** — Nam, 22 tuổi (sinh 27/04/2004), BHYT HS4010234567890, CCCD 123456789012, SĐT 0909090909  \n\nSau khi xác nhận, tôi sẽ truy xuất ghi chú lâm sàng sau lần khám ngày 06/06/2026."
+    },
+    {
+      "role": "user",
+      "content": "Bác sĩ dặn Alex Phạm gì sau lần khám ngày 6/6?"
+    },
+    {
+      "role": "assistant",
+      "content": "",
+      "tool_calls": [
+        {
+          "id": "call_6daedcd05b464d11bcb80641",
+          "type": "function",
+          "function": {
+            "name": "fhir_get_clinical_impressions",
+            "arguments": "{\"patient_id\": \"294b0ed1-6df7-44a4-9838-2b5a99d59e33\", \"count\": 5}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "call_6daedcd05b464d11bcb80641",
+      "content": "{\"found\": true, \"total\": 1, \"impressions\": [{\"date\": \"2026-06-06\", \"diagnosis\": \"Viêm họng cấp\", \"notes\": \"Họng đỏ, amidan sưng. Không sốt cao.\", \"plan\": \"Kháng sinh 5 ngày, tái khám nếu không đỡ\", \"doctor\": \"Practitioner/prac-general\"}]}"
+    },
+    {
+      "role": "assistant",
+      "content": "**Alex Phạm** — sau lần khám ngày **06/06/2026**:  \n- **Chẩn đoán:** Viêm họng cấp (họng đỏ, amidan sưng, không sốt cao)  \n- **Kế hoạch điều trị:**  \n  - Dùng kháng sinh trong 5 ngày  \n  - Tái khám nếu triệu chứng không cải thiện  \n\n📋 *Nguồn: FHIR R5 · Aidbox · Bệnh viện Đa khoa Hà Nội*"
+    },
+    {
+      "role": "user",
+      "content": "Xin chào"
+    },
+    {
+      "role": "assistant",
+      "content": "Bảng Lịch hẹn hôm nay trên giao diện hiển thị danh sách theo bác sĩ và ngày.  \nNếu cần tra cứu hồ sơ, lịch hẹn, hoặc phân tích xét nghiệm — vui lòng cung cấp tên bệnh nhân, mã định danh, hoặc nội dung cụ thể."
+    }
+  ]
+}

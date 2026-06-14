@@ -17,6 +17,7 @@ ARGS_SCHEMA = {
 
 # LOINC codes → tên tiếng Việt
 _LOINC_VI = {
+    "85353-1": "Sinh hiệu",
     "8480-6":  "Huyết áp tâm thu",
     "8462-4":  "Huyết áp tâm trương",
     "55284-4": "Huyết áp",
@@ -49,13 +50,27 @@ def run(args: dict) -> dict:
     category = str(args.get("category") or "all").strip().lower()
 
     _VITAL_LOINC = {
+        "85353-1",                           # Vital signs panel (parent code)
         "85354-9",                           # BP panel (parent code)
         "8480-6", "8462-4", "55284-4",       # BP components
         "29463-7", "8302-2", "39156-5",      # weight, height, BMI
         "8867-4", "9279-1",                  # HR, RR
         "8310-5", "59408-5",                 # temp, SpO2
     }
-    _LAB_LOINC = {"2339-0","4548-4","2093-3","2085-9","2089-1","3094-0","2160-0"}
+    _LAB_LOINC = {
+        # Sinh hóa / metabolic
+        "2339-0","4548-4","2093-3","2085-9","2089-1","3094-0","2160-0",
+        # CBC panel + components (LOINC codes used by fhir_create_cbc)
+        "58410-2",          # CBC panel
+        "777-3",            # PLT
+        "6690-2",           # WBC
+        "4544-3",           # HCT
+        "718-7",            # HGB
+        "789-8",            # RBC
+        "787-2","785-6","786-4",  # MCV, MCH, MCHC
+        "736-9","4650-8",   # Lymphocyte %, Neutrophil %
+        "1920-8","1742-6",  # AST, ALT
+    }
 
     # Server-side filter by subject
     params = {"subject": f"Patient/{pid}", "_count": "200", "_sort": "-date"}

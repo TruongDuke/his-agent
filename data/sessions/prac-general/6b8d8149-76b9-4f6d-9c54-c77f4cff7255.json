@@ -1,0 +1,100 @@
+{
+  "session_id": "doctor_prac-general_6b8d8149-76b9-4f6d-9c54-c77f4cff7255",
+  "title": "Xin chào",
+  "created_at": "2026-06-08T10:44:00",
+  "updated_at": "2026-06-11T10:56:53",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Xin chào"
+    },
+    {
+      "role": "assistant",
+      "content": "Bác sĩ Thanh Tùng Phạm, có các kế hoạch chưa theo dõi từ lần khám gần đây:\n\n- Alex Phạm (2026-06-07): Đánh giá lại lâm sàng và xét nghiệm nếu cần; tái khám sau 3–5 ngày nếu triệu chứng còn tồn tại hoặc tiến triển.  \n- Phan Hùng (2026-06-07): Làm test NS1 nhanh trong ngày; theo dõi sát dấu hiệu cảnh báo, tái khám sau 24–48 giờ hoặc khi có biến chứng.  \n- Alex Phạm (2026-06-06): Kháng sinh 5 ngày, tái khám nếu không đỡ.\n\nBác sĩ cần hỗ trợ xem hồ sơ, lịch hẹn, hoặc phân tích xét nghiệm nào không?"
+    },
+    {
+      "role": "user",
+      "content": "đây là cbc của hùng phan ngày thứ 4\n\n[Nội dung ảnh xét nghiệm]\nTÊN XÉT NGHIỆM KẾT QUẢ CSBT ĐƠN VỊ\nHuyết học * Tổng phân tích TB máu ( Laser)\nWBc 3.2 (4 - 10) 10^9/L\nNEU% 63.2 (50 - 75) % \nNEU# 2.4 (1.7 - 7.5) 10^9/L\nLYM% 24.9 (20 - 45) %\nLYM# 1.0 (0.4 - 4.5) 10^9/L\nMONO% 7.1 (0.0 - 9.0) %\nMONO# 0.3 (0.0 - 0.9) %\nEOS% 2.2 (0.0 - 6.0) %\nEOS# 0.1 (0.0 - 0.7) %\nBASO% 0.4 (0.0 - 2.5) %\nBASO# 0 (0.0 - 0.2) %\nRBC 5.37 (4.0 - 5.0) 10^12/L\nHGB 163 (120 - 160) g/L\nHCT 47.9 (35 - 55) %\nMCV 89.3 (80 - 97) fl\nMCH 30.5 (26 - 32) pg\nMCHC 341 (320 - 360) g/L\nRDW 13.3 (10 - 15) %\nPLT 133 (150 - 450) 10^9/L\nMPV 7.9 (5 - 11) fl\nPCT 0.11 (0.0 - 9.98) %\nPDW 45.6"
+    },
+    {
+      "role": "assistant",
+      "content": "",
+      "tool_calls": [
+        {
+          "id": "call_ef26e925e15b4f5e892dda54",
+          "type": "function",
+          "function": {
+            "name": "fhir_search_patient",
+            "arguments": "{\"query\": \"Hùng Phan\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "call_ef26e925e15b4f5e892dda54",
+      "content": "{\"matched_by\": \"name\", \"count\": 0, \"patients\": [], \"_data_source\": \"FHIR R5 · Aidbox · Bệnh viện Đa khoa Hà Nội\"}"
+    },
+    {
+      "role": "assistant",
+      "content": "",
+      "tool_calls": [
+        {
+          "id": "call_af9bb90e6a5449d784617f9d",
+          "type": "function",
+          "function": {
+            "name": "fhir_search_patient",
+            "arguments": "{\"query\": \"Hùng Phan\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "call_af9bb90e6a5449d784617f9d",
+      "content": "{\"matched_by\": \"name\", \"count\": 0, \"patients\": [], \"_data_source\": \"FHIR R5 · Aidbox · Bệnh viện Đa khoa Hà Nội\"}"
+    },
+    {
+      "role": "assistant",
+      "content": "",
+      "tool_calls": [
+        {
+          "id": "call_331cfb2f6a804288996fbf1f",
+          "type": "function",
+          "function": {
+            "name": "fhir_search_patient",
+            "arguments": "{\"query\": \"Phan Hùng\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "call_331cfb2f6a804288996fbf1f",
+      "content": "{\"matched_by\": \"name\", \"count\": 1, \"patients\": [{\"id\": \"c0f6d7cf-bd7b-47c8-8373-b59a233435f9\", \"name\": \"Phan Hùng\", \"gender\": \"male\", \"birth_date\": \"2004-01-01\", \"age\": 22, \"bhyt\": null, \"cccd\": null, \"phone\": \"0904608777\", \"_source\": \"FHIR R5 · Aidbox · Patient/c0f6d7cf-bd7b-47c8-8373-b59a233435f9 · cập nhật 2026-05-12 07:57\"}], \"_data_source\": \"FHIR R5 · Aidbox · Bệnh viện Đa khoa Hà Nội\"}"
+    },
+    {
+      "role": "assistant",
+      "content": "",
+      "tool_calls": [
+        {
+          "id": "call_ccfe90091b934dde8ddcb06e",
+          "type": "function",
+          "function": {
+            "name": "fhir_create_cbc",
+            "arguments": "{\"patient_id\": \"c0f6d7cf-bd7b-47c8-8373-b59a233435f9\", \"plt\": 133, \"wbc\": 3.2, \"hct\": 47.9, \"hgb\": 16.3, \"fever_day\": 4}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "call_ccfe90091b934dde8ddcb06e",
+      "content": "{\"saved\": true, \"observation_id\": \"b4fdde6f-463f-4086-a46b-620a436c30e5\", \"observation_date\": \"2026-06-11\", \"patient_id\": \"c0f6d7cf-bd7b-47c8-8373-b59a233435f9\", \"patient_name\": \"Phan Hùng\", \"cbc_saved\": {\"PLT\": \"133.0 K/μL\", \"WBC\": \"3.2 K/μL\", \"HCT\": \"47.9 %\", \"HGB\": \"16.3 g/dL\"}, \"dengue_screening\": {\"dengue_likelihood\": \"possible\", \"likelihood_label\": \"Có thể là SXHD — cần xác chẩn\", \"color\": \"yellow\", \"cbc_score\": 1, \"warning_score\": 0, \"input\": {\"plt\": 133.0, \"wbc\": 3.2, \"hct\": 47.9, \"hct_baseline\": 43.0, \"gender\": \"male\", \"ast\": null, \"alt\": null, \"hgb\": 16.3, \"plt_previous\": null, \"fever_day\": 4.0}, \"findings\": [\"🟢 Tiểu cầu thấp-bình thường: 133.0 K/μL (100–150)\", \"🟡 Bạch cầu giảm: 3.2 K/μL — leukopenia, dấu hiệu sớm điển hình của SXHD\", \"ℹ️ Dùng Hct baseline TB nam giới: 43.0% (QĐ 2760 trang 28)\", \"ℹ️ Hematocrit: 47.9% — không có baseline thực để đánh giá xu hướng.\", \"⚠️ Ngày sốt thứ 4 — GIAI ĐOẠN NGUY HIỂM (ngày 3–7), cần theo dõi sát\"], \"citations\": {\"🟡 Bạch cầu giảm: 3.2 K/μL — leukopenia, dấu hiệu sớm điển hình của SXHD\": \"QĐ 2760 trang 5 mục II.1.2; ngưỡng số là thực hành\", \"⚠️ Ngày sốt thứ 4 — GIAI ĐOẠN NGUY HIỂM (ngày 3–7), cần theo dõi sát\": \"QĐ 2760 trang 5 mục II.2\"}, \"clinical_red_flags\": [], \"interpretation\": \"Phát hiện 2/3 tiêu chí cận lâm sàng SXHD theo QĐ 2760 (Phụ lục 2 trang 23): bạch cầu giảm, Hct tăng so với baseline dân số. Bệnh nhân đang trong giai đoạn nguy hiểm (ngày 3–7) — cửa sổ thoát huyết tương và sốc có thể xảy ra.\", \"recommended_next_tests\": [\"🔬 NS1 (test nhanh) — ưu tiên trong 5 ngày đầu của sốt (QĐ 2760 trang 6)\"], \"next_action\": \"Đến phòng khám làm NS1 (test nhanh) trong ngày\", \"aspirin_warning\": \"⛔ KHÔNG dùng aspirin (acetylsalicylic acid), analgin, ibuprofen để hạ sốt vì có thể gây xuất huyết, toan máu (QĐ 2760 trang 7). Chỉ dùng paracetamol đơn chất, 10–15 mg/kg/lần, cách 4–6 giờ, tối đa 60 mg/kg/ngày.\", \"dangerous_phase\": true, \"fever_phase\": \"dangerous\", \"disclaimer\": \"Đây là TOOL SÀNG LỌC dựa trên CBC theo WHO 2009 và QĐ 2760/QĐ-BYT ngày 04/7/2023. KHÔNG thay thế khám lâm sàng. Chẩn đoán xác định SXHD CHỈ qua xét nghiệm NS1/IgM/IgG/PCR (QĐ 2760 trang 6).\", \"source_references\": {\"QĐ_2760_QD_BYT_2023\": {\"trang_5\": \"Giai đoạn lâm sàng & cận lâm sàng (PLT<100, Hct>20% baseline, BC giảm)\", \"trang_6\": \"Chẩn đoán căn nguyên: NS1, IgM/IgG, PCR\", \"trang_7\": \"Khuyến cáo điều trị, cấm aspirin/ibuprofen/analgin\", \"trang_23\": \"Phụ lục 2 — Phân độ SXHD (Hct↑+PLT↓, AST/ALT≥400 = cảnh báo; ≥1000 = nặng); C.1.5 tổn thương gan nhẹ (120–400)\", \"trang_28\": \"Giá trị Hct TB theo giới: nam 43%, nữ 38%\"}, \"WHO_2009\": {\"page_23_pdf\": \"Figure 1.4 — Probable dengue criteria\", \"page_38_pdf\": \"Section 2.1.2 — Critical phase days 3–7\", \"page_114_pdf\": \"Section 4.3.5 — Haematological tests\"}}, \"_citation\": \"QĐ 2760/QĐ-BYT 2023 · Bộ Y tế Việt Nam · WHO Dengue Guidelines 2009\"}}"
+    },
+    {
+      "role": "assistant",
+      "content": "**Bệnh nhân:** Phan Hùng — Nam, 22 tuổi  \n**Ngày xét nghiệm:** 11/06/2026 (ngày sốt thứ 4)  \n\n**Chỉ số CBC:**\n- PLT: **133 K/μL** | WBC: **3.2 K/μL** | HCT: **47.9%** | HGB: **16.3 g/dL**\n\n**Sàng lọc SXHD:** Có thể là SXHD — cần xác chẩn (yellow)\n\n**Phát hiện:**\n- 🟢 Tiểu cầu thấp-bình thường: 133 K/μL (100–150)\n- 🟡 Bạch cầu giảm: 3.2 K/μL — leukopenia, dấu hiệu sớm điển hình của SXHD  \n- ℹ️ Hematocrit: 47.9% — không có baseline thực; dùng Hct nền dân số nam giới (43%) để so sánh  \n- ⚠️ Ngày sốt thứ 4 — GIAI ĐOẠN NGUY HIỂM (ngày 3–7), cần theo dõi sát\n\n**Khuyến nghị tiếp theo:**  \n→ Làm **NS1 (test nhanh)** trong ngày (ưu tiên <5 ngày kể từ khi sốt)  \n→ ⛔ Không dùng aspirin, ibuprofen, analgin — chỉ dùng paracetamol đơn chất  \n→ Theo dõi dấu hiệu cảnh báo: đau bụng, nôn liên tục, xuất huyết niêm mạc, lờ đờ  \n\n_(Công cụ sàng lọc theo QĐ 2760/QĐ-BYT 2023. Không thay thế chẩn đoán lâm sàng.)_  \n📖 *Theo: QĐ 2760/QĐ-BYT 2023 · Bộ Y tế Việt Nam · WHO Dengue Guidelines 2009*"
+    }
+  ]
+}

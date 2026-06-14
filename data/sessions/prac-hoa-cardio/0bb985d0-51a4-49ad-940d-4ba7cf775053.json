@@ -1,0 +1,16 @@
+{
+  "session_id": "doctor_prac-hoa-cardio_0bb985d0-51a4-49ad-940d-4ba7cf775053",
+  "title": "tôi là ai",
+  "created_at": "2026-06-05T17:56:11",
+  "updated_at": "2026-06-05T17:56:11",
+  "messages": [
+    {
+      "role": "user",
+      "content": "tôi là ai"
+    },
+    {
+      "role": "assistant",
+      "content": "Bạn là Nguyễn Thị Hoa — bác sĩ chuyên khoa Tim mạch, mã nhân viên: **prac-hoa-cardio**, đang làm việc tại Bệnh viện Đa khoa Hà Nội."
+    }
+  ]
+}

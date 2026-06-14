@@ -131,6 +131,26 @@ def _run(args: dict) -> dict:
             "disclaimer":           meta["disclaimer"],
         }
 
+    # --- Layer 3b: Warning signs bypass epi/fever gates ---
+    # Các dấu hiệu cảnh báo lâm sàng nguy hiểm bất kể dịch tễ hay sốt
+    if warning_signs:
+        r = rules["warning"]
+        return {
+            "severity":             "warning",
+            "severity_label":       r["severity_label"],
+            "urgency_color":        r["urgency_color"],
+            "met_criteria":         _labels(symptoms),
+            "basic_symptoms":       _labels(symptoms),
+            "warning_signs":        _labels(warning_signs),
+            "abnormal_signs":       _labels(warning_signs),
+            "summary":              r["summary"],
+            "recommendation":       r["recommendation"],
+            "next_action":          r["next_action"],
+            "suggested_department": r.get("suggested_department"),
+            "home_care":            None,
+            "disclaimer":           meta["disclaimer"],
+        }
+
     # --- Layer 1: Epidemiology gate ---
     if not in_epidemic_area:
         r = rules["none"]

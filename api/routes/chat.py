@@ -5,12 +5,13 @@ import json as _json
 import asyncio
 import concurrent.futures
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Header
 from fastapi.responses import StreamingResponse
 from fastapi import HTTPException
 
 from agent import chat, chat_stream
 from api.models import ChatRequest, ChatResponse
+from api.tokens import resolve_token
 from api.sessions import (
     _sessions,
     _doctor_current,
@@ -26,8 +27,18 @@ from api.sessions import (
 router = APIRouter()
 
 
+def _resolve_patient(body: ChatRequest, token: str) -> tuple[str, str]:
+    """Trả về (patient_id, patient_name) đã xác thực từ token, hoặc rỗng nếu guest."""
+    if body.role != "patient" or not token:
+        return "", ""
+    info = resolve_token(token)
+    if info and info["role"] == "patient":
+        return info["fhir_id"], info["name"]
+    return "", ""
+
+
 @router.post("/chat", response_model=ChatResponse)
-async def chat_endpoint(body: ChatRequest):
+async def chat_endpoint(body: ChatRequest, x_session_token: str = Header(default="")):
     if body.role == "doctor" and body.doctor_id:
         pfx = f"doctor_{body.doctor_id}_"
         if body.session_id and body.session_id.startswith(pfx):
@@ -38,15 +49,69 @@ async def chat_endpoint(body: ChatRequest):
     else:
         session_id = body.session_id or str(uuid.uuid4())
     history = _load_session(session_id)
+    patient_id, patient_name = _resolve_patient(body, x_session_token)
+
+    # Khi bác sĩ mở session mới (lịch sử rỗng) và gửi __init__
+    # → inject kế hoạch pending vào system prompt để agent chủ động nhắc
+    extra_system = ""
+    is_init = body.message.strip() == "__init__"
+    if is_init and not history:
+        try:
+            base = "http://localhost:8000"
+            if body.role == "doctor" and body.doctor_id:
+                r = await asyncio.get_event_loop().run_in_executor(
+                    None,
+                    lambda: __import__("httpx").get(
+                        f"{base}/api/doctor/{body.doctor_id}/pending-plans",
+                        timeout=10,
+                    )
+                )
+                plans = r.json().get("plans", []) if r.status_code == 200 else []
+                if plans:
+                    lines = "\n".join(
+                        f"- {p['patient_name']} ({p['date']}): {p['plan']}"
+                        for p in plans
+                    )
+                    extra_system = (
+                        "=== KẾ HOẠCH CHƯA THEO DÕI ===\n"
+                        "Bác sĩ có các kế hoạch từ lần khám gần đây chưa được theo dõi:\n"
+                        f"{lines}\n"
+                        "Hãy chủ động nhắc bác sĩ về các kế hoạch này khi chào hỏi."
+                    )
+            elif body.role == "patient" and patient_id:
+                r = await asyncio.get_event_loop().run_in_executor(
+                    None,
+                    lambda: __import__("httpx").get(
+                        f"{base}/api/patient/{patient_id}/clinical-impressions",
+                        timeout=10,
+                    )
+                )
+                impressions = r.json().get("impressions", []) if r.status_code == 200 else []
+                latest = next((i for i in impressions if i.get("plan")), None)
+                if latest:
+                    extra_system = (
+                        "=== KẾ HOẠCH TÁI KHÁM TỪ BÁC SĨ ===\n"
+                        f"Lần khám gần nhất ({latest['date']}), bác sĩ ghi:\n"
+                        f"- Chẩn đoán: {latest['diagnosis']}\n"
+                        f"- Kế hoạch: {latest['plan']}\n"
+                        "Hãy chủ động nhắc bệnh nhân về kế hoạch này khi chào hỏi "
+                        "và hỏi xem tình trạng hiện tại thế nào."
+                    )
+        except Exception:
+            pass
 
     try:
         reply, updated_history = chat(
-            body.message, history,
+            body.message if not is_init else "Xin chào",
+            history,
             role=body.role,
             doctor_name=body.doctor_name,
             doctor_id=body.doctor_id,
+            patient_id=patient_id,
+            patient_name=patient_name,
             image_base64=body.image_base64,
             image_mime=body.image_mime,
+            extra_system=extra_system,
         )
         _save_session(session_id, updated_history)
         return ChatResponse(reply=reply, session_id=session_id)
@@ -57,7 +122,7 @@ async def chat_endpoint(body: ChatRequest):
 
 
 @router.post("/chat/stream")
-async def chat_stream_endpoint(body: ChatRequest):
+async def chat_stream_endpoint(body: ChatRequest, x_session_token: str = Header(default="")):
     if body.role == "doctor" and body.doctor_id:
         pfx = f"doctor_{body.doctor_id}_"
         if body.session_id and body.session_id.startswith(pfx):
@@ -68,6 +133,7 @@ async def chat_stream_endpoint(body: ChatRequest):
     else:
         session_id = body.session_id or str(uuid.uuid4())
     history = list(_load_session(session_id))  # mutable copy
+    patient_id, patient_name = _resolve_patient(body, x_session_token)
     loop = asyncio.get_event_loop()
     queue: asyncio.Queue = asyncio.Queue()
 
@@ -78,6 +144,8 @@ async def chat_stream_endpoint(body: ChatRequest):
                 role=body.role,
                 doctor_name=body.doctor_name,
                 doctor_id=body.doctor_id,
+                patient_id=patient_id,
+                patient_name=patient_name,
                 image_base64=body.image_base64,
                 image_mime=body.image_mime,
             ):

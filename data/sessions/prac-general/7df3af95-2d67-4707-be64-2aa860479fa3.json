@@ -1,0 +1,16 @@
+{
+  "session_id": "doctor_prac-general_7df3af95-2d67-4707-be64-2aa860479fa3",
+  "title": "Xin chào",
+  "created_at": "2026-06-08T10:43:12",
+  "updated_at": "2026-06-08T10:43:12",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Xin chào"
+    },
+    {
+      "role": "assistant",
+      "content": "Bác sĩ Phạm Thanh Tùng đang có các kế hoạch chưa theo dõi từ lần khám gần đây:\n\n- Alex Phạm (2026-06-07): Đánh giá lại lâm sàng và xét nghiệm nếu cần; tái khám sau 3–5 ngày nếu triệu chứng còn tồn tại hoặc tiến triển.  \n- Phan Hùng (2026-06-07): Làm test NS1 nhanh trong ngày; theo dõi sát dấu hiệu cảnh báo, tái khám sau 24–48 giờ hoặc khi có biến chứng.  \n- Alex Phạm (2026-06-06): Kháng sinh 5 ngày, tái khám nếu không đỡ.\n\nBác sĩ cần hỗ trợ xem hồ sơ, lịch hẹn, hoặc phân tích xét nghiệm nào không?"
+    }
+  ]
+}

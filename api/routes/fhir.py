@@ -146,11 +146,13 @@ async def api_appointments(date_str: str = "", practitioner_id: str = "",
     rows = []
     for appt in appointments:
         patient_name = ""
+        patient_id   = ""
         pract_name   = ""
         for part in appt.get("participant") or []:
             ref = (part.get("actor") or {}).get("reference", "")
             if ref.startswith("Patient/"):
-                patient_name = p_names.get(ref.split("/")[1], "")
+                patient_id   = ref.split("/")[1]
+                patient_name = p_names.get(patient_id, "")
             elif ref.startswith("Practitioner/"):
                 pract_name = pr_names.get(ref.split("/")[1], "")
 
@@ -163,6 +165,7 @@ async def api_appointments(date_str: str = "", practitioner_id: str = "",
 
         rows.append({
             "id":           appt.get("id", ""),
+            "patient_id":   patient_id,
             "patient_name": patient_name,
             "practitioner": pract_name,
             "department":   dept,
@@ -303,6 +306,8 @@ async def api_patient_detail(patient_id: str):
     name = f"{nm.get('family', '')} {' '.join(nm.get('given') or [])}".strip()
     phone = next((t.get("value") for t in (pt.get("telecom") or [])
                   if t.get("system") == "phone"), "")
+    email = next((t.get("value") for t in (pt.get("telecom") or [])
+                  if t.get("system") == "email"), "")
     birth = pt.get("birthDate", "")
     age   = ""
     if birth:
@@ -395,6 +400,7 @@ async def api_patient_detail(patient_id: str):
         "age":        age,
         "birth_date": birth,
         "phone":      phone,
+        "email":      email,
         "vitals":     vitals[:6],
         "labs":       labs[:8],
         "appointments": appts,
@@ -474,6 +480,112 @@ async def api_dengue_screening(patient_id: str):
     return {"available": True, "obs_date": obs_date, "cbc_used": cbc_used, "screening": result}
 
 
+# ── /api/doctor/{doctor_id}/patients — bệnh nhân của bác sĩ ──────
+@router.get("/api/doctor/{doctor_id}/patients")
+async def api_doctor_patients(doctor_id: str):
+    """Trả về danh sách bệnh nhân đã từng có appointment với bác sĩ này,
+    kèm PLT mới nhất và ngày khám gần nhất."""
+    url, auth = _aidbox()
+    if not url:
+        raise HTTPException(503, "AIDBOX_URL not configured")
+
+    async with httpx.AsyncClient(timeout=20, auth=auth) as client:
+        # Lấy tất cả appointment của bác sĩ (không lọc ngày)
+        r = await client.get(f"{url}/fhir/Appointment", params={
+            "actor": f"Practitioner/{doctor_id}",
+            "_count": "500",
+            "_sort": "-date",
+        })
+        if r.status_code >= 400:
+            raise HTTPException(r.status_code, r.text[:200])
+
+        appointments = _entries(r.json(), "Appointment")
+
+        # Tập hợp unique patient IDs + ngày khám gần nhất cho mỗi BN
+        patient_last_visit: dict[str, str] = {}
+        for appt in appointments:
+            appt_date = (appt.get("start") or "")[:10]
+            for part in appt.get("participant") or []:
+                ref = (part.get("actor") or {}).get("reference", "")
+                if ref.startswith("Patient/"):
+                    pid = ref.split("/")[1]
+                    if pid not in patient_last_visit or appt_date > patient_last_visit[pid]:
+                        patient_last_visit[pid] = appt_date
+
+        if not patient_last_visit:
+            return {"total": 0, "patients": []}
+
+        patient_ids = list(patient_last_visit.keys())
+
+        # Batch-fetch patient info + CBC mới nhất song song
+        async def _fetch_patient(pid: str):
+            pt_r, obs_r = await _asyncio.gather(
+                client.get(f"{url}/fhir/Patient/{pid}"),
+                client.get(f"{url}/fhir/Observation", params={
+                    "subject": f"Patient/{pid}",
+                    "code": "http://loinc.org|58410-2",  # CBC panel
+                    "_sort": "-date",
+                    "_count": "1",
+                }),
+            )
+            if pt_r.status_code >= 400:
+                return None
+            pt = pt_r.json()
+            phone = next(
+                (t.get("value") for t in (pt.get("telecom") or []) if t.get("system") == "phone"),
+                "",
+            )
+            # Tìm PLT từ CBC observation gần nhất
+            plt_val = None
+            obs_date = ""
+            if obs_r.status_code < 400:
+                obs_list = _entries(obs_r.json(), "Observation")
+                if obs_list:
+                    latest = obs_list[0]
+                    obs_date = (latest.get("effectiveDateTime") or "")[:10]
+                    for comp in latest.get("component") or []:
+                        c_code = ((comp.get("code") or {}).get("coding") or [{}])[0].get("code", "")
+                        if c_code == "777-3":  # PLT LOINC
+                            vq = comp.get("valueQuantity") or {}
+                            if vq.get("value") is not None:
+                                plt_val = float(vq["value"])
+                            break
+
+            # PLT status
+            if plt_val is None:
+                plt_status = "none"
+                plt_display = "—"
+            elif plt_val < 50:
+                plt_status = "critical"
+                plt_display = f"{plt_val:.0f}"
+            elif plt_val < 100:
+                plt_status = "warning"
+                plt_display = f"{plt_val:.0f}"
+            else:
+                plt_status = "normal"
+                plt_display = f"{plt_val:.0f}"
+
+            last_visit = patient_last_visit.get(pid, "")
+            return {
+                "id":         pid,
+                "name":       _patient_name(pt),
+                "gender":     "Nam" if pt.get("gender") == "male" else "Nữ" if pt.get("gender") == "female" else "",
+                "birth_date": pt.get("birthDate", ""),
+                "phone":      phone,
+                "plt":        plt_val,
+                "plt_display": plt_display,
+                "plt_status": plt_status,
+                "cbc_date":   obs_date,
+                "last_visit": last_visit,
+            }
+
+        results = await _asyncio.gather(*[_fetch_patient(pid) for pid in patient_ids])
+        rows = [r for r in results if r is not None]
+        rows.sort(key=lambda x: x["last_visit"], reverse=True)
+
+    return {"total": len(rows), "patients": rows}
+
+
 # ── /api/register-patient ─────────────────────────────────────
 # ── /api/cbc — POST: lưu kết quả CBC thủ công từ UI ─────────────
 class CbcRequest(BaseModel):
@@ -497,6 +609,160 @@ async def api_create_cbc(body: CbcRequest):
     from fhir_create_cbc import run  # type: ignore
     args = {k: v for k, v in body.dict().items() if v is not None}
     result = run(args)
+    if "error" in result:
+        raise HTTPException(status_code=400, detail=result["error"])
+    return result
+
+
+# ── /api/vitals — POST: lưu sinh hiệu thủ công từ UI ─────────────
+class VitalsRequest(BaseModel):
+    patient_id:  str
+    systolic:    float | None = None
+    diastolic:   float | None = None
+    heart_rate:  float | None = None
+    resp_rate:   float | None = None
+    temp:        float | None = None
+    spo2:        float | None = None
+    weight:      float | None = None
+    height:      float | None = None
+    measured_at: str   | None = None
+
+@router.post("/api/vitals")
+async def api_create_vitals(body: VitalsRequest):
+    import sys as _sys
+    from pathlib import Path as _Path
+    _tool = str(_Path(__file__).parent.parent.parent / "tools" / "fhir")
+    if _tool not in _sys.path:
+        _sys.path.insert(0, _tool)
+    from fhir_create_vitals import run  # type: ignore
+    args = {k: v for k, v in body.dict().items() if v is not None}
+    result = run(args)
+    if "error" in result:
+        raise HTTPException(status_code=400, detail=result["error"])
+    return result
+
+
+# ── /api/drug-catalog — GET: lấy danh mục thuốc ─────────────
+@router.get("/api/drug-catalog")
+async def api_drug_catalog():
+    import sys as _sys
+    from pathlib import Path as _Path
+    _shared = str(_Path(__file__).parent.parent.parent / "tools" / "shared")
+    if _shared not in _sys.path:
+        _sys.path.insert(0, _shared)
+    from _drug_catalog import drugs_by_category  # type: ignore
+    return {"by_category": drugs_by_category()}
+
+
+# ── /api/allergy — POST: ghi nhận dị ứng BN ─────────────
+class AllergyRequest(BaseModel):
+    patient_id:    str
+    substance:     str
+    category:      str   = "medication"
+    severity:      str   = "moderate"
+    reaction:      str   = ""
+    verification:  str   = "unconfirmed"
+    onset_date:    str   = ""
+
+@router.post("/api/allergy")
+async def api_create_allergy(body: AllergyRequest):
+    import sys as _sys
+    from pathlib import Path as _Path
+    _tool = str(_Path(__file__).parent.parent.parent / "tools" / "fhir")
+    if _tool not in _sys.path:
+        _sys.path.insert(0, _tool)
+    from fhir_create_allergy import run  # type: ignore
+    args = {k: v for k, v in body.dict().items() if v not in (None, "")}
+    result = run(args)
+    if "error" in result:
+        raise HTTPException(status_code=400, detail=result["error"])
+    return result
+
+
+# ── /api/allergies/{patient_id} — GET: danh sách dị ứng BN ─────────────
+@router.get("/api/allergies/{patient_id}")
+async def api_get_allergies(patient_id: str):
+    import sys as _sys
+    from pathlib import Path as _Path
+    _tool = str(_Path(__file__).parent.parent.parent / "tools" / "fhir")
+    if _tool not in _sys.path:
+        _sys.path.insert(0, _tool)
+    from fhir_get_allergies import run  # type: ignore
+    result = run({"patient_id": patient_id, "active_only": True})
+    if "error" in result:
+        raise HTTPException(status_code=400, detail=result["error"])
+    return result
+
+
+# ── /api/check-allergy — POST: check dị ứng cho 1 thuốc ─────────────
+class CheckAllergyRequest(BaseModel):
+    patient_id: str
+    drug_id:    str | None = None
+    drug_name:  str | None = None
+
+@router.post("/api/check-allergy")
+async def api_check_allergy(body: CheckAllergyRequest):
+    import sys as _sys
+    from pathlib import Path as _Path
+    _tool = str(_Path(__file__).parent.parent.parent / "tools" / "fhir")
+    if _tool not in _sys.path:
+        _sys.path.insert(0, _tool)
+    from fhir_check_drug_allergy import run  # type: ignore
+    args = {k: v for k, v in body.dict().items() if v is not None}
+    result = run(args)
+    if "error" in result:
+        raise HTTPException(status_code=400, detail=result["error"])
+    return result
+
+
+# ── /api/prescription — POST: kê đơn thuốc ─────────────
+class MedicationItem(BaseModel):
+    drug_id:           str
+    dose_per_intake:   int   = 1
+    frequency_per_day: int   = 1
+    duration_days:     int | None = None
+    instructions:      str   = ""
+    override_reason:   str   = ""
+
+class PrescriptionRequest(BaseModel):
+    patient_id:      str
+    practitioner_id: str
+    diagnosis:       str
+    medications:     list[MedicationItem]
+    notes:           str = ""
+
+@router.post("/api/prescription")
+async def api_create_prescription(body: PrescriptionRequest):
+    import sys as _sys
+    from pathlib import Path as _Path
+    _tool = str(_Path(__file__).parent.parent.parent / "tools" / "fhir")
+    if _tool not in _sys.path:
+        _sys.path.insert(0, _tool)
+    from fhir_create_prescription import run  # type: ignore
+    args = body.dict()
+    args["medications"] = [
+        {k: v for k, v in m.items() if v not in (None, "")}
+        for m in args["medications"]
+    ]
+    result = run(args)
+    if result.get("error") == "prescription_blocked":
+        # Trả về 200 nhưng saved=False để frontend xử lý hiển thị blocked
+        return result
+    if "error" in result:
+        raise HTTPException(status_code=400, detail=result["error"])
+    return result
+
+
+# ── /api/prescriptions/{patient_id} — GET: lịch sử đơn thuốc ─────────────
+@router.get("/api/prescriptions/{patient_id}")
+async def api_get_prescriptions(patient_id: str):
+    import sys as _sys
+    from pathlib import Path as _Path
+    _tool = str(_Path(__file__).parent.parent.parent / "tools" / "fhir")
+    if _tool not in _sys.path:
+        _sys.path.insert(0, _tool)
+    from fhir_get_prescriptions import run  # type: ignore
+    result = run({"patient_id": patient_id})
     if "error" in result:
         raise HTTPException(status_code=400, detail=result["error"])
     return result

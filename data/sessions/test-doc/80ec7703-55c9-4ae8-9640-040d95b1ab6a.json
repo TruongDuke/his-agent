@@ -1,0 +1,70 @@
+{
+  "session_id": "doctor_test-doc_80ec7703-55c9-4ae8-9640-040d95b1ab6a",
+  "title": "xem lịch sử xét nghiệm bệnh nhân phan hùng",
+  "created_at": "2026-06-01T17:04:41",
+  "updated_at": "2026-06-01T17:05:40",
+  "messages": [
+    {
+      "role": "user",
+      "content": "xem lịch sử xét nghiệm bệnh nhân phan hùng"
+    },
+    {
+      "role": "assistant",
+      "content": "Tôi sẽ tìm bệnh nhân Phan Hùng và lấy lịch sử xét nghiệm.",
+      "tool_calls": [
+        {
+          "id": "toolu_bdrk_01RDy6rhgYvhMYqV7vRFLVZY",
+          "type": "function",
+          "function": {
+            "name": "fhir_search_patient",
+            "arguments": "{\"query\": \"Phan Hùng\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "toolu_bdrk_01RDy6rhgYvhMYqV7vRFLVZY",
+      "content": "{\"matched_by\": \"name\", \"count\": 1, \"patients\": [{\"id\": \"c0f6d7cf-bd7b-47c8-8373-b59a233435f9\", \"name\": \"Phan Hùng\", \"gender\": \"male\", \"birth_date\": \"2004-01-01\", \"age\": 22, \"bhyt\": null, \"cccd\": null, \"phone\": \"0904608777\", \"_source\": \"FHIR R5 · Aidbox · Patient/c0f6d7cf-bd7b-47c8-8373-b59a233435f9 · cập nhật 2026-05-12 07:57\"}], \"_data_source\": \"FHIR R5 · Aidbox · Bệnh viện Đa khoa Hà Nội\"}"
+    },
+    {
+      "role": "assistant",
+      "content": "Giờ tôi lấy lịch sử xét nghiệm của bệnh nhân:",
+      "tool_calls": [
+        {
+          "id": "toolu_bdrk_01RosLzL816VJSVQ5WqrGG5Q",
+          "type": "function",
+          "function": {
+            "name": "fhir_get_observations",
+            "arguments": "{\"patient_id\": \"c0f6d7cf-bd7b-47c8-8373-b59a233435f9\", \"category\": \"laboratory\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "toolu_bdrk_01RosLzL816VJSVQ5WqrGG5Q",
+      "content": "{\"patient_id\": \"c0f6d7cf-bd7b-47c8-8373-b59a233435f9\", \"count\": 3, \"observations\": [{\"date\": \"2026-05-19\", \"name\": \"CBC panel\", \"value\": \"Platelets: 120.0 10*3/uL | WBC: 4.5 10*3/uL | Hematocrit: 42.0 % | Hemoglobin: 14.0 g/dL\", \"unit\": null, \"status\": \"final\"}, {\"date\": \"2026-05-15\", \"name\": \"CBC panel\", \"value\": \"Platelets: 133.0 10*3/uL | WBC: 3.9 10*3/uL | Hematocrit: 47.9 % | Hemoglobin: 16.3 g/dL\", \"unit\": null, \"status\": \"final\"}, {\"date\": \"2026-05-13\", \"name\": \"CBC panel\", \"value\": \"Platelets: 133.0 10*3/uL | WBC: 3.9 10*3/uL | Hematocrit: 47.9 % | Hemoglobin: 16.3 g/dL\", \"unit\": null, \"status\": \"final\"}], \"summary\": \"Chỉ số gần nhất:\\n- CBC panel: Platelets: 120.0 10*3/uL | WBC: 4.5 10*3/uL | Hematocrit: 42.0 % | Hemoglobin: 14.0 g/dL (ngày 2026-05-19)\"}"
+    },
+    {
+      "role": "assistant",
+      "content": "**Phan Hùng** — Nam, 22 tuổi\n\n**Lịch sử xét nghiệm (CBC panel):**\n\n| Ngày | Tiểu cầu (PLT) | Bạch cầu (WBC) | Hematocrit | Hemoglobin |\n|------|---|---|---|---|\n| 19/05/2026 | **120** K/μL *(giảm)* | 4.5 K/μL | 42.0% | 14.0 g/dL |\n| 15/05/2026 | 133 K/μL | 3.9 K/μL | 47.9% | 16.3 g/dL |\n| 13/05/2026 | 133 K/μL | 3.9 K/μL | 47.9% | 16.3 g/dL |\n\n**Nhận xét:** PLT có xu hướng giảm từ 133 → 120 K/μL (khoảng 4 ngày). Các chỉ số khác ổn định.\n\n📋 *Nguồn: FHIR R5 · Aidbox · Bệnh viện Đa khoa Hà Nội*"
+    },
+    {
+      "role": "user",
+      "content": "xem lịch sử xét nghiệm bệnh nhân phan hùng"
+    },
+    {
+      "role": "assistant",
+      "content": "**Phan Hùng** — Nam, 22 tuổi\n\n**Lịch sử xét nghiệm (CBC panel):**\n\n| Ngày | Tiểu cầu (PLT) | Bạch cầu (WBC) | Hematocrit | Hemoglobin |\n|------|---|---|---|---|\n| 19/05/2026 | **120** K/μL *(giảm)* | 4.5 K/μL | 42.0% | 14.0 g/dL |\n| 15/05/2026 | 133 K/μL | 3.9 K/μL | 47.9% | 16.3 g/dL |\n| 13/05/2026 | 133 K/μL | 3.9 K/μL | 47.9% | 16.3 g/dL |\n\n**Nhận xét:** PLT có xu hướng giảm từ 133 → 120 K/μL (khoảng 4 ngày). Các chỉ số khác ổn định.\n\n📋 *Nguồn: FHIR R5 · Aidbox · Bệnh viện Đa khoa Hà Nội*"
+    },
+    {
+      "role": "user",
+      "content": "xem lịch sử xét nghiệm bệnh nhân phan hùng"
+    },
+    {
+      "role": "assistant",
+      "content": "**Phan Hùng** — Nam, 22 tuổi\n\n**Lịch sử xét nghiệm (CBC panel):**\n\n| Ngày | Tiểu cầu (PLT) | Bạch cầu (WBC) | Hematocrit | Hemoglobin |\n|------|---|---|---|---|\n| 19/05/2026 | **120** K/μL *(giảm)* | 4.5 K/μL | 42.0% | 14.0 g/dL |\n| 15/05/2026 | 133 K/μL | 3.9 K/μL | 47.9% | 16.3 g/dL |\n| 13/05/2026 | 133 K/μL | 3.9 K/μL | 47.9% | 16.3 g/dL |\n\n**Nhận xét:** PLT có xu hướng giảm từ 133 → 120 K/μL (khoảng 4 ngày). Các chỉ số khác ổn định.\n\n📋 *Nguồn: FHIR R5 · Aidbox · Bệnh viện Đa khoa Hà Nội*"
+    }
+  ]
+}

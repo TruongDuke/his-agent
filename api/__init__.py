@@ -2,8 +2,12 @@
 
 import sys
 from pathlib import Path
+from dotenv import load_dotenv
+load_dotenv(Path(__file__).parent.parent / ".env")
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from api.routes import chat, scheduling, fhir, appointments, ui, auth
 
@@ -39,5 +43,6 @@ app.include_router(chat.router)
 app.include_router(scheduling.router)
 app.include_router(fhir.router)
 app.include_router(appointments.router)
+app.mount("/static", StaticFiles(directory="static"), name="static")
 app.include_router(ui.router)
 app.include_router(auth.router)
