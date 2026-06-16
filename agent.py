@@ -33,7 +33,7 @@ def _load_tool_modules() -> dict[str, Any]:
     """Load tất cả fhir_* và dengue_* tools, trả về dict name → module."""
     modules = {}
     tools_dir = Path(__file__).parent / "tools"
-    subpackages = {"fhir": "fhir_*.py", "dengue": "dengue_*.py"}
+    subpackages = {"fhir": "fhir_*.py", "dengue": "dengue_*.py", "outbreak": "outbreak_*.py"}
     seen = set()
     for pkg, pattern in subpackages.items():
         for path in sorted((tools_dir / pkg).glob(pattern)):
@@ -114,6 +114,7 @@ _TOOLS_BY_ROLE: dict[str, list[str] | None] = {
         "fhir_get_clinical_impressions",
         "fhir_get_allergies", "fhir_get_prescriptions",
         "dengue_symptom_assessment", "dengue_cbc_predict",
+        "outbreak_get_stats",
     ],
     "doctor": None,
     "doctor_records": [
@@ -182,6 +183,7 @@ _TOOL_LABELS = {
     "fhir_get_patient_appointments":  "Đang kiểm tra lịch hẹn...",
     "dengue_symptom_assessment":      "Đang phân loại mức độ sốt xuất huyết...",
     "dengue_cbc_predict":             "Đang phân tích chỉ số CBC...",
+    "outbreak_get_stats":             "Đang tra cứu số liệu dịch bệnh từ HCDC...",
 }
 
 

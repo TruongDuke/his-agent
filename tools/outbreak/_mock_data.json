@@ -1,0 +1,26 @@
+[
+  {
+    "disease": "dengue", "location": "hcm", "week": 20, "year": 2026,
+    "weekly_cases": 414, "cumulative_cases": 16892,
+    "direction": "giảm", "percent_change": 17.5, "published_at": "2026-05-21",
+    "source_url": "https://hcdc.vn/tinh-hinh-dich-benh-sot-xuat-huyet-tay-chan-mieng-tren-dia-ban-tp-ho-chi-minh-tinh-den-tuan-202026-38gibz.html"
+  },
+  {
+    "disease": "dengue", "location": "hcm", "week": 21, "year": 2026,
+    "weekly_cases": 372, "cumulative_cases": 17278,
+    "direction": "giảm", "percent_change": 20.0, "published_at": "2026-05-28",
+    "source_url": "https://hcdc.vn/tinh-hinh-dich-benh-sot-xuat-huyet-tay-chan-mieng-tren-dia-ban-tp-ho-chi-minh-tinh-den-tuan-212026-Q7X9iA.html"
+  },
+  {
+    "disease": "dengue", "location": "hcm", "week": 22, "year": 2026,
+    "weekly_cases": 397, "cumulative_cases": 17718,
+    "direction": "giảm", "percent_change": 10.1, "published_at": "2026-06-04",
+    "source_url": "https://hcdc.vn/tinh-hinh-dich-benh-sot-xuat-huyet-tay-chan-mieng-tren-dia-ban-tp-ho-chi-minh-tinh-den-tuan-222026-EnN9Vk.html"
+  },
+  {
+    "disease": "dengue", "location": "hcm", "week": 23, "year": 2026,
+    "weekly_cases": 409, "cumulative_cases": 18136,
+    "direction": "ổn định", "percent_change": 5.9, "published_at": "2026-06-11",
+    "source_url": "https://hcdc.vn/tinh-hinh-dich-benh-sot-xuat-huyet-tay-chan-mieng-tren-dia-ban-tp-ho-chi-minh-tinh-den-tuan-232026-DonOak.html"
+  }
+]
