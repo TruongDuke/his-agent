@@ -9,7 +9,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from api.routes import chat, scheduling, fhir, appointments, ui, auth
+from api.routes import chat, scheduling, fhir, appointments, ui, auth, a2a
 
 app = FastAPI(title="HIS Agent API", version="1.0.0")
 
@@ -40,9 +40,16 @@ app.add_middleware(
 )
 
 app.include_router(chat.router)
+app.include_router(a2a.router)
 app.include_router(scheduling.router)
 app.include_router(fhir.router)
 app.include_router(appointments.router)
 app.mount("/static", StaticFiles(directory="static"), name="static")
+
+# UI React (Vite build) — phục vụ assets nếu đã build (frontend/dist)
+_DIST = Path(__file__).parent.parent / "frontend" / "dist"
+if (_DIST / "assets").is_dir():
+    app.mount("/assets", StaticFiles(directory=str(_DIST / "assets")), name="assets")
+
 app.include_router(ui.router)
 app.include_router(auth.router)

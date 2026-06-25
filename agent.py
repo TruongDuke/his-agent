@@ -33,7 +33,8 @@ def _load_tool_modules() -> dict[str, Any]:
     """Load tất cả fhir_* và dengue_* tools, trả về dict name → module."""
     modules = {}
     tools_dir = Path(__file__).parent / "tools"
-    subpackages = {"fhir": "fhir_*.py", "dengue": "dengue_*.py", "outbreak": "outbreak_*.py"}
+    subpackages = {"fhir": "fhir_*.py", "dengue": "dengue_*.py", "outbreak": "outbreak_*.py",
+                   "knowledge": "*_info.py"}
     seen = set()
     for pkg, pattern in subpackages.items():
         for path in sorted((tools_dir / pkg).glob(pattern)):
@@ -115,6 +116,7 @@ _TOOLS_BY_ROLE: dict[str, list[str] | None] = {
         "fhir_get_allergies", "fhir_get_prescriptions",
         "dengue_symptom_assessment", "dengue_cbc_predict",
         "outbreak_get_stats",
+        "drug_info",
     ],
     "doctor": None,
     "doctor_records": [
@@ -184,6 +186,7 @@ _TOOL_LABELS = {
     "dengue_symptom_assessment":      "Đang phân loại mức độ sốt xuất huyết...",
     "dengue_cbc_predict":             "Đang phân tích chỉ số CBC...",
     "outbreak_get_stats":             "Đang tra cứu số liệu dịch bệnh từ HCDC...",
+    "drug_info":                      "Đang tra cứu thông tin thuốc (NCBI)...",
 }
 
 
@@ -363,7 +366,7 @@ def chat_stream(message: str, history: list[dict], role: str = "patient",
 
     # Tool-calling loop (non-streaming — cần full JSON để parse tool calls)
     while True:
-        response = _CLIENT.chat.completions.create(
+        response = _CLIENT.chat.completions.create( # gọi API LLM để nhận phản hồi, có thể là tool call hoặc text
             model=_MODEL,
             max_tokens=1024,
             messages=[{"role": "system", "content": system}] + _trim_history(history),
@@ -421,6 +424,14 @@ def chat_stream(message: str, history: list[dict], role: str = "patient",
                 result_str = _execute_tool(tc.function.name, args, _MODULES)
 
                 history.append({"role": "tool", "tool_call_id": tc.id, "content": result_str})
+
+                # Nếu tool trả về danh sách nguồn (vd drug_info) → đẩy lên UI để render thẻ
+                try:
+                    _parsed = json.loads(result_str)
+                    if isinstance(_parsed, dict) and _parsed.get("sources"):
+                        yield sse({"type": "sources", "items": _parsed["sources"]})
+                except Exception:
+                    pass
             yield sse({"type": "status", "text": "Đang tổng hợp kết quả..."})
         else:
             # Phản hồi cuối — stream từng token
@@ -526,7 +537,7 @@ def chat(message: str, history: list[dict], role: str = "patient",
         choice = response.choices[0]
         msg    = choice.message
 
-        if choice.finish_reason == "tool_calls" and msg.tool_calls:
+        if choice.finish_reason == "tool_calls" and msg.tool_calls: # AI nói tôi muốn dùng tool
             history.append({
                 "role": "assistant",
                 "content": msg.content,

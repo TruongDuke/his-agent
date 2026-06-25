@@ -37,8 +37,8 @@ def _resolve_patient(body: ChatRequest, token: str) -> tuple[str, str]:
     return "", ""
 
 
-@router.post("/chat", response_model=ChatResponse)
-async def chat_endpoint(body: ChatRequest, x_session_token: str = Header(default="")):
+@router.post("/chat", response_model=ChatResponse) #khởi tạo hội thoại mới hoặc tiếp tục hội thoại cũ
+async def chat_endpoint(body: ChatRequest, x_session_token: str = Header(default="")): #body = tin nhắn
     if body.role == "doctor" and body.doctor_id:
         pfx = f"doctor_{body.doctor_id}_"
         if body.session_id and body.session_id.startswith(pfx):
@@ -101,7 +101,7 @@ async def chat_endpoint(body: ChatRequest, x_session_token: str = Header(default
             pass
 
     try:
-        reply, updated_history = chat(
+        reply, updated_history = chat( #gọi đến agent.py để xử lý hội thoại, trả về phản hồi và lịch sử đã cập nhật
             body.message if not is_init else "Xin chào",
             history,
             role=body.role,
@@ -114,7 +114,7 @@ async def chat_endpoint(body: ChatRequest, x_session_token: str = Header(default
             extra_system=extra_system,
         )
         _save_session(session_id, updated_history)
-        return ChatResponse(reply=reply, session_id=session_id)
+        return ChatResponse(reply=reply, session_id=session_id) #bê câu trả lời reply về cho web
     except Exception as e:
         import traceback
         traceback.print_exc()

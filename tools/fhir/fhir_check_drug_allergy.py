@@ -88,7 +88,7 @@ def run(args: dict) -> dict:
         }
 
     # ── Fetch dị ứng của BN ──
-    allergy_result = fetch_allergies({"patient_id": pid, "active_only": True})
+    allergy_result = fetch_allergies({"patient_id": pid, "active_only": True}) # lấy danh sách dị ứng thuốc đã ghi nhận của bệnh nhân từ FHIR server
     if "error" in allergy_result:
         return allergy_result
     allergies = allergy_result.get("allergies") or []
@@ -118,8 +118,8 @@ def run(args: dict) -> dict:
         substance = allergy.get("substance") or ""
         substance_lower = substance.lower()
 
-        # ── Layer 1: Direct name match ──
-        if substance_lower == drug_name_lower or drug_name_lower in substance_lower:
+        # ── Layer 1: Direct name match ── 
+        if substance_lower == drug_name_lower or drug_name_lower in substance_lower: #trùng tên thuốc → cấm kê
             checks.append({
                 "severity":       "critical",
                 "type":           "direct_match",

@@ -966,6 +966,40 @@ function addMsg(ctx, text, msgRole) {
   return bub;
 }
 
+/* ── Render câu trả lời có nguồn (thẻ nguồn + chip [n] bấm được, kiểu MedDeep) ── */
+function _escAttr(s) {
+  return String(s || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+}
+function _sourceCardsHTML(sources) {
+  const cards = sources.map(s => `
+    <a class="source-card" href="${_escAttr(s.url)}" target="_blank" rel="noopener">
+      <span class="source-card-n">${s.n}</span>
+      <span class="source-card-main">
+        <span class="source-card-title">${_escAttr(s.title)}</span>
+        <span class="source-card-src">${_escAttr(s.source || 'Nguồn')}</span>
+      </span>
+    </a>`).join('');
+  return `<div class="source-cards"><div class="source-cards-label">📚 Nguồn tham khảo (${sources.length})</div>
+    <div class="source-cards-row">${cards}</div></div>`;
+}
+function _renderSourcedAnswer(bubble, md, sources) {
+  // Bỏ mục "Nguồn:" dạng text (kèm dấu --- phía trên) nếu LLM lỡ viết — thẻ đã thay thế
+  const body = md.replace(
+    /\n+(?:[-*_]{3,}\s*\n+)?#{0,4}\s*Ngu[ồo]n[^\n]*\n[\s\S]*?(?=\n\s*⚠|$)/i, '\n');
+  let html = marked.parse(body);
+  // [n] hoặc [1,2] → chip bấm được, link tới đúng nguồn
+  html = html.replace(/\[(\d+(?:\s*,\s*\d+)*)\]/g, (_m, grp) =>
+    grp.split(',').map(x => {
+      const n = x.trim();
+      const s = sources[parseInt(n, 10) - 1];
+      return s
+        ? `<a class="cite-chip" href="${_escAttr(s.url)}" target="_blank" rel="noopener" title="${_escAttr(s.title)}">${n}</a>`
+        : `[${n}]`;
+    }).join('')
+  );
+  bubble.innerHTML = _sourceCardsHTML(sources) + html;
+}
+
 function createBotBubble(ctx) {
   document.getElementById(ctx.welcomeId)?.remove();
   const row = document.createElement('div');
@@ -1055,7 +1089,7 @@ async function sendMsg(r) {
 
   const bubble = createBotBubble(ctx);
 
-  let fullText = '', textStarted = false, badgesDiv = null;
+  let fullText = '', textStarted = false, badgesDiv = null, collectedSources = [];
 
   try {
     const res = await fetch('/chat/stream', {
@@ -1107,10 +1141,14 @@ async function sendMsg(r) {
           const st = bubble.querySelector('.status-line');
           if (st) st.textContent = ev.label || ev.name;
 
+        } else if (ev.type === 'sources') {
+          collectedSources = ev.items || [];
+
         } else if (ev.type === 'text') {
           if (!textStarted) { bubble.innerHTML = ''; textStarted = true; }
           fullText += ev.delta;
-          bubble.innerHTML = marked.parse(fullText);
+          if (collectedSources.length) _renderSourcedAnswer(bubble, fullText, collectedSources);
+          else bubble.innerHTML = marked.parse(fullText);
           ctx.msgsEl.scrollTop = ctx.msgsEl.scrollHeight;
 
         } else if (ev.type === 'done' && isDengueChecklist(fullText)) {
@@ -3200,7 +3238,10 @@ async function submitCompleteAppt() {
     // r1 result có thể chứa email field
     const r1Data  = await r1.clone().json().catch(() => ({}));
     const emailOk = r1Data.email && r1Data.email.success;
-    const emailLine = emailOk ? ' · 📧 Email đã gửi' : (r1Data.email?.error ? ' · ⚠ Email lỗi' : '');
+    let emailLine = '';
+    if (emailOk)                       emailLine = ' · 📧 Email đã gửi';
+    else if (r1Data.email?.error)      emailLine = ' · ⚠ Email lỗi: ' + r1Data.email.error;
+    else if (sendEmail && !patientEmail) emailLine = ' · ⚠ Chưa gửi email (hồ sơ BN không có địa chỉ email)';
     const summary = rxResult
       ? `✅ Đã kết thúc khám — chẩn đoán + ${rxResult.medications.length} thuốc${emailLine}`
       : `✅ Đã kết thúc khám và lưu ghi chú lâm sàng${emailLine}`;

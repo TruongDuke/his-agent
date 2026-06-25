@@ -189,9 +189,12 @@ def build_bundle() -> tuple[dict, int, int, int]:
 
 
 def main():
+    global DAYS_AHEAD
     parser = argparse.ArgumentParser()
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--days", type=int, default=DAYS_AHEAD, help="Số ngày tạo slot (mặc định 30)")
     args = parser.parse_args()
+    DAYS_AHEAD = args.days
 
     bundle, n_pract, n_sched, n_slot = build_bundle()
     total = len(bundle["entry"])

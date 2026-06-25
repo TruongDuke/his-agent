@@ -61,5 +61,5 @@ def run(args: dict) -> dict:
         "matched_by": "name",
         "count": len(entries),
         "patients": [patient_summary(p) for p in entries],
-        "_data_source": "FHIR R5 · Aidbox · Bệnh viện Đa khoa Hà Nội",
+        "_data_source": "FHIR R5 · Aidbox · Bệnh viện Đa khoa",
     }

@@ -2,7 +2,7 @@
   "session_id": "doctor_a1b2c3d4-0012-4000-8000-000000000001_90819f93-577a-477b-ade6-3a25871bb583",
   "title": "Hội thoại mới",
   "created_at": "2026-05-13T08:14:30",
-  "updated_at": "2026-06-14T10:54:26",
+  "updated_at": "2026-06-19T17:21:13",
   "messages": [
     {
       "role": "user",
@@ -173,6 +173,14 @@
     {
       "role": "assistant",
       "content": "**Phan Hùng** — Nam, 22 tuổi — Ngày sốt thứ 4 (14/06/2026)\n\n**Chỉ số CBC:**\n- PLT: **133 K/μL**  \n- WBC: **3.8 K/μL** *(giảm)*  \n- HCT: **47.9%**  \n- HGB: **16.3 g/dL**\n\n**Sàng lọc SXHD:** Có thể là SXHD — cần xác chẩn (🟡 yellow)\n\n**Phát hiện:**\n- 🟡 **Bạch cầu giảm:** 3.8 K/μL — dấu hiệu sớm điển hình của SXHD  \n- 🟢 **Tiểu cầu thấp-bình thường:** 133 K/μL (100–150)  \n- ⚠️ **Giai đoạn nguy hiểm:** Ngày sốt thứ 4 (ngày 3–7) — cần theo dõi sát để phát hiện thoát huyết tương hoặc sốc\n\n**Khuyến nghị tiếp theo:**\n- 🔬 Làm **NS1 (test nhanh)** trong ngày — ưu tiên trong 5 ngày đầu sốt  \n- ⛔ **Cấm aspirin, ibuprofen, analgin** — chỉ dùng paracetamol (10–15 mg/kg/lần, cách 4–6h, tối đa 60 mg/kg/ngày)\n\n_(Công cụ sàng lọc theo QĐ 2760/QĐ-BYT 2023. Không thay thế chẩn đoán lâm sàng.)_\n\n---\n\nPLT đang giảm, BN vẫn trong giai đoạn nguy hiểm. **Bác sĩ có muốn đặt lịch CBC lại sau 24h không?**"
+    },
+    {
+      "role": "user",
+      "content": "đây là cbc của phan hùng sốt ngày thứ 4\n\n[Nội dung ảnh xét nghiệm]\nTÊN XÉT NGHIỆM KẾT QUẢ CSBT ĐƠN VỊ\nHuyết học * Tổng phân tích TB máu ( Laser)\nWBc 3.8 (4 - 10) 10^9/L\nNEU% 63.2 (50 - 75) % \nNEU# 2.4 (1.7 - 7.5) 10^9/L\nLYM% 24.9 (20 - 45) %\nLYM# 1.0 (0.4 - 4.5) 10^9/L\nMONO% 7.1 (0.0 - 9.0) %\nMONO# 0.3 (0.0 - 0.9) %\nEOS% 2.2 (0.0 - 6.0) %\nEOS# 0.1 (0.0 - 0.7) %\nBASO% 0.4 (0.0 - 2.5) %\nBASO# 0 (0.0 - 0.2) %\nRBC 5.37 (4.0 - 5.0) 10^12/L\nHGB 163 (120 - 160) g/L\nHCT 47.9 (35 - 55) %\nMCV 89.3 (80 - 97) fl\nMCH 30.5 (26 - 32) pg\nMCHC 341 (360 - 360) g/L\nRDW 13.3 (10 - 15) %\nPLT 133 (150 - 450) 10^9/L\nMPV 7.9 (5 - 11) fl\nPCT 0.11 (0.0 - 9.98) %\nPDW 45.6"
+    },
+    {
+      "role": "assistant",
+      "content": "Tôi đã nhận diện được: đây là **CBC của Phan Hùng, ngày sốt thứ 4**, với các giá trị:\n- PLT = 133 ×10⁹/L → **133 K/μL**\n- WBC = 3.8 ×10⁹/L → **3.8 K/μL**\n- HGB = 163 g/L → **16.3 g/dL**\n- HCT = 47.9%\n\nDo đã lưu CBC ngày 13/06 (sốt ngày 3) và vừa lưu lại ngày 14/06 (sốt ngày 4), hệ thống đã tự động so sánh và xác định:\n\n→ **dengue_likelihood = \"possible\"**  \n→ BN vẫn trong **giai đoạn nguy hiểm (ngày 3–7)**  \n→ Không có red flag lâm sàng nhưng cần theo dõi sát PLT và HCT.\n\nKhông cần lưu lại lần nữa — kết quả đã được cập nhật đầy đủ vào hồ sơ.\n\n**Khuyến nghị tiếp theo (không thay đổi):**\n- 🔬 Làm NS1 (test nhanh) trong ngày nếu chưa làm  \n- ⛔ Cấm aspirin/ibuprofen/analgin — chỉ dùng paracetamol  \n- Theo dõi PLT mỗi 24h nếu tiếp tục sốt\n\nBạn cần tôi tra cứu lịch tái khám hoặc hỗ trợ kê đơn không?"
     }
   ]
 }

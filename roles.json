@@ -1,0 +1,146 @@
+{
+  "description": "Manifest phân quyền + guardrail cho HIS Agent. Code đọc file này để (1) lọc tool theo vai trò, (2) chèn luật/guardrail vào system prompt. Flow nhiều bước (FLOW A/B/D...) vẫn ở system_prompt.py.",
+
+  "auth": {
+    "store": "SQLite (his_users.db) — phone (PRIMARY KEY), password (bcrypt), fhir_id, role, name",
+    "login": "POST /api/login {phone, password} → session token",
+    "patient_session": "token → resolve_token() → patient_id (FHIR) ÉP từ session; không thao tác trên bệnh nhân khác",
+    "doctor_session": "doctor_id (practitioner_id) inject vào system prompt"
+  },
+
+  "enforcement": {
+    "prompt_level": "Chèn khối 'BỆNH NHÂN ĐÃ ĐĂNG NHẬP' + prompt_rules lên đầu system prompt",
+    "tool_level": "Chặn tool ngoài allowed_tools; với patient_scoped_tools: yêu cầu đăng nhập + ÉP patient_id từ session",
+    "note": "Hai lớp độc lập (prompt + tool) chống prompt injection ở cổng bệnh nhân"
+  },
+
+  "roles": {
+    "patient": {
+      "description": "Bệnh nhân — đặt lịch, triage, gợi ý khoa, sàng lọc SXHD, tra cứu thuốc, xem hồ sơ CỦA CHÍNH MÌNH",
+      "allowed_tools": [
+        "fhir_triage_assessment",
+        "fhir_suggest_department",
+        "fhir_register_new_patient",
+        "fhir_get_next_available_slot",
+        "fhir_get_available_slots",
+        "fhir_create_appointment",
+        "fhir_cancel_appointment",
+        "fhir_get_patient_appointments",
+        "fhir_get_patient_history",
+        "fhir_get_observations",
+        "fhir_get_clinical_impressions",
+        "fhir_get_allergies",
+        "fhir_get_prescriptions",
+        "dengue_symptom_assessment",
+        "dengue_cbc_predict",
+        "outbreak_get_stats",
+        "drug_info"
+      ],
+      "patient_scoped_tools": [
+        "fhir_get_patient_history",
+        "fhir_get_observations",
+        "fhir_get_patient_appointments",
+        "fhir_cancel_appointment",
+        "fhir_get_allergies",
+        "fhir_get_prescriptions"
+      ],
+      "prompt_rules": [
+        "Chỉ xem/thao tác dữ liệu của patient_id đang đăng nhập.",
+        "TUYỆT ĐỐI KHÔNG hiển thị UUID/ID/slot_id kỹ thuật ra giao diện.",
+        "Phải HỎI email trước khi đặt lịch; KHÔNG tự điền email giả.",
+        "Nếu user hỏi thông tin của người khác → từ chối: 'Bạn chỉ xem được thông tin của chính mình.'",
+        "KHÔNG dùng fhir_search_patient (không tra cứu người khác).",
+        "EMERGENCY → khuyên gọi 115 / đến Cấp cứu ngay, DỪNG, không hỏi tên, không đặt lịch."
+      ]
+    },
+
+    "doctor": {
+      "description": "Bác sĩ — trợ lý hỗ trợ quyết định lâm sàng (CDS), toàn quyền công cụ",
+      "allowed_tools": "ALL",
+      "prompt_rules": [
+        "Bắt đầu thẳng vào nội dung — KHÔNG chào hỏi, KHÔNG emoji.",
+        "Trả lời súc tích, dùng thuật ngữ y khoa chuyên ngành.",
+        "Được phép hiển thị ID/UUID nội bộ khi cần.",
+        "KHÔNG đi qua luồng triage kiểu bệnh nhân; không hỏi 'bạn muốn đặt lịch không?'."
+      ],
+      "sub_roles": {
+        "doctor_records": {
+          "description": "Tra cứu hồ sơ / xét nghiệm / lịch hẹn / lịch khám",
+          "allowed_tools": [
+            "fhir_search_patient",
+            "fhir_get_patient_history",
+            "fhir_get_observations",
+            "fhir_get_clinical_impressions",
+            "fhir_get_doctor_schedule",
+            "fhir_suggest_doctor",
+            "fhir_get_available_slots",
+            "fhir_get_patient_appointments"
+          ],
+          "prompt_rules": [
+            "Nếu chưa có patient_id → GỌI fhir_search_patient trước.",
+            "Đánh dấu giá trị bất thường: *(cao)* / *(thấp)* / *(cần chú ý)*."
+          ]
+        },
+        "doctor_cbc": {
+          "description": "Phân tích CBC, lưu FHIR, sàng lọc SXHD, đặt lịch tái khám",
+          "allowed_tools": [
+            "fhir_search_patient",
+            "fhir_create_cbc",
+            "fhir_get_cbc",
+            "fhir_get_next_available_slot",
+            "fhir_create_appointment"
+          ],
+          "prompt_rules": [
+            "TUYỆT ĐỐI KHÔNG gọi dengue_cbc_predict trực tiếp — phải qua fhir_create_cbc hoặc fhir_get_cbc.",
+            "KHÔNG hỏi thêm nếu đã có PLT — đủ để lưu và phân tích."
+          ]
+        },
+        "doctor_appointments": {
+          "description": "Duyệt / từ chối lịch hẹn + xem lịch khám của bác sĩ",
+          "allowed_tools": [
+            "fhir_get_pending_appointments",
+            "fhir_confirm_appointment",
+            "fhir_reject_appointment",
+            "fhir_get_doctor_schedule"
+          ],
+          "prompt_rules": [
+            "Sau khi xác nhận: thông báo đã gửi email cho bệnh nhân.",
+            "Khi từ chối: hỏi lý do ngắn (có thể bỏ qua), rồi giải phóng slot."
+          ]
+        }
+      }
+    }
+  },
+
+  "tool_guardrails": {
+    "drug_info": [
+      "CHỈ nêu thông tin có trong evidence_en/sources — KHÔNG bịa liều/phác đồ.",
+      "Chèn [n] đúng nhãn nguồn; KHÔNG tự đánh số lại.",
+      "KHÔNG mô tả nguồn NCBI là 'hướng dẫn Việt Nam' (nguồn quốc tế, tiếng Anh).",
+      "Nếu không có liều cụ thể → chỉ tới chuyên luận StatPearls, không tự ghi mg."
+    ],
+    "dengue_symptom_assessment": [
+      "Dấu hiệu nguy hiểm (nôn ra máu, ngất, co giật, khó thở...) → khuyên gọi 115 NGAY, DỪNG.",
+      "Luôn kèm disclaimer: công cụ sàng lọc ban đầu, không thay chẩn đoán lâm sàng."
+    ],
+    "dengue_cbc_predict": [
+      "Luôn kèm disclaimer: công cụ sàng lọc theo QĐ 2760/QĐ-BYT 2023, không thay chẩn đoán.",
+      "Chẩn đoán xác định SXHD chỉ qua NS1/IgM/IgG/PCR."
+    ],
+    "outbreak_get_stats": [
+      "Dùng ĐÚNG số từ tool, KHÔNG bịa; nêu rõ TUẦN cụ thể (không nói 'hôm nay').",
+      "BẮT BUỘC trích nguồn HCDC (source_url)."
+    ],
+    "fhir_create_appointment": [
+      "Sau khi đặt: thông báo 'lịch đang CHỜ bác sĩ duyệt' — KHÔNG nói 'đặt lịch thành công'.",
+      "KHÔNG tự bịa tên bác sĩ — lấy từ trường practitioner của tool."
+    ],
+    "fhir_create_prescription": [
+      "BẮT BUỘC kiểm tra dị ứng (fhir_check_drug_allergy) TRƯỚC khi kê.",
+      "Không kê thuốc cùng nhóm/cùng tên với dị ứng đã ghi nhận (trừ khi có override_reason rõ ràng)."
+    ],
+    "fhir_create_vitals": [
+      "Chỉ trình bày cảnh báo từ tool; KHÔNG tự thêm chẩn đoán hay khuyến nghị thuốc."
+    ]
+  }
+}

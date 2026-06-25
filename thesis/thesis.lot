@@ -1,0 +1,23 @@
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {1.1}{\ignorespaces So sánh các hệ thống HIS tiêu biểu với HIS Agent}}{4}{table.caption.6}%
+\contentsline {table}{\numberline {1.2}{\ignorespaces So sánh các mô hình LLM theo tiêu chí ứng dụng y tế}}{4}{table.caption.7}%
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {2.1}{\ignorespaces Bảng tóm tắt format input/output của 9 tool chính}}{16}{table.caption.15}%
+\contentsline {table}{\numberline {2.2}{\ignorespaces Danh sách 26 công cụ của HIS Agent và phân quyền theo vai trò (8 công cụ mới thuộc nhóm CDS)}}{20}{table.2.2}%
+\contentsline {table}{\numberline {2.3}{\ignorespaces So sánh hai biến thể RAG trong HIS Agent}}{27}{table.caption.22}%
+\contentsline {table}{\numberline {2.4}{\ignorespaces Bảng 7 cặp cross-reactivity với nguồn open-access đã verify}}{30}{table.caption.23}%
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {3.1}{\ignorespaces Các FHIR resource sử dụng trong hệ thống}}{39}{table.caption.27}%
+\contentsline {table}{\numberline {3.2}{\ignorespaces Năm mẫu regex trích số liệu từ nội dung bản tin HCDC}}{45}{table.caption.31}%
+\contentsline {table}{\numberline {3.3}{\ignorespaces Sửa lỗi lệch số trích dẫn nhờ gắn nhãn nguồn cho bằng chứng}}{46}{table.caption.32}%
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {4.1}{\ignorespaces Kết quả kiểm thử đơn vị module sàng lọc SXHD (20 ca)}}{59}{table.caption.44}%
+\contentsline {table}{\numberline {4.2}{\ignorespaces Kết quả kiểm thử end-to-end sàng lọc SXHD qua LLM (15 ca)}}{59}{table.caption.45}%
+\contentsline {table}{\numberline {4.3}{\ignorespaces Kết quả kiểm thử module đánh giá nguy cơ SXHD từ CBC}}{60}{table.caption.46}%
+\contentsline {table}{\numberline {4.4}{\ignorespaces 5 test case allergy check với BN có dị ứng Penicillin severe}}{61}{table.caption.47}%
+\contentsline {table}{\numberline {4.5}{\ignorespaces Kiểm thử phân quyền theo vai trò}}{63}{table.caption.48}%
+\contentsline {table}{\numberline {4.6}{\ignorespaces Kết quả kiểm thử các luồng chức năng chính}}{64}{table.caption.49}%
+\contentsline {table}{\numberline {4.7}{\ignorespaces Kết quả kiểm thử module tra cứu số liệu dịch bệnh}}{64}{table.caption.50}%
+\contentsline {table}{\numberline {4.8}{\ignorespaces Kết quả kiểm chứng grounding và độ chính xác trích dẫn của drug\_info}}{65}{table.caption.51}%
+\contentsline {table}{\numberline {4.9}{\ignorespaces Thời gian phản hồi trung bình theo luồng (đo trên môi trường localhost)}}{66}{table.caption.52}%
+\contentsfinish 

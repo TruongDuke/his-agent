@@ -378,6 +378,29 @@ async def api_patient_detail(patient_id: str):
         row = {"name": label, "value": val, "unit": unit, "date": date}
         (vitals if cat == "vital" else labs).append(row)
 
+    # ── Fallback email: Patient.telecom thường KHÔNG có email (chỉ lưu phone lúc
+    #    đăng ký). Email BN cung cấp lúc đặt lịch được lưu ở Appointment.note dạng
+    #    "__patient_email__:...". Lấy từ lịch hẹn gần nhất để modal Kết thúc khám
+    #    tự điền được → email tóm tắt mới tự gửi.
+    if not email:
+        try:
+            async with httpx.AsyncClient(timeout=15, auth=auth) as client:
+                ea_r = await client.get(
+                    f"{url}/fhir/Appointment",
+                    params={"patient": f"Patient/{patient_id}",
+                            "_sort": "-date", "_count": "20"},
+                )
+            for appt in _entries(ea_r.json(), "Appointment"):
+                for note in (appt.get("note") or []):
+                    txt = note.get("text", "")
+                    if txt.startswith("__patient_email__:"):
+                        email = txt.split(":", 1)[1].strip()
+                        break
+                if email:
+                    break
+        except Exception:
+            pass
+
     # ── Upcoming appointments ──
     appts = []
     for appt in _entries(appt_r.json(), "Appointment"):

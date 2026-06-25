@@ -24,7 +24,7 @@ def fhir_get(path: str, params: dict | None = None, timeout: float = 15.0) -> di
     auth = (cid, sec) if cid and sec else None
     try:
         with httpx.Client(timeout=timeout, auth=auth) as client:
-            resp = client.get(full, params=params or {})
+            resp = client.get(full, params=params or {}) # ← GỬI yêu cầu qua mạng tới bệnh viện
         if resp.status_code >= 400:
             return {"error": f"FHIR {resp.status_code}: {resp.text[:300]}"}
         return resp.json()
