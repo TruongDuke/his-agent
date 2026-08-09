@@ -25,3 +25,4 @@ his_users.db
 # Node / frontend build deps
 node_modules/
 frontend/node_modules/
+frontend/dist/

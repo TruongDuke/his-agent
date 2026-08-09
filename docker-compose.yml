@@ -1,0 +1,27 @@
+# Chốt cứng tên project — không phụ thuộc tên thư mục.
+# Nếu để mặc định, hai bản clone cùng tên folder sẽ dùng chung project name và đè container của nhau
+# (đúng lỗi mà allard-prod / allard-console gặp phải trên server này).
+name: his-agent
+
+services:
+  his-agent:
+    build: .
+    image: his-agent:latest
+    container_name: his-agent
+    restart: unless-stopped
+    user: "1001:1001"
+    env_file: .env
+    environment:
+      TZ: Asia/Ho_Chi_Minh
+    ports:
+      - "8102:8000"
+    volumes:
+      # Dữ liệu chạy thực tế — giữ lại giữa các lần rebuild
+      - ./data:/app/data
+      - ./his_users.db:/app/his_users.db
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')"]
+      interval: 30s
+      timeout: 5s
+      start_period: 180s
+      retries: 3

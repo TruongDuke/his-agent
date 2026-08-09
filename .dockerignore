@@ -1,0 +1,19 @@
+venv/
+__pycache__/
+*.py[cod]
+.git/
+.gitignore
+
+# Frontend: source cần cho stage build; node_modules và dist thì stage 1 tự sinh
+frontend/node_modules/
+frontend/dist/
+
+# Tài liệu, slide, thesis — không cần trong image
+thesis/
+slides/
+tests/
+*.md
+
+.env
+.DS_Store
+*.log
