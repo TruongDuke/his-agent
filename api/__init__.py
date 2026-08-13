@@ -9,7 +9,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from api.routes import chat, scheduling, fhir, appointments, ui, auth, a2a
+from api.routes import (
+    chat, scheduling, fhir, appointments, ui, auth, a2a, doctor_config,
+    med_reminders, his,
+)
 
 app = FastAPI(title="HIS Agent API", version="1.0.0")
 
@@ -19,6 +22,8 @@ async def _warmup():
     """Pre-load sentence-transformer model so first user request is fast."""
     import asyncio
     sys.path.insert(0, str(Path(__file__).parent.parent / "tools"))
+    from api.reminder_service import start_scheduler
+    start_scheduler()
     loop = asyncio.get_event_loop()
     await loop.run_in_executor(None, _load_rag)
 
@@ -44,6 +49,9 @@ app.include_router(a2a.router)
 app.include_router(scheduling.router)
 app.include_router(fhir.router)
 app.include_router(appointments.router)
+app.include_router(doctor_config.router)
+app.include_router(med_reminders.router)
+app.include_router(his.router)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # UI React (Vite build) — phục vụ assets nếu đã build (frontend/dist)

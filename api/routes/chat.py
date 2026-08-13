@@ -10,6 +10,7 @@ from fastapi.responses import StreamingResponse
 from fastapi import HTTPException
 
 from agent import chat, chat_stream
+from api.doctor_config import load_cbc_config, compile_cbc_prompt
 from api.models import ChatRequest, ChatResponse
 from api.tokens import resolve_token
 from api.sessions import (
@@ -27,10 +28,17 @@ from api.sessions import (
 router = APIRouter()
 
 
+def _doctor_cbc_extra(body: ChatRequest) -> str:
+    """Block chỉ dẫn trình bày báo cáo CBC theo cấu hình của bác sĩ."""
+    if body.role == "doctor" and body.doctor_id:
+        return compile_cbc_prompt(load_cbc_config(body.doctor_id))
+    return ""
+
+
 def _resolve_patient(body: ChatRequest, token: str) -> tuple[str, str]:
     """Trả về (patient_id, patient_name) đã xác thực từ token, hoặc rỗng nếu guest."""
-    if body.role != "patient" or not token:
-        return "", ""
+    if body.role != "patient" or not token: # lấy từ login token
+        return "", "" 
     info = resolve_token(token)
     if info and info["role"] == "patient":
         return info["fhir_id"], info["name"]
@@ -39,7 +47,7 @@ def _resolve_patient(body: ChatRequest, token: str) -> tuple[str, str]:
 
 @router.post("/chat", response_model=ChatResponse) #khởi tạo hội thoại mới hoặc tiếp tục hội thoại cũ
 async def chat_endpoint(body: ChatRequest, x_session_token: str = Header(default="")): #body = tin nhắn
-    if body.role == "doctor" and body.doctor_id:
+    if body.role == "doctor" and body.doctor_id: #xác định session_id cho bác sĩ, nếu có doctor_id thì tạo session riêng cho bác sĩ đó
         pfx = f"doctor_{body.doctor_id}_"
         if body.session_id and body.session_id.startswith(pfx):
             session_id = body.session_id
@@ -100,6 +108,10 @@ async def chat_endpoint(body: ChatRequest, x_session_token: str = Header(default
         except Exception:
             pass
 
+    cbc_extra = _doctor_cbc_extra(body)
+    if cbc_extra:
+        extra_system = f"{extra_system}\n\n{cbc_extra}" if extra_system else cbc_extra
+
     try:
         reply, updated_history = chat( #gọi đến agent.py để xử lý hội thoại, trả về phản hồi và lịch sử đã cập nhật
             body.message if not is_init else "Xin chào",
@@ -134,12 +146,13 @@ async def chat_stream_endpoint(body: ChatRequest, x_session_token: str = Header(
         session_id = body.session_id or str(uuid.uuid4())
     history = list(_load_session(session_id))  # mutable copy
     patient_id, patient_name = _resolve_patient(body, x_session_token)
+    extra_system = _doctor_cbc_extra(body)
     loop = asyncio.get_event_loop()
-    queue: asyncio.Queue = asyncio.Queue()
+    queue: asyncio.Queue = asyncio.Queue() # quầy trung chuyển
 
     def producer():
         try:
-            for chunk in chat_stream(
+            for chunk in chat_stream( # agent YIELD từng chunk, mỗi chunk là 1 phần của phản hồi, nhét vào queue để stream về client
                 body.message, history,
                 role=body.role,
                 doctor_name=body.doctor_name,
@@ -148,29 +161,30 @@ async def chat_stream_endpoint(body: ChatRequest, x_session_token: str = Header(
                 patient_name=patient_name,
                 image_base64=body.image_base64,
                 image_mime=body.image_mime,
+                extra_system=extra_system,
             ):
-                loop.call_soon_threadsafe(queue.put_nowait, chunk)
+                loop.call_soon_threadsafe(queue.put_nowait, chunk) # đẩy chunk vào queue
         except Exception as e:
             import traceback
             traceback.print_exc()
             err = f"data: {_json.dumps({'type': 'error', 'text': str(e)})}\n\n"
             loop.call_soon_threadsafe(queue.put_nowait, err)
         finally:
-            loop.call_soon_threadsafe(queue.put_nowait, None)  # sentinel
+            loop.call_soon_threadsafe(queue.put_nowait, None)  # sentinel hết hàng
 
     async def generate():
         executor = concurrent.futures.ThreadPoolExecutor(max_workers=1)
-        executor.submit(producer)
+        executor.submit(producer) # chạy producer trong thread riêng để không block event loop
         try:
             while True:
-                item = await queue.get()
+                item = await queue.get() # lấy từng chunk từ queue
                 if item is None:
                     break
-                yield item
+                yield item # yield chunk về client
             yield f"data: {_json.dumps({'session_id': session_id})}\n\n"
         finally:
             _save_session(session_id, history)
-            executor.shutdown(wait=False)
+            executor.shutdown(wait=False) # xong hết mới lưu lịch sử
 
     return StreamingResponse(
         generate(),

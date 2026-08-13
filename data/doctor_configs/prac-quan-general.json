@@ -1,0 +1,9 @@
+{
+  "length": "concise",
+  "audience": "doctor",
+  "show_citations": true,
+  "show_recommended_tests": false,
+  "show_aspirin_warning": false,
+  "show_scores": false,
+  "custom_note": "nhấn mạnh PLT"
+}

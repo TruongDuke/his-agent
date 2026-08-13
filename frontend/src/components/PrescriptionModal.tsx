@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import {
-  Modal, Input, Select, InputNumber, Button, Alert, Space, Card, Tag, message, Typography, Divider,
+  Modal, Input, Select, InputNumber, Button, Alert, Space, Card, Tag, message, Typography, Divider, Checkbox,
 } from 'antd'
-import { PlusOutlined, DeleteOutlined } from '@ant-design/icons'
+import { PlusOutlined, DeleteOutlined, BellOutlined } from '@ant-design/icons'
 
 const { Text } = Typography
 
@@ -39,16 +39,41 @@ export default function PrescriptionModal({
   const [rows, setRows] = useState<Row[]>([newRow()])
   const [catalog, setCatalog] = useState<Record<string, any[]>>({})
   const [submitting, setSubmitting] = useState(false)
+  const [allergies, setAllergies] = useState<any[]>([])
+  const [remind, setRemind] = useState(true)
+  const [email, setEmail] = useState('')
 
   useEffect(() => {
     if (!open) return
     setDiagnosis('')
     setRows([newRow()])
+    setAllergies([])
+    setRemind(true)
+    setEmail('')
     fetch('/api/drug-catalog')
       .then((r) => r.json())
       .then((d) => setCatalog(d.by_category || {}))
       .catch(() => {})
-  }, [open])
+    if (patientId) {
+      fetch('/api/allergies/' + patientId)
+        .then((r) => r.json())
+        .then((a) => setAllergies((a.allergies || []).filter((x: any) => x.category === 'medication')))
+        .catch(() => {})
+      fetch('/api/patient/' + patientId)
+        .then((r) => r.json())
+        .then((p) => setEmail(p.email || ''))
+        .catch(() => {})
+    }
+  }, [open, patientId])
+
+  function drugName(id?: string): string {
+    if (!id) return ''
+    for (const drugs of Object.values(catalog)) {
+      const d = (drugs as any[]).find((x) => x.id === id)
+      if (d) return `${d.name} ${d.strength || ''}`.trim()
+    }
+    return id
+  }
 
   const options = Object.entries(catalog).map(([cat, drugs]) => ({
     label: cat,
@@ -77,7 +102,7 @@ export default function PrescriptionModal({
     if (!diagnosis.trim()) return message.warning('Vui lòng nhập chẩn đoán.')
     const meds = rows.filter((r) => r.drug_id)
     if (!meds.length) return message.warning('Thêm ít nhất một thuốc.')
-    if (meds.some((r) => r.check?.verdict === 'block'))
+    if (meds.some((r) => r.check?.verdict === 'block')) 
       return message.error('Có thuốc bị CHẶN do dị ứng — hãy bỏ hoặc đổi thuốc.')
     const needOverride = meds.find((r) => r.check?.verdict === 'warn' && !r.override_reason.trim())
     if (needOverride)
@@ -109,6 +134,35 @@ export default function PrescriptionModal({
       }
       if (!r.ok) throw new Error()
       message.success(`Đã kê đơn ${meds.length} thuốc cho ${patientName}`)
+
+      if (remind) {
+        if (!email.trim()) {
+          message.warning('Đã kê đơn nhưng chưa có email BN — không bật được nhắc uống thuốc.')
+        } else {
+          try {
+            const rr = await fetch(`/api/med-reminders/${patientId}/from-prescription`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                email: email.trim(),
+                patient_name: patientName,
+                medications: meds.map((m) => ({
+                  drug_name: drugName(m.drug_id),
+                  frequency_per_day: m.frequency_per_day,
+                  duration_days: m.duration_days,
+                  dose_per_intake: m.dose_per_intake,
+                  instructions: m.instructions,
+                })),
+              }),
+            })
+            if (rr.ok) message.success('Đã bật nhắc uống thuốc qua email cho BN')
+            else message.warning('Kê đơn xong nhưng bật nhắc uống thuốc thất bại.')
+          } catch {
+            message.warning('Kê đơn xong nhưng bật nhắc uống thuốc thất bại.')
+          }
+        }
+      }
+
       onDone?.()
       onClose()
     } catch {
@@ -128,6 +182,23 @@ export default function PrescriptionModal({
       confirmLoading={submitting}
       onOk={submit}
     >
+      {allergies.length > 0 && (
+        <Alert
+          style={{ marginBottom: 12 }}
+          type="warning"
+          showIcon
+          message="Dị ứng thuốc đã ghi nhận"
+          description={
+            <Space size={[4, 4]} wrap>
+              {allergies.map((a, i) => (
+                <Tag key={i} color={a.criticality === 'high' ? 'red' : 'orange'}>
+                  {a.substance}{a.severity_vi ? ` (${a.severity_vi})` : ''}
+                </Tag>
+              ))}
+            </Space>
+          }
+        />
+      )}
       <Input
         placeholder="Chẩn đoán *"
         value={diagnosis}
@@ -207,6 +278,26 @@ export default function PrescriptionModal({
       <Button type="dashed" icon={<PlusOutlined />} block onClick={() => setRows([...rows, newRow()])}>
         Thêm thuốc
       </Button>
+
+      <Card size="small" style={{ marginTop: 12, background: '#f7fbfb' }}>
+        <Checkbox checked={remind} onChange={(e) => setRemind(e.target.checked)}>
+          <BellOutlined /> Nhắc bệnh nhân uống thuốc qua email
+        </Checkbox>
+        {remind && (
+          <div style={{ marginTop: 8 }}>
+            <Input
+              placeholder="Email bệnh nhân để nhận nhắc"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <Text type="secondary" style={{ fontSize: 12, display: 'block', marginTop: 4 }}>
+              Giờ nhắc tự suy theo số lần/ngày (vd 3 lần → 07:00, 12:00, 19:00), gửi trong số ngày kê đơn.
+              BN có thể chỉnh lại trong Hồ sơ.
+            </Text>
+          </div>
+        )}
+      </Card>
+
       <Divider style={{ margin: '12px 0 0' }} />
       <Text type="secondary" style={{ fontSize: 12 }}>
         Hệ thống tự kiểm tra dị ứng 4 lớp khi chọn thuốc (Stockley's, BNF). Thuốc bị chặn phải đổi; cảnh báo cần lý do override.

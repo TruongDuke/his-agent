@@ -31,6 +31,7 @@ export default function CompleteVisitModal({
   const [plan, setPlan] = useState('')
   const [email, setEmail] = useState('')
   const [sendEmail, setSendEmail] = useState(true)
+  const [remind, setRemind] = useState(true)
   const [saving, setSaving] = useState(false)
   const [aiLoading, setAiLoading] = useState(false)
   const [allergies, setAllergies] = useState<any[]>([])
@@ -39,7 +40,7 @@ export default function CompleteVisitModal({
 
   useEffect(() => {
     if (!open || !appt) return
-    setDiagnosis(''); setNotes(''); setPlan(''); setEmail(''); setSendEmail(true); setRows([])
+    setDiagnosis(''); setNotes(''); setPlan(''); setEmail(''); setSendEmail(true); setRemind(true); setRows([])
     fetch('/api/patient/' + appt.patient_id).then((r) => r.json()).then((p) => p.email && setEmail(p.email)).catch(() => {})
     fetch('/api/allergies/' + appt.patient_id).then((r) => r.json()).then((a) => setAllergies((a.allergies || []).filter((x: any) => x.category === 'medication'))).catch(() => {})
     fetch('/api/drug-catalog').then((r) => r.json()).then((d) => setCatalog(d.by_category || {})).catch(() => {})
@@ -133,6 +134,38 @@ export default function CompleteVisitModal({
           message.error('Đơn thuốc bị chặn: ' + (d2.message || ''))
           return
         }
+
+        // Bật nhắc uống thuốc — cùng cơ chế với màn Kê đơn. Thiếu đoạn này thì thuốc
+        // kê qua "Hoàn tất khám" không bao giờ có lịch nhắc, dù cùng là kê đơn.
+        if (remind) {
+          if (!email.trim()) {
+            message.warning('Đã kê đơn nhưng chưa có email BN — không bật được nhắc uống thuốc.')
+          } else {
+            try {
+              const rr = await fetch(`/api/med-reminders/${appt.patient_id}/from-prescription`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  email: email.trim(),
+                  patient_name: appt.patient_name,
+                  medications: meds.map((m) => {
+                    const d = flatDrugs.find((x: any) => x.id === m.drug_id)
+                    return {
+                      drug_name: d ? `${d.name} ${d.strength}` : m.drug_id,
+                      dose_per_intake: m.dose_per_intake,
+                      frequency_per_day: m.frequency_per_day,
+                      duration_days: m.duration_days,
+                      instructions: m.instructions,
+                    }
+                  }),
+                }),
+              })
+              if (rr.ok) message.success('Đã bật nhắc uống thuốc qua email cho BN')
+            } catch {
+              message.warning('Đã kê đơn nhưng bật nhắc uống thuốc thất bại.')
+            }
+          }
+        }
       }
 
       const emailMsg = d1.email?.success ? ' · 📧 đã gửi email' : sendEmail && !email ? ' · ⚠ chưa gửi email' : ''
@@ -197,6 +230,14 @@ export default function CompleteVisitModal({
                   description={
                     <>
                       {(row.check.checks || []).map((c: any, j: number) => <div key={j}>{c.message}</div>)}
+                      {row.check.suggested_alternatives?.length > 0 && (
+                        <div style={{ marginTop: 4 }}>
+                          Gợi ý thay thế:{' '}
+                          {row.check.suggested_alternatives.map((a: any) => (
+                            <Tag key={a.id} color="green">{a.name}</Tag>
+                          ))}
+                        </div>
+                      )}
                       {row.check.verdict === 'warn' && (
                         <Input placeholder="Lý do override (≥5 ký tự)" value={row.override_reason}
                           onChange={(e) => updateRow(i, { override_reason: e.target.value })} style={{ marginTop: 6 }} />
@@ -220,6 +261,12 @@ export default function CompleteVisitModal({
         <Divider style={{ margin: '4px 0' }} />
         <Checkbox checked={sendEmail} onChange={(e) => setSendEmail(e.target.checked)}>📧 Gửi email tóm tắt khám cho bệnh nhân</Checkbox>
         {sendEmail && <Input placeholder="Email bệnh nhân" value={email} onChange={(e) => setEmail(e.target.value)} />}
+        <Checkbox checked={remind} onChange={(e) => setRemind(e.target.checked)}>
+          ⏰ Nhắc bệnh nhân uống thuốc qua email
+        </Checkbox>
+        {remind && !sendEmail && (
+          <Input placeholder="Email bệnh nhân để nhận nhắc" value={email} onChange={(e) => setEmail(e.target.value)} />
+        )}
         <Text type="secondary" style={{ fontSize: 12 }}>
           Lưu ClinicalImpression + đổi trạng thái → fulfilled. Có thuốc thì kê đơn (check dị ứng). Email tóm tắt gửi tự động.
         </Text>
