@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Drawer, Descriptions, Tabs, Table, Tag, Empty, Spin, List, Typography, Card } from 'antd'
 import CbcSection from './CbcSection'
+import MedRemindersSection from './MedRemindersSection'
 
 const { Text } = Typography
 
@@ -66,8 +67,6 @@ export default function MyProfileDrawer({
                 key: 'obs', label: 'Sức khỏe',
                 children: (
                   <>
-                    <Text strong>Sinh hiệu</Text>
-                    <Table size="small" columns={obsCols} dataSource={(detail.vitals || []).map((x: any, i: number) => ({ ...x, key: i }))} pagination={false} locale={{ emptyText: 'Chưa có' }} style={{ marginBottom: 12 }} />
                     <Text strong>Xét nghiệm</Text>
                     <Table size="small" columns={obsCols} dataSource={(detail.labs || []).map((x: any, i: number) => ({ ...x, key: i }))} pagination={false} locale={{ emptyText: 'Chưa có' }} style={{ marginBottom: 16 }} />
                     <Text strong>Diễn tiến CBC & sàng lọc SXHD</Text>
@@ -88,6 +87,10 @@ export default function MyProfileDrawer({
                 ) : <Empty description="Không có dị ứng ghi nhận" />,
               },
               {
+                key: 'remind', label: 'Nhắc uống thuốc',
+                children: <MedRemindersSection patientId={patientId} />,
+              },
+              {
                 key: 'rx', label: `Đơn thuốc (${prescriptions.length})`,
                 children: prescriptions.length ? (
                   <List
@@ -95,11 +98,23 @@ export default function MyProfileDrawer({
                     renderItem={(p: any) => (
                       <List.Item>
                         <List.Item.Meta
-                          title={<>{p.prescription_date} {p.diagnosis && <Tag color="blue">{p.diagnosis}</Tag>}</>}
+                          title={
+                            <>
+                              {p.prescription_date} {p.diagnosis && <Tag color="blue">{p.diagnosis}</Tag>}
+                              {p.has_override && <Tag color="warning">⚠ Có override</Tag>}
+                            </>
+                          }
                           description={
                             <ul style={{ margin: 0, paddingLeft: 18 }}>
                               {(p.medications || []).map((m: any, j: number) => (
-                                <li key={j}>{m.drug_name} {m.instruction && <Text type="secondary">— {m.instruction}</Text>}</li>
+                                <li key={j}>
+                                  {m.drug_name} {m.instruction && <Text type="secondary">— {m.instruction}</Text>}
+                                  {m.override_note && (
+                                    <div style={{ color: '#d46b08', fontSize: 12, marginTop: 2 }}>
+                                      {m.override_note}
+                                    </div>
+                                  )}
+                                </li>
                               ))}
                             </ul>
                           }

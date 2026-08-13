@@ -3,10 +3,9 @@ import {
   Input, List, Card, Descriptions, Tabs, Table, Tag, Empty, Spin, Typography, message, Avatar, Button, Space, Segmented,
 } from 'antd'
 import {
-  UserOutlined, SearchOutlined, MedicineBoxOutlined, HeartOutlined, WarningOutlined, UserAddOutlined, ExperimentOutlined,
+  UserOutlined, SearchOutlined, MedicineBoxOutlined, WarningOutlined, UserAddOutlined, ExperimentOutlined,
 } from '@ant-design/icons'
 import PrescriptionModal from '../components/PrescriptionModal'
-import VitalsModal from '../components/VitalsModal'
 import AllergyModal from '../components/AllergyModal'
 import RegisterPatientModal from '../components/RegisterPatientModal'
 import CbcModal from '../components/CbcModal'
@@ -19,7 +18,6 @@ interface PatientRow { id: string; name: string; gender: string; birth_date: str
 
 export default function PatientLookup({ session, onAskAI }: { session: Session; onAskAI?: (name: string) => void }) {
   const [rxOpen, setRxOpen] = useState(false)
-  const [vitalsOpen, setVitalsOpen] = useState(false)
   const [allergyOpen, setAllergyOpen] = useState(false)
   const [registerOpen, setRegisterOpen] = useState(false)
   const [cbcOpen, setCbcOpen] = useState(false)
@@ -161,24 +159,12 @@ export default function PatientLookup({ session, onAskAI }: { session: Session; 
                   {onAskAI && (
                     <Button type="dashed" onClick={() => onAskAI(detail.name)}>🤖 Hỏi AI</Button>
                   )}
-                  <Button icon={<HeartOutlined />} onClick={() => setVitalsOpen(true)}>Sinh hiệu</Button>
                   <Button icon={<ExperimentOutlined />} onClick={() => setCbcOpen(true)}>CBC</Button>
                   <Button icon={<WarningOutlined />} onClick={() => setAllergyOpen(true)}>Dị ứng</Button>
                   <Button type="primary" icon={<MedicineBoxOutlined />} onClick={() => setRxOpen(true)}>Kê đơn</Button>
                 </Space>
               }
             >
-              {(() => {
-                const v = (n: string) => (detail.vitals || []).find((x: any) => x.name === n)
-                const sys = v('HA tâm thu'), dia = v('HA tâm trương'), pulse = v('Nhịp tim'), spo2 = v('SpO2')
-                return (
-                  <div className="pt-banner">
-                    <div><span className="pb-v">{sys && dia ? `${sys.value}/${dia.value}` : '—'}</span><span className="pb-l">Huyết áp</span></div>
-                    <div><span className="pb-v">{pulse?.value ?? '—'}</span><span className="pb-l">Mạch</span></div>
-                    <div><span className="pb-v">{spo2?.value ?? '—'}</span><span className="pb-l">SpO₂</span></div>
-                  </div>
-                )
-              })()}
               <Descriptions column={2} size="small" bordered>
                 <Descriptions.Item label="Giới tính">{detail.gender || '—'}</Descriptions.Item>
                 <Descriptions.Item label="Tuổi">{detail.age || '—'}</Descriptions.Item>
@@ -195,9 +181,6 @@ export default function PatientLookup({ session, onAskAI }: { session: Session; 
                     label: 'Tổng quan',
                     children: (
                       <>
-                        <Text strong>Sinh hiệu gần nhất</Text>
-                        <Table size="small" columns={obsCols} dataSource={(detail.vitals || []).map((x: any, i: number) => ({ ...x, key: i }))}
-                          pagination={false} locale={{ emptyText: 'Chưa có' }} style={{ marginBottom: 16 }} />
                         <Text strong>Xét nghiệm gần nhất</Text>
                         <Table size="small" columns={obsCols} dataSource={(detail.labs || []).map((x: any, i: number) => ({ ...x, key: i }))}
                           pagination={false} locale={{ emptyText: 'Chưa có' }} style={{ marginBottom: 16 }} />
@@ -230,11 +213,24 @@ export default function PatientLookup({ session, onAskAI }: { session: Session; 
                         renderItem={(p: any) => (
                           <List.Item>
                             <List.Item.Meta
-                              title={<>{p.prescription_date} {p.diagnosis && <Tag color="blue">{p.diagnosis}</Tag>}</>}
+                              title={
+                                <>
+                                  {p.prescription_date} {p.diagnosis && <Tag color="blue">{p.diagnosis}</Tag>}
+                                  {p.has_override && <Tag color="warning">⚠ Có override</Tag>}
+                                </>
+                              }
                               description={
                                 <ul style={{ margin: 0, paddingLeft: 18 }}>
                                   {(p.medications || []).map((m: any, j: number) => (
-                                    <li key={j}>{m.drug_name} {m.instruction && <Text type="secondary">— {m.instruction}</Text>}</li>
+                                    <li key={j}>
+                                      {m.drug_name} {m.instruction && <Text type="secondary">— {m.instruction}</Text>}
+                                      {/* Lý do bác sĩ vẫn kê dù có cảnh báo dị ứng — bắt buộc hiện để audit được */}
+                                      {m.override_note && (
+                                        <div style={{ color: '#d46b08', fontSize: 12, marginTop: 2 }}>
+                                          {m.override_note}
+                                        </div>
+                                      )}
+                                    </li>
                                   ))}
                                 </ul>
                               }
@@ -261,13 +257,6 @@ export default function PatientLookup({ session, onAskAI }: { session: Session; 
             patientName={detail.name}
             practitionerId={session.id}
             onClose={() => setRxOpen(false)}
-            onDone={() => open(selected)}
-          />
-          <VitalsModal
-            open={vitalsOpen}
-            patientId={selected}
-            patientName={detail.name}
-            onClose={() => setVitalsOpen(false)}
             onDone={() => open(selected)}
           />
           <AllergyModal
