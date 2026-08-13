@@ -136,23 +136,49 @@ gọn**, tắt **trích dẫn**, bật **thang điểm** → lưu → phân tíc
 > Nói cách khác, bác sĩ chỉnh được hành vi AI mà không cần ai sửa code."
 
 ## Demo 10 — Đầu chờ tích hợp HIS bệnh viện  ·  (trả lời câu "triển khai thật thì sao?")
-Đây là **demo bằng lời + 1 câu lệnh**, không có UI. Chỉ dùng khi hội đồng hỏi về khả năng tích hợp.
+Không có UI, và lúc bảo vệ cũng **không có HIS bệnh viện thật** nào để bấm. Nên dùng script giả lập
+đóng vai bên gửi — chạy đúng một ca bệnh từ đầu tới cuối.
 
 ```bash
-curl https://his.svisor.vn/api/his/capabilities
+python scripts/demo_his_push.py --url https://his.svisor.vn --key <HIS_API_KEY>
 ```
-**Kết quả:** trả về hợp đồng tích hợp — 5 loại bản tin (bệnh nhân, lượt khám, kết quả xét nghiệm,
-đơn thuốc, lịch hẹn), cách xác thực, quy tắc chống gửi trùng, và `status: stub`.
+
+**Kết quả (chiếu thẳng terminal, chậm 0.8s/bước cho hội đồng kịp đọc):**
+```
+  BỆNH VIỆN B — hệ thống HIS  →  HIS Agent (https://his.svisor.vn)
+  ──────────────────────────────────────────────────────────────
+  Hợp đồng tích hợp v1.0 · trạng thái: stub
+
+  ✓ Tiếp nhận bệnh nhân              → 202 accepted  biên nhận aa794600
+  ✓ Mở lượt khám                     → 202 accepted  biên nhận 956312e8
+  ✓ Trả kết quả xét nghiệm CBC       → 202 accepted  biên nhận 2dc3b675
+  ✓ Gửi đơn thuốc                    → 202 accepted  biên nhận 09363ef7
+  ✓ Hẹn tái khám                     → 202 accepted  biên nhận c33ca290
+
+  ↻ Gửi lại bản tin đầu (giả lập HIS retry vì timeout)
+    → duplicate — nhận lại đúng biên nhận cũ, không tạo bản ghi thứ hai
+```
+
+Rồi mở `/api/his/messages/lab-results` chiếu dữ liệu đã nhận — có tiểu cầu **98** và bạch cầu **3.2**
+(đều thấp), tức là **nối thẳng được sang phần sàng lọc sốt xuất huyết ở Demo 2/6**.
 
 **Nói:**
-> "Hệ thống hiện chạy trên FHIR/Aidbox. Muốn ghép vào HIS thật của bệnh viện thì em đã **chốt sẵn hợp
-> đồng API**: schema từng loại bản tin, xác thực bằng API key, chống gửi trùng theo message_id. Bên HIS
-> tích hợp và test được ngay từ bây giờ; phần ánh xạ dữ liệu sang FHIR làm sau mà **không phải đổi hợp
-> đồng**, họ không phải sửa code. Em cố ý để `persisted_to_fhir: false` cho minh bạch — chưa ghi vào
-> bệnh án chính thức thì phải nói rõ là chưa."
+> "Đây là HIS của một bệnh viện khác đẩy dữ liệu sang hệ thống em: tiếp nhận bệnh nhân → mở lượt khám
+> → trả kết quả CBC → kê đơn → hẹn tái khám. Em đã **chốt sẵn hợp đồng API**: schema từng loại bản tin,
+> xác thực bằng API key, chống gửi trùng theo message_id. Bên HIS tích hợp và test được ngay từ bây
+> giờ; phần ánh xạ sang FHIR làm sau mà **không phải đổi hợp đồng**, họ không phải sửa lại code."
 
-⚠️ Cổng đang **đóng** (chưa đặt `HIS_API_KEY` trên server) nên POST sẽ trả 503 — **đó là đúng thiết
-kế**, không phải lỗi. Nếu muốn demo POST thành công thì đặt key vào `.env` trên server rồi deploy lại.
+**Bước cuối là chỗ đáng khoe nhất** — nhấn mạnh khi chiếu dòng `duplicate`:
+> "Mạng bệnh viện hay timeout, HIS sẽ gửi lại bản tin đó. Nếu cứ nhận là ghi thì một bệnh nhân bị tạo
+> thành hai hồ sơ. Nên em định danh theo message_id: gửi lại bao nhiêu lần cũng **trả về đúng biên
+> nhận cũ**, không đẻ thêm bản ghi."
+
+⚠️ **Phải đặt `HIS_API_KEY` trên server trước**, không thì script dừng ngay ở bước đầu với thông báo
+"cổng đang ĐÓNG". Script tự kiểm tra và báo rõ, không để bạn ngơ ngác giữa lúc demo.
+
+⚠️ `persisted_to_fhir: false` trong biên nhận là **cố ý, không phải làm dở**. Nếu bị hỏi:
+> "Bản tin đã nhận và lưu, nhưng chưa ghi vào bệnh án chính thức trên FHIR. Em để cờ này để bên gửi
+> biết chính xác dữ liệu đang ở đâu — nhận rồi không có nghĩa là đã vào hồ sơ."
 
 ---
 
@@ -190,8 +216,8 @@ Demo 9 (cấu hình CBC) và Demo 10 (đầu chờ HIS) để **dành trả lờ
 - Đừng gõ "đau ngực khó thở" ở demo gợi ý khoa → ra cảnh báo 115 (đúng nhưng không phải happy case).
 - Demo 1: nói "sớm nhất", đừng nói ngày/giờ cụ thể.
 - Demo 8: đừng ngồi chờ tới giờ nhắc thật — dùng nút **Gửi thử**.
-- Demo 10: POST vào `/api/his/*` sẽ trả 503 vì cổng đang đóng. Chỉ chiếu `capabilities` (GET), đừng
-  demo POST trừ khi đã đặt `HIS_API_KEY` trên server trước.
+- Demo 10: **phải đặt `HIS_API_KEY` trên server trước**, không thì cổng đóng và script dừng ngay bước
+  đầu. Chạy thử một lần trước buổi bảo vệ cho chắc.
 
 ## 🛡️ Nếu gặp sự cố giữa demo
 - **Model chèn chữ Trung vào câu tiếng Việt** — đã có bộ lọc chặn ở tầng code, nhưng nếu vẫn lọt thì
