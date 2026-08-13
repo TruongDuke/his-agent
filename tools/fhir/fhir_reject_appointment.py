@@ -34,11 +34,17 @@ def run(args: dict) -> dict:
         if appt.get("status") != "proposed":
             return {"error": f"Lịch này không ở trạng thái chờ xác nhận (status={appt.get('status')})"}
 
-        # Cancel appointment
+        # Cancel appointment — R5 dùng "cancellationReason" (2 chữ l), R4 mới là "cancelationReason".
+        # Sai chính tả → Aidbox trả 422 unknown-key và toàn bộ thao tác từ chối hỏng.
         appt["status"] = "cancelled"
-        appt["cancelationReason"] = {"text": reason}
+        appt["cancellationReason"] = {"text": reason}
 
-        # Free the slot back
+        r2 = client.put(f"{url}/fhir/Appointment/{appt_id}", json=appt)
+        if not (200 <= r2.status_code < 300):
+            return {"error": f"Cập nhật thất bại (HTTP {r2.status_code})"}
+
+        # Free the slot back — chỉ làm SAU khi hủy lịch thành công. Nếu giải phóng trước mà PUT lỗi
+        # thì slot trống nhưng lịch vẫn "proposed" → người khác đặt trùng vào slot đó.
         slot_ref = ((appt.get("slot") or [{}])[0] or {}).get("reference", "")
         if slot_ref:
             rs = client.get(f"{url}/fhir/{slot_ref}")
@@ -46,10 +52,6 @@ def run(args: dict) -> dict:
                 slot = rs.json()
                 slot["status"] = "free"
                 client.put(f"{url}/fhir/{slot_ref}", json=slot)
-
-        r2 = client.put(f"{url}/fhir/Appointment/{appt_id}", json=appt)
-        if not (200 <= r2.status_code < 300):
-            return {"error": f"Cập nhật thất bại (HTTP {r2.status_code})"}
 
         patient_name = "Bệnh nhân"
         for p in (appt.get("participant") or []):

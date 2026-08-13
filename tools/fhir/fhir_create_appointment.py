@@ -41,30 +41,34 @@ def _resolve_slot_by_time(client, url: str, dept: str, date_str: str, time_str: 
 
     sched_entries = (r.json().get("entry") or [])
     if not sched_entries:
-        return None, f"Khoa '{dept}' chưa có lịch khám trong hệ thống. Gọi fhir_get_available_slots để kiểm tra khoa khác."
+        return None, f"Khoa '{dept}' chưa có lịch khám trong hệ thống. Gọi fhir_get_next_available_slot để kiểm tra khoa khác."
 
-    want_prefix = f"{date_str}T{time_str}"  # "2026-04-27T08:30"
+    want_prefix = f"{date_str}T{time_str}"  # "2026-04-27T08:30" ngay gio nguoi dung muon
     for se in sched_entries:
         sched_id = (se.get("resource") or {}).get("id", "")
-        if not sched_id:
+        if not sched_id: # lịch không có id → bỏ, xét lịch tiếp
             continue
-        r2 = client.get(
+        r2 = client.get( #query slot trong cua schedule này
             f"{url}/fhir/Slot",
             params={
                 "schedule": f"Schedule/{sched_id}",
                 "status": "free",
                 "start": f"ge{date_str}",
+                "_sort": "start",   # earliest trước → slot cần tìm không bị rớt khỏi _count
                 "_count": "50",
             },
         )
-        if r2.status_code != 200:
+        if r2.status_code != 200: # lỗi thử lịch khác
             continue
-        for e in (r2.json().get("entry") or []):
+        for e in (r2.json().get("entry") or []): #mỗi slot trống
             slot = e.get("resource", {})
-            if (slot.get("start") or "").startswith(want_prefix):
+            if (slot.get("start") or "").startswith(want_prefix): # so khop ngay+giờ
                 return slot.get("id"), None
 
-    return None, f"Không có slot trống ở khoa {dept} vào {date_str} lúc {time_str}. Gọi fhir_get_available_slots để xem slot nào đang trống."
+    return None, f"Không có slot trống ở khoa {dept} vào {date_str} lúc {time_str}. Gọi fhir_get_next_available_slot để xem slot trống gần nhất."
+ #duyệt từng LỊCH của khoa
+  # duyệt từng SLOT trống của lịch đó
+   #   slot nào bắt đầu đúng 7/7 8:30 → lấy!
 
 
 def run(args: dict) -> dict:
@@ -163,8 +167,8 @@ def run(args: dict) -> dict:
         if notes:
             appointment["note"] = notes
         if actor_ref:
-            appointment["participant"].append(
-                {"actor": {"reference": actor_ref}, "status": "accepted"}
+            appointment["participant"].append( # thêm bác sĩ vào participant
+                {"actor": {"reference": actor_ref}, "status": "accepted"} # bác sĩ sẽ thấy lịch trong danh sách của mình, status=accepted để bác sĩ biết đã được book
             )
 
         r = client.post(f"{url}/fhir/Appointment", json=appointment)
@@ -223,8 +227,10 @@ def run(args: dict) -> dict:
         "end": (slot_end or "")[:16].replace("T", " "),
         "reason": reason,
         "_appointment_id_internal": appt_id,  # giữ UUID cho hệ thống, tên có dấu _ để LLM bớt show
+        # Lịch luôn tạo ở status "proposed" → KHÔNG được nói "thành công", bệnh nhân sẽ tưởng
+        # đã xong và ngồi chờ email không bao giờ tới (email chỉ gửi khi bác sĩ duyệt).
         "message": (
-            f"Đã đặt lịch thành công!\n"
+            f"Đã ghi nhận lịch khám, đang chờ bác sĩ xác nhận.\n"
             f"Bệnh nhân: {patient_name}\n"
             f"Khoa: {dept_name}\n"
             f"Bác sĩ: {pract_name}\n"

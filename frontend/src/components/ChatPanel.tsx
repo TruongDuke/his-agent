@@ -1,10 +1,12 @@
 import { useRef, useState, useEffect } from 'react'
 import { Button, Avatar, Input } from 'antd'
 import {
-  SendOutlined, RobotOutlined, UserOutlined, PaperClipOutlined, CloseCircleFilled,
+  SendOutlined, RobotOutlined, UserOutlined, PaperClipOutlined, CloseCircleFilled, PlusOutlined,
+  SettingOutlined,
 } from '@ant-design/icons'
 import { marked } from 'marked'
 import DengueForm from './DengueForm'
+import CbcConfigModal from './CbcConfigModal'
 import { streamChat } from '../api'
 import type { Session, Source } from '../api'
 
@@ -72,6 +74,7 @@ export default function ChatPanel({
   const [input, setInput] = useState(prefillInput || '')
   const [busy, setBusy] = useState(false)
   const [img, setImg] = useState<{ data: string; mime: string; url: string } | null>(null)
+  const [cfgOpen, setCfgOpen] = useState(false)
   const sessionId = useRef(initialSessionId || '')
   const scrollRef = useRef<HTMLDivElement>(null)
   const fileRef = useRef<HTMLInputElement>(null)
@@ -81,11 +84,9 @@ export default function ChatPanel({
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' })
   }, [messages])
 
-  // Lời chào chủ động khi đăng nhập: nhắc chẩn đoán/kế hoạch tái khám lần trước
-  // (backend xử lý qua tin "__init__" ở endpoint /chat non-stream).
-  useEffect(() => {
-    if (!autoInit || initRan.current || messages.length) return
-    initRan.current = true
+  // Lời chào chủ động (__init__): nhắc chẩn đoán/kế hoạch tái khám lần trước.
+  // Tách thành hàm để dùng lại cho cả lần đăng nhập lẫn nút "Cuộc trò chuyện mới".
+  function runInit() {
     setMessages([{ role: 'assistant', content: '', status: 'Đang tải...' }])
     fetch('/chat', {
       method: 'POST',
@@ -107,6 +108,23 @@ export default function ChatPanel({
         setMessages(d.reply ? [{ role: 'assistant', content: d.reply }] : [])
       })
       .catch(() => setMessages([]))
+  }
+
+  // Bắt đầu cuộc trò chuyện mới: quên session_id (backend sẽ cấp id mới) + xóa lịch sử hiển thị.
+  function newChat() {
+    if (busy) return
+    sessionId.current = ''
+    setInput('')
+    setImg(null)
+    if (autoInit) runInit()   // bệnh nhân đã đăng nhập → chào lại + nhận session mới
+    else setMessages([])      // khách → chỉ xóa
+  }
+
+  // Lời chào chủ động khi đăng nhập lần đầu (backend xử lý qua tin "__init__").
+  useEffect(() => {
+    if (!autoInit || initRan.current || messages.length) return
+    initRan.current = true
+    runInit()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -179,6 +197,33 @@ export default function ChatPanel({
 
   return (
     <div className="chat-panel">
+      {session.role === 'patient' && (
+        <div
+          style={{
+            display: 'flex', justifyContent: 'flex-end',
+            padding: '8px 12px', borderBottom: '1px solid #f0f0f0', background: '#fff',
+          }}
+        >
+          <Button size="small" icon={<PlusOutlined />} onClick={newChat} disabled={busy}>
+            Cuộc trò chuyện mới
+          </Button>
+        </div>
+      )}
+      {isDoctor && (
+        <div
+          style={{
+            display: 'flex', justifyContent: 'flex-end',
+            padding: '8px 12px', borderBottom: '1px solid #f0f0f0', background: '#fff',
+          }}
+        >
+          <Button size="small" icon={<SettingOutlined />} onClick={() => setCfgOpen(true)}>
+            Cấu hình báo cáo CBC
+          </Button>
+        </div>
+      )}
+      {isDoctor && (
+        <CbcConfigModal open={cfgOpen} doctorId={session.id} onClose={() => setCfgOpen(false)} />
+      )}
       <div className="chat-content" ref={scrollRef}>
         <div className="chat-inner">
           {messages.length === 0 && (
@@ -233,13 +278,18 @@ export default function ChatPanel({
 
       <div className="chat-footer">
         <div className="chat-input-wrap">
-          <input ref={fileRef} type="file" accept="image/*,application/pdf" hidden onChange={onFile} />
-          <Button
-            size="large"
-            icon={<PaperClipOutlined />}
-            onClick={() => fileRef.current?.click()}
-            title="Đính kèm ảnh phiếu xét nghiệm"
-          />
+          {/* Đính kèm ảnh phiếu xét nghiệm chỉ dành cho bác sĩ (phân tích CBC) */}
+          {isDoctor && (
+            <>
+              <input ref={fileRef} type="file" accept="image/*,application/pdf" hidden onChange={onFile} />
+              <Button
+                size="large"
+                icon={<PaperClipOutlined />}
+                onClick={() => fileRef.current?.click()}
+                title="Đính kèm ảnh phiếu xét nghiệm"
+              />
+            </>
+          )}
           <div style={{ flex: 1 }}>
             {img && (
               <div className="img-preview">
@@ -260,7 +310,7 @@ export default function ChatPanel({
               }}
             />
           </div>
-          <Button type="primary" size="large" icon={<SendOutlined />} loading={busy} onClick={send} />
+          <Button type="primary" size="large" icon={<SendOutlined />} loading={busy} onClick={() => send()} />
         </div>
       </div>
     </div>

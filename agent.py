@@ -1,7 +1,7 @@
 """HIS Agent — tool-calling loop (OpenAI-compatible SDK, works with OpenRouter)."""
 
 from __future__ import annotations
-import importlib, os, sys, json
+import importlib, os, sys, json, re
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
@@ -101,6 +101,128 @@ def _execute_tool(name: str, args: dict, modules: dict) -> str:
         return json.dumps({"error": str(e)})
 
 
+# ── SÀNG LỌC SXHD: phiếu tích cố định (frontend nhận diện 3 tiêu đề A/B/C để render form) ──
+DENGUE_CHECKLIST = (
+    "Mình sẽ giúp bạn sàng lọc sốt xuất huyết. Vui lòng trả lời các câu hỏi sau:\n\n"
+    "**A. Dịch tễ:**\n"
+    "1. Bạn đang sống hoặc vừa đến vùng có dịch sốt xuất huyết không?\n"
+    "2. Bạn đang sốt mấy ngày rồi? (ghi số, ví dụ: 2 ngày)\n\n"
+    "**B. Triệu chứng** (trả lời có/không cho từng mục):\n"
+    "3. Buồn nôn hoặc nôn ói?\n"
+    "4. Phát ban, nổi mẩn đỏ trên da?\n"
+    "5. Đau cơ, đau khớp, nhức hai hố mắt?\n"
+    "6. Chấm đỏ dưới da hoặc bầm tím không rõ nguyên nhân?\n\n"
+    "**C. Dấu hiệu cảnh báo** (trả lời có/không):\n"
+    "7. Đau bụng nhiều hoặc đau vùng gan?\n"
+    "8. Nôn ói liên tục nhiều lần?\n"
+    "9. Chảy máu chân răng, chảy máu mũi, phân đen?\n"
+    "10. Đi tiểu ít hoặc nước tiểu sẫm màu?\n"
+    "11. Vật vã, lờ đờ, mệt lả nhiều?"
+)
+
+# Dấu hiệu nguy hiểm → KHÔNG hiện phiếu, để LLM cảnh báo 115 (khớp EARLY-STOP FLOW D)
+_DENGUE_DANGER = ("nôn ra máu", "ói máu", "ngất", "mất ý thức", "co giật",
+                  "tay chân lạnh", "khó thở", "xuất huyết ồ ạt", "vàng da", "vàng mắt",
+                  "rối loạn ý thức")
+# Câu hỏi SỐ LIỆU dịch (FLOW G) — KHÔNG phải sàng lọc triệu chứng cá nhân
+_OUTBREAK_KW = ("bao nhiêu ca", "số ca", "tình hình", "thống kê", "ca mắc",
+                "bao nhiu ca", "mấy ca", "dịch đang", "số liệu")
+_DENGUE_EXPLICIT = ("sốt xuất huyết", "sxh", "dengue")
+_DENGUE_SYMPTOMS = ("đau người", "nhức mỏi", "đau khớp", "đau mỏi", "phát ban",
+                    "mẩn đỏ", "nổi mẩn", "buồn nôn", "nôn ói", "chấm đỏ",
+                    "xuất huyết dưới da", "nhức hố mắt", "đau hố mắt")
+
+
+def _should_show_dengue_checklist(message: str, history: list[dict]) -> bool:
+    """True nếu đây là lượt MỞ ĐẦU sàng lọc SXHD của bệnh nhân → hiện phiếu cố định.
+    Xác định (deterministic), không phụ thuộc LLM có 'ngẫu hứng' gọi tool hay không."""
+    m = (message or "").lower()
+    if any(d in m for d in _DENGUE_DANGER):
+        return False                      # nguy hiểm → để LLM xử lý cảnh báo 115
+    if any(k in m for k in _OUTBREAK_KW):
+        return False                      # hỏi số liệu dịch (FLOW G), không phải sàng lọc
+    # đã hiện phiếu trước đó rồi (user đang trả lời) → không lặp lại
+    for h in history:
+        if h.get("role") == "assistant" and "A. Dịch tễ" in (h.get("content") or ""):
+            return False
+    explicit = any(k in m for k in _DENGUE_EXPLICIT)
+    fever_plus = ("sốt" in m) and any(s in m for s in _DENGUE_SYMPTOMS)
+    return explicit or fever_plus
+
+
+def _booking_confirmation(result_json: str) -> str | None:
+    """Nếu fhir_create_appointment trả success → dựng câu xác nhận xác định.
+    Trả None nếu không phải đặt lịch thành công (để luồng chạy bình thường)."""
+    try:
+        d = json.loads(result_json)
+    except Exception:
+        return None
+    if not (isinstance(d, dict) and d.get("success") and d.get("booking_code")):
+        return None
+    msg = d.get("message") or "Đã ghi nhận lịch khám, đang chờ bác sĩ xác nhận."
+    if d.get("pending_confirmation"):
+        email = d.get("patient_email", "")
+        msg += (f"\n\n⏳ Lịch đang **chờ bác sĩ duyệt**. Sau khi bác sĩ xác nhận, "
+                f"email xác nhận sẽ được gửi tới {email}." if email
+                else "\n\n⏳ Lịch đang **chờ bác sĩ duyệt**.")
+    return msg
+
+
+# ── CHỐNG RÒ CHỮ HÁN/NHẬT/HÀN (AYT-2) ──────────────────────────────────────
+# Model đang dùng (qwen3-vl-plus) đôi khi chèn chữ Trung vào giữa câu tiếng Việt,
+# VD "Mất thị lực, nói不清, yếu một bên cơ thể". Prompt cấm được nhưng không tuyệt đối,
+# nên chặn thêm ở tầng code: rà từng đoạn trước khi gửi ra UI.
+_CJK_RE = re.compile(
+    "[\u3040-\u30ff"   # hiragana + katakana
+    "\u3400-\u4dbf"    # CJK ext A
+    "\u4e00-\u9fff"    # CJK thong nhat (chu Han)
+    "\uf900-\ufaff"    # CJK tuong thich
+    "\uac00-\ud7af]"   # hangul
+)
+
+_REPAIR_SYSTEM = (
+    "Viết lại văn bản của user thành 100% tiếng Việt. Giữ nguyên ý nghĩa, định dạng markdown, "
+    "emoji, số liệu và cách xuống dòng. Thay mọi chữ Hán/Nhật/Hàn bằng từ tiếng Việt tương ứng "
+    "(VD: 不清 → không rõ). CHỈ trả về văn bản đã sửa, không thêm lời giải thích."
+)
+
+
+def _sanitize_vi(text: str) -> str:
+    """Nếu đoạn văn có chữ Hán/Nhật/Hàn → nhờ model dịch lại đúng chỗ đó.
+    Sửa không xong thì xoá thẳng ký tự lạ — thà thiếu chữ hơn là hiện chữ Trung cho bệnh nhân."""
+    if not text or not _CJK_RE.search(text):
+        return text
+    try:
+        r = _CLIENT.chat.completions.create(
+            model=_MODEL,
+            max_tokens=1024,
+            temperature=0,
+            messages=[
+                {"role": "system", "content": _REPAIR_SYSTEM},
+                {"role": "user", "content": text},
+            ],
+        )
+        fixed = (r.choices[0].message.content or "").strip()
+        if fixed and not _CJK_RE.search(fixed):
+            return fixed
+    except Exception:
+        pass
+    return _CJK_RE.sub("", text)
+
+
+def _split_safe(pending: str) -> tuple[str, str]:
+    """Tách (phần gửi được, phần còn treo). Chỉ gửi khi đã hết câu — vì phải thấy trọn câu
+    mới rà được chữ lạ; gửi từng token thì chữ Trung đã hiện lên màn hình rồi mới phát hiện."""
+    idx = max(
+        pending.rfind("\n"),
+        pending.rfind(". "), pending.rfind(", "),
+        pending.rfind("! "), pending.rfind("? "), pending.rfind(": "),
+    )
+    if idx == -1:
+        return "", pending
+    return pending[: idx + 1], pending[idx + 1 :]
+
+
 # Cache modules + tools để không reload mỗi request
 _MODULES = _load_tool_modules()
 _TOOLS   = _build_openai_tools(_MODULES)
@@ -109,7 +231,7 @@ _TOOLS   = _build_openai_tools(_MODULES)
 _TOOLS_BY_ROLE: dict[str, list[str] | None] = {
     "patient": [
         "fhir_triage_assessment", "fhir_suggest_department",
-        "fhir_register_new_patient", "fhir_get_next_available_slot", "fhir_get_available_slots",
+        "fhir_register_new_patient", "fhir_get_next_available_slot",
         "fhir_create_appointment", "fhir_cancel_appointment", "fhir_get_patient_appointments",
         "fhir_get_patient_history", "fhir_get_observations",
         "fhir_get_clinical_impressions",
@@ -135,6 +257,7 @@ _TOOLS_BY_ROLE: dict[str, list[str] | None] = {
     ],
 }
 
+ # lọc quyền 2 lớp — (1) lúc build tools chỉ đưa tool được phép cho LLM thấy (_get_tools_for_role), (2) lúc chạy vẫn check lại _allowed_tool_names phòng LLM cố gọi tool không được đưa. Không tin LLM, verify 2 lần.
 
 def _get_tools_for_role(role: str) -> list[dict]:
     allowed = _TOOLS_BY_ROLE.get(role)
@@ -152,7 +275,7 @@ if _ALIBABA_KEY:
         base_url=os.getenv("ALIBABA_BASE_URL", "https://dashscope-intl.aliyuncs.com/compatible-mode/v1"),
         timeout=_LLM_TIMEOUT,
     )
-    _MODEL = os.getenv("ALIBABA_MODEL", "qwen-plus")
+    _MODEL = os.getenv("ALIBABA_MODEL", "qwen3-vl-plus")
 elif _OPENROUTER_KEY:
     _CLIENT = OpenAI(
         api_key=_OPENROUTER_KEY,
@@ -190,7 +313,7 @@ _TOOL_LABELS = {
 }
 
 
-def _find_last_slot_id(history: list) -> str | None:
+def _find_last_slot_id(history: list) -> str | None:  # tiêm slot_id vào lệnh đặt lịch. Đây là 1 đường hỗ trợ; luồng chính của create_appointment vẫn tự tra slot từ dept+date+time.
     """Tìm slot_id từ kết quả fhir_get_next_available_slot gần nhất trong history."""
     for msg in reversed(history):
         if msg.get("role") != "tool":
@@ -202,6 +325,8 @@ def _find_last_slot_id(history: list) -> str | None:
         except Exception:
             pass
     return None
+
+    # cần cải thiện táhc 1 lớp session state để luu slot_id, tránh phải parse history. Lưu slot_id vào session state khi gọi fhir_get_next_available_slot, rồi fhir_create_appointment sẽ lấy từ session state thay vì parse history.
 
 
 def _strip_images(history: list[dict]) -> list[dict]:
@@ -219,15 +344,15 @@ def _strip_images(history: list[dict]) -> list[dict]:
     return result
 
 
-def _trim_history(history: list[dict], max_messages: int = 24) -> list[dict]:
+def _trim_history(history: list[dict], max_messages: int = 24) -> list[dict]: # cắt bớt history để tránh quá dài, max_messages=24 là mặc định
     """Giữ tối đa max_messages tin nhắn gần nhất, strip ảnh khỏi history cũ."""
-    cleaned = _strip_images(history)
+    cleaned = _strip_images(history) # strip ảnh khỏi history cũ để tránh quá dài
     if len(cleaned) <= max_messages:
         trimmed = cleaned
     else:
-        trimmed = cleaned[-max_messages:]
+        trimmed = cleaned[-max_messages:] # giữ max_messages = 24 tin nhắn gần nhất
     # First non-system message must be user role
-    while trimmed and trimmed[0].get("role") != "user":
+    while trimmed and trimmed[0].get("role") != "user": # đảm bảo bắt đầu bằng user tránh căt giữa chừng
         trimmed = trimmed[1:]
     roles = [m.get("role") for m in trimmed]
     print(f"[TRIM] history={len(history)} trimmed={len(trimmed)} roles={roles}", flush=True)
@@ -238,14 +363,14 @@ def _normalize_image(image_base64: str, image_mime: str = "image/jpeg") -> tuple
     """Convert any image or PDF (page 1) to PNG ≤512px for API compatibility."""
     try:
         from PIL import Image
-        raw = base64.b64decode(image_base64)
-        if image_mime == "application/pdf" or raw[:4] == b"%PDF":
+        raw = base64.b64decode(image_base64) # decode base64 to bytes ảnh thật
+        if image_mime == "application/pdf" or raw[:4] == b"%PDF": # nếu là PDF, convert page 1 sang ảnh
             import fitz
             doc = fitz.open(stream=raw, filetype="pdf")
             pix = doc[0].get_pixmap(matrix=fitz.Matrix(2, 2))
             img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
         else:
-            img = Image.open(io.BytesIO(raw)).convert("RGB")
+            img = Image.open(io.BytesIO(raw)).convert("RGB") # convert to RGB để tránh alpha channel
         max_px = 512
         w, h = img.size
         if w > max_px or h > max_px:
@@ -260,6 +385,17 @@ def _normalize_image(image_base64: str, image_mime: str = "image/jpeg") -> tuple
         print(f"[IMG] normalize failed: {e}", flush=True)
         return image_base64, image_mime
 
+# Hàm 1 — _normalize_image = "chỉnh sửa ảnh cho gọn"
+# Tưởng tượng bạn có cái máy photo thông minh. Ai đưa gì vào — ảnh chụp, file PDF — nó cũng biến thành 1 tấm ảnh chuẩn, nhỏ gọn, rõ nét để dễ đọc.
+
+# Nó làm 3 việc:
+
+# Nếu là PDF → chụp lại trang 1 thành ảnh (vì máy đọc chữ chỉ hiểu ảnh, không hiểu PDF).
+# Nếu ảnh quá to → thu nhỏ lại (tối đa 512 chấm), nhưng giữ chữ nét để không đọc nhầm số.
+# Đóng gói lại thành 1 tấm ảnh PNG sạch sẽ.
+# → Kết quả: dù bạn đưa vào cái gì, ra là 1 tấm ảnh chuẩn.
+
+# Nếu lỗi? (file hỏng) → nó đưa lại ảnh gốc, không làm sập chương trình.
 
 def _ocr_image(image_base64: str, image_mime: str) -> str:
     """Extract text from image via direct httpx call (bypasses OpenAI SDK formatting)."""
@@ -267,11 +403,11 @@ def _ocr_image(image_base64: str, image_mime: str) -> str:
         b64, mime = _normalize_image(image_base64, image_mime)
         api_key = os.getenv("ALIBABA_API_KEY", "")
         base_url = os.getenv("ALIBABA_BASE_URL", "").rstrip("/")
-        r = httpx.post(
+        r = httpx.post( # gửi rquest trực tiếp tới API OCR của Alibaba, bypass OpenAI SDK
             f"{base_url}/chat/completions",
             headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
             json={
-                "model": "qwen-vl-ocr-2025-11-20",
+                "model": "qwen-vl-ocr-2025-11-20", # model chuyên đọc ảnh y tế
                 "messages": [{"role": "user", "content": [
                     {"type": "text", "text": "Read ALL text and numbers from this medical report image exactly as shown. Include every row and value."},
                     {"type": "image_url", "image_url": {"url": f"data:{mime};base64,{b64}"}},
@@ -289,6 +425,14 @@ def _ocr_image(image_base64: str, image_mime: str) -> str:
         print(f"[OCR] failed: {e}", flush=True)
     return ""
 
+# Tưởng tượng bạn thuê 1 người chuyên đọc phiếu xét nghiệm. Bạn đưa tấm ảnh, họ chép lại y nguyên mọi con số, mọi dòng ra giấy.
+
+# Nó làm:
+
+# Nhờ hàm 1 chỉnh ảnh cho gọn trước.
+# Gửi ảnh cho "người đọc chuyên nghiệp" (model qwen-vl-ocr) kèm lời dặn: "Đọc HẾT mọi chữ, mọi số, đừng bỏ sót dòng nào."
+# Nhận về đoạn chữ (VD: "PLT 85, WBC 3.2, HCT 44...").
+# Nếu lỗi? (mạng hỏng, đọc không được) → trả về rỗng → hệ thống chuyển sang cách khác (đưa thẳng ảnh cho AI chính tự nhìn).
 
 def _build_user_content(message: str, image_base64: str = "", image_mime: str = "image/jpeg"):
     """Tạo user content. Nếu có ảnh, OCR trước rồi gửi text."""
@@ -340,7 +484,7 @@ def chat_stream(message: str, history: list[dict], role: str = "patient",
                 f"⚠ KHI ĐÃ ĐĂNG NHẬP, OVERRIDE TẤT CẢ CÁC FLOW BÊN DƯỚI:\n"
                 f"- TUYỆT ĐỐI KHÔNG HỎI 'Tên đầy đủ của bạn' — đã biết tên là {patient_name or 'BN'}.\n"
                 f"- TUYỆT ĐỐI KHÔNG gọi fhir_search_patient — đã có patient_id='{patient_id}' sẵn, dùng trực tiếp.\n"
-                f"- Khi đặt lịch: chỉ cần HỎI EMAIL (nếu chưa có), rồi gọi fhir_get_next_available_slot → fhir_create_appointment NGAY.\n"
+                f"- Khi đặt lịch: gọi fhir_get_next_available_slot lấy slot → xác nhận giờ + bác sĩ với user → HỎI EMAIL 1 LẦN (nếu chưa có) → gọi fhir_create_appointment NGAY trong cùng lượt. KHÔNG hỏi email khi chưa chốt slot; KHÔNG hỏi lại email nếu user đã cung cấp.\n"
                 f"- Khi hủy/xem lịch: dùng patient_id trực tiếp, KHÔNG hỏi xác minh tên.\n"
                 f"- TUYỆT ĐỐI KHÔNG tra cứu, hiển thị hoặc thao tác trên hồ sơ / lịch hẹn / kết quả xét nghiệm của bất kỳ bệnh nhân NÀO KHÁC ngoài patient_id='{patient_id}'.\n"
                 f"- Nếu user yêu cầu thông tin của người khác, từ chối lịch sự: 'Bạn chỉ có thể xem thông tin của chính mình.'\n"
@@ -361,22 +505,35 @@ def chat_stream(message: str, history: list[dict], role: str = "patient",
 
     role_tools = _get_tools_for_role(role)
 
-    history.append({"role": "user", "content": _build_user_content(message, image_base64, image_mime)})
+    history.append({"role": "user", "content": _build_user_content(message, image_base64, image_mime)}) # thêm tin nhắn người dùng vào lịch sử
+
+    # GUARD (deterministic): lượt mở đầu sàng lọc SXHD của bệnh nhân → hiện PHIẾU cố định,
+    # KHÔNG để LLM tự đoán rồi gọi thẳng dengue_symptom_assessment (làm mất phiếu + đoán sai dịch tễ).
+    if role == "patient" and not image_base64 and _should_show_dengue_checklist(message, history):
+        history.append({"role": "assistant", "content": DENGUE_CHECKLIST})
+        yield sse({"type": "status", "text": ""})
+        yield sse({"type": "text", "delta": DENGUE_CHECKLIST})
+        yield sse({"type": "done"})
+        return
+
     yield sse({"type": "status", "text": "Đang xử lý..."})
 
-    # Tool-calling loop (non-streaming — cần full JSON để parse tool calls)
+    # ═══ TRÁI TIM: vòng lặp tool-calling ═══
+    # LLM KHÔNG có trí nhớ giữa các lần gọi -> mỗi vòng phải gửi LẠI toàn bộ history.
+    # Lặp tới khi LLM NGỪNG đòi tool (finish_reason != "tool_calls") thì mới trả lời & thoát.
+    # Code KHÔNG định trước thứ tự/số lượng tool — LLM tự suy luận. Đó chính là điểm "agent".
     while True:
         response = _CLIENT.chat.completions.create( # gọi API LLM để nhận phản hồi, có thể là tool call hoặc text
             model=_MODEL,
             max_tokens=1024,
-            messages=[{"role": "system", "content": system}] + _trim_history(history),
+            messages=[{"role": "system", "content": system}] + _trim_history(history), #mỗi vòng lặp gửi lại toàn bộ history (có tool result) để LLM đọc
             tools=role_tools or None,
         )
         choice = response.choices[0]
         msg    = choice.message
 
         if choice.finish_reason == "tool_calls" and msg.tool_calls:
-            history.append({
+            history.append({ # LLM đòi gọi tool → lưu tin nhắn này vào history, kèm tool_calls (có id)
                 "role": "assistant",
                 "content": msg.content,
                 "tool_calls": [
@@ -386,6 +543,7 @@ def chat_stream(message: str, history: list[dict], role: str = "patient",
                 ],
             })
             _allowed_tool_names = {t["function"]["name"] for t in (role_tools or _TOOLS)}
+            _booked = None
             for tc in msg.tool_calls:
                 # Block tool nếu không có trong allowed list (model đôi khi gọi tool không được phép)
                 if tc.function.name not in _allowed_tool_names:
@@ -409,6 +567,9 @@ def chat_stream(message: str, history: list[dict], role: str = "patient",
                         history.append({"role": "tool", "tool_call_id": tc.id,
                                         "content": json.dumps({"error": "Bạn cần đăng nhập để xem thông tin này.", "authenticated": False})})
                         continue
+                    # BẢO MẬT TẦNG 2 (code-enforced): ép patient_id = ID đã đăng nhập, ghi đè bất kỳ ID nào
+                    # LLM truyền. Kể cả LLM bị "dụ" (jailbreak) cũng KHÔNG truy được hồ sơ bệnh nhân khác.
+                    # (Tầng 1 là prompt cấm ở system prompt.)
                     args["patient_id"] = patient_id  # force ID của BN đang đăng nhập
 
                 # Doctor portal: inject practitioner_id vào slot lookup
@@ -423,7 +584,10 @@ def chat_stream(message: str, history: list[dict], role: str = "patient",
 
                 result_str = _execute_tool(tc.function.name, args, _MODULES)
 
-                history.append({"role": "tool", "tool_call_id": tc.id, "content": result_str})
+                history.append({"role": "tool", "tool_call_id": tc.id, "content": result_str}) # Lưu kết quả tool vào history để LLM đọc ở vòng lặp tiếp theo
+
+                if tc.function.name == "fhir_create_appointment":
+                    _booked = _booking_confirmation(result_str)
 
                 # Nếu tool trả về danh sách nguồn (vd drug_info) → đẩy lên UI để render thẻ
                 try:
@@ -432,6 +596,14 @@ def chat_stream(message: str, history: list[dict], role: str = "patient",
                         yield sse({"type": "sources", "items": _parsed["sources"]})
                 except Exception:
                     pass
+            # GUARD: đặt lịch thành công → trả confirmation xác định NGAY, chặn LLM
+            # gọi thêm tool slot / narrate sai (xem _booking_confirmation).
+            if _booked:
+                history.append({"role": "assistant", "content": _booked})
+                yield sse({"type": "status", "text": ""})
+                yield sse({"type": "text", "delta": _booked})
+                yield sse({"type": "done"})
+                return
             yield sse({"type": "status", "text": "Đang tổng hợp kết quả..."})
         else:
             # Phản hồi cuối — stream từng token
@@ -446,19 +618,21 @@ def chat_stream(message: str, history: list[dict], role: str = "patient",
             full_reply = ""
             in_think   = False
             buf        = ""
+            pending    = ""   # đã bỏ <think>, chờ đủ câu mới rà chữ lạ rồi gửi (xem _split_safe)
+            sent       = ""   # phần thật sự hiện trên UI (đã sửa) — đây mới là cái lưu vào history
             for chunk in stream:
                 if not (chunk.choices and chunk.choices[0].delta.content):
                     continue
                 full_reply += chunk.choices[0].delta.content
                 buf        += chunk.choices[0].delta.content
-                # Stream từng chunk sau khi strip thinking
+                # Gom chunk sau khi strip thinking
                 while buf:
                     if not in_think:
                         s = buf.find("<think>")
                         if s == -1:
-                            yield sse({"type": "text", "delta": buf}); buf = ""; break
+                            pending += buf; buf = ""; break
                         if s > 0:
-                            yield sse({"type": "text", "delta": buf[:s]})
+                            pending += buf[:s]
                         in_think = True; buf = buf[s+7:]
                     else:
                         e = buf.find("</think>")
@@ -466,9 +640,19 @@ def chat_stream(message: str, history: list[dict], role: str = "patient",
                             buf = ""; break
                         in_think = False; buf = buf[e+8:]
 
-            import re
+                ready, pending = _split_safe(pending)
+                if ready:
+                    ready = _sanitize_vi(ready)
+                    sent += ready
+                    yield sse({"type": "text", "delta": ready})
+
+            if pending:  # phần đuôi không kết thúc bằng dấu câu
+                tail = _sanitize_vi(pending)
+                sent += tail
+                yield sse({"type": "text", "delta": tail})
+
             clean = re.sub(r"<think>.*?</think>", "", full_reply, flags=re.DOTALL).strip()
-            history.append({"role": "assistant", "content": clean or full_reply})
+            history.append({"role": "assistant", "content": sent.strip() or clean or full_reply})
             yield sse({"type": "done"})
             return
 
@@ -504,7 +688,7 @@ def chat(message: str, history: list[dict], role: str = "patient",
                 f"⚠ KHI ĐÃ ĐĂNG NHẬP, OVERRIDE TẤT CẢ CÁC FLOW BÊN DƯỚI:\n"
                 f"- TUYỆT ĐỐI KHÔNG HỎI 'Tên đầy đủ của bạn' — đã biết tên là {patient_name or 'BN'}.\n"
                 f"- TUYỆT ĐỐI KHÔNG gọi fhir_search_patient — đã có patient_id='{patient_id}' sẵn, dùng trực tiếp.\n"
-                f"- Khi đặt lịch: chỉ cần HỎI EMAIL (nếu chưa có), rồi gọi fhir_get_next_available_slot → fhir_create_appointment NGAY.\n"
+                f"- Khi đặt lịch: gọi fhir_get_next_available_slot lấy slot → xác nhận giờ + bác sĩ với user → HỎI EMAIL 1 LẦN (nếu chưa có) → gọi fhir_create_appointment NGAY trong cùng lượt. KHÔNG hỏi email khi chưa chốt slot; KHÔNG hỏi lại email nếu user đã cung cấp.\n"
                 f"- Khi hủy/xem lịch: dùng patient_id trực tiếp, KHÔNG hỏi xác minh tên.\n"
                 f"- TUYỆT ĐỐI KHÔNG tra cứu, hiển thị hoặc thao tác trên hồ sơ / lịch hẹn / kết quả xét nghiệm của bất kỳ bệnh nhân NÀO KHÁC ngoài patient_id='{patient_id}'.\n"
                 f"- Nếu user yêu cầu thông tin của người khác, từ chối lịch sự: 'Bạn chỉ có thể xem thông tin của chính mình.'\n"
@@ -525,6 +709,11 @@ def chat(message: str, history: list[dict], role: str = "patient",
 
     role_tools = _get_tools_for_role(role)
     history = history + [{"role": "user", "content": _build_user_content(message, image_base64, image_mime)}]
+
+    # GUARD (deterministic): lượt mở đầu sàng lọc SXHD của bệnh nhân → hiện PHIẾU cố định.
+    if role == "patient" and not image_base64 and _should_show_dengue_checklist(message, history):
+        history = history + [{"role": "assistant", "content": DENGUE_CHECKLIST}]
+        return DENGUE_CHECKLIST, history
 
     while True:
         response = _CLIENT.chat.completions.create(
@@ -550,6 +739,7 @@ def chat(message: str, history: list[dict], role: str = "patient",
                     for tc in msg.tool_calls
                 ],
             })
+            _booked = None
             for tc in msg.tool_calls:
                 args   = json.loads(tc.function.arguments)
                 result = _execute_tool(tc.function.name, args, _MODULES)
@@ -558,7 +748,15 @@ def chat(message: str, history: list[dict], role: str = "patient",
                     "tool_call_id": tc.id,
                     "content":      result,
                 })
+                if tc.function.name == "fhir_create_appointment":
+                    _booked = _booking_confirmation(result)
+            # GUARD: đặt lịch thành công → trả confirmation xác định NGAY, chặn LLM
+            # gọi thêm tool slot / narrate sai (Qwen hay gọi song song get_next_available_slot
+            # rồi báo "chưa đặt, xác nhận lại" dù lịch đã tạo).
+            if _booked:
+                history.append({"role": "assistant", "content": _booked})
+                return _booked, history
         else:
-            reply = msg.content or ""
+            reply = _sanitize_vi(msg.content or "")
             history.append({"role": "assistant", "content": reply})
             return reply, history
