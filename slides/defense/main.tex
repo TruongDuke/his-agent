@@ -1,0 +1,330 @@
+% ============================================================
+%  HIS Agent — Slide bảo vệ đồ án (theme HUST)
+%  Biên dịch: pdflatex main.tex  (chạy 2 lần cho số trang)
+%  CẦN: ảnh nền theme trong images/  (hust-red-169-title.png, -section.png,
+%       -content-full.png, -end.png). Đổi 169<->43 ở documentclass VÀ \usetheme.
+%  Placeholder \imgph{...} = chỗ chèn screenshot: thay bằng
+%       \includegraphics[width=\linewidth]{images/ten-anh.png}
+% ============================================================
+\documentclass[aspectratio=169,t]{beamer}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T5]{fontenc}
+\usepackage[vietnamese]{babel}
+\usepackage{lmodern}
+\usepackage{tikz}
+\usetikzlibrary{positioning, arrows.meta}
+\usepackage[most]{tcolorbox}
+
+\usetheme[169,red]{HUST}
+
+% Thẻ persona (card có viền) — dùng ở slide Người dùng
+\tcbset{personacard/.style={
+    colframe=hustprimary, colback=hustprimary!4, boxrule=1pt, arc=3pt,
+    fonttitle=\bfseries\small, fontupper=\small, coltitle=white,
+    left=4pt, right=4pt, top=3pt, bottom=3pt,
+    equal height group=persona}}
+\showPageNumber
+
+% Khung placeholder cho ảnh chụp (thay bằng \includegraphics khi có ảnh)
+\newcommand{\imgph}[2][0.72]{%
+  \begin{center}
+  \fcolorbox{black!30}{black!5}{%
+    \parbox[c][3cm][c]{#1\linewidth}{\centering\color{black!45}\small [Ảnh chụp: #2]}%
+  }%
+  \end{center}%
+}
+
+% ---- Thông tin đề tài ----
+\title{HIS Agent}
+\subtitle{Trợ lý AI hội thoại cho hệ thống thông tin bệnh viện}
+\author{Trương Công Thái Đức}
+\institute{Đại học Bách Khoa Hà Nội\\GVHD: PGS.TS. Nguyễn Hồng Quang}
+
+\begin{document}
+
+% ================= BÌA =================
+\husttitlepage
+
+% ================= MỤC LỤC (slide 2) =================
+\begin{frame}{Nội dung trình bày}
+  \vspace{0.4cm}
+  \tableofcontents
+\end{frame}
+
+% ================= A. ĐẶT VẤN ĐỀ =================
+\section{Đặt vấn đề}
+\hustsectionpage{Đặt vấn đề}
+
+% --- Người dùng & bối cảnh ---
+\begin{frame}{Người dùng \& bối cảnh}
+  \begin{center}\small\textit{Bệnh viện đa khoa quy mô vừa — quá tải, đông bệnh nhân}\end{center}
+  \vspace{0.1cm}
+  \begin{columns}[t]
+    \column{0.49\textwidth}
+      \begin{tcolorbox}[personacard, title={Bệnh nhân \normalfont\itshape\small— đi khám nhưng bối rối}]
+        \begin{itemize}\setlength\itemsep{3pt}
+          \item Không biết triệu chứng khám \textbf{khoa nào} → đăng ký nhầm, chờ lâu
+          \item Đặt lịch phải gọi/đến trong giờ hành chính, xếp hàng
+          \item Triệu chứng đáng lo (sốt, mẩn đỏ) — không rõ \textbf{có nguy hiểm} không
+          \item Tra thuốc/dịch trên mạng → nguồn không đáng tin
+        \end{itemize}
+      \end{tcolorbox}
+    \column{0.49\textwidth}
+      \begin{tcolorbox}[personacard, title={Bác sĩ \normalfont\itshape\small— quá tải, dễ sai sót}]
+        \begin{itemize}\setlength\itemsep{3pt}
+          \item Tra hồ sơ rời rạc (tiền sử, xét nghiệm, đơn cũ) → mất thời gian
+          \item Nguy cơ \textbf{kê nhầm thuốc} dị ứng (phản ứng chéo khó nhớ)
+          \item Nhập tay kết quả xét nghiệm (CBC) → chậm, dễ sai số
+          \item Nhớ ngưỡng/phác đồ sàng lọc SXHD → dễ bỏ sót cảnh báo
+        \end{itemize}
+      \end{tcolorbox}
+  \end{columns}
+\end{frame}
+
+% --- Bài toán ---
+\begin{frame}{Bài toán}
+  \begin{itemize}
+    \item \textbf{HIS truyền thống}: giao diện form cứng, nhiều bước, \textbf{không hiểu ngôn ngữ tự nhiên}.
+    \item \textbf{LLM thuần}: hiểu ngôn ngữ nhưng \textbf{ảo giác}, bịa số/liều → \textbf{không an toàn cho y tế}, không nối dữ liệu bệnh viện.
+  \end{itemize}
+  \vspace{0.3cm}
+  \begin{center}
+    \color{hustprimary}\large\textbf{Khoảng trống: cần trợ lý vừa hiểu ngôn ngữ tự nhiên,\\ vừa AN TOÀN và nối được dữ liệu chuẩn.}
+  \end{center}
+\end{frame}
+
+% --- Mục tiêu ---
+\begin{frame}{Mục tiêu}
+  Xây dựng \textbf{trợ lý AI hội thoại tiếng Việt} cho bệnh viện:
+  \begin{enumerate}
+    \item Hiểu \textbf{ngôn ngữ tự nhiên} tiếng Việt cho cả bệnh nhân và bác sĩ.
+    \item Quyết định lâm sàng dựa trên \textbf{luật có nguồn} (QĐ 2760, Stockley's) — \textbf{chống ảo giác}.
+    \item \textbf{Phân quyền} an toàn theo vai trò (bệnh nhân / bác sĩ).
+    \item Lưu trữ theo \textbf{chuẩn FHIR R5} — chuẩn hoá \& liên thông.
+  \end{enumerate}
+\end{frame}
+
+% ================= B. GIẢI PHÁP & CÔNG NGHỆ =================
+\section{Giải pháp \& Công nghệ}
+\hustsectionpage{Giải pháp \& Công nghệ}
+
+% --- Kiến trúc 4 lớp ---
+\begin{frame}{Tổng quan giải pháp: kiến trúc 4 lớp}
+  \centering
+  \begin{tikzpicture}[
+    box/.style={draw, rounded corners, fill=black!5, minimum width=0.82\textwidth,
+                 minimum height=0.85cm, align=center, font=\small},
+    arr/.style={-{Latex[length=2mm]}, thick}]
+    \node[box] (ui) {Lớp giao diện: React + TypeScript (bệnh nhân / bác sĩ)};
+    \node[box, below=0.35cm of ui] (api) {Lớp API: FastAPI (chat, fhir, auth, appointments)};
+    \node[box, below=0.35cm of api] (ag) {Lớp Agent: LLM + Tool-Calling Loop};
+    \node[box, fill=hustprimary!12, below=0.35cm of ag] (db) {Lớp dữ liệu: Aidbox FHIR R5 \quad|\quad SQLite (tài khoản)};
+    \draw[arr] (ui) -- (api); \draw[arr] (api) -- (ag); \draw[arr] (ag) -- (db);
+  \end{tikzpicture}
+  \vspace{0.2cm}
+  \begin{center}\small\color{hustprimary}\textbf{Agent điều phối — Luật quyết định. Mỗi lớp một trách nhiệm.}\end{center}
+\end{frame}
+
+% --- Bảng ánh xạ Nhu cầu -> Chức năng ---
+\begin{frame}{Từ nhu cầu đến chức năng}
+  \footnotesize
+  \begin{center}
+  \begin{tabular}{@{}p{2.2cm} p{4.6cm} p{4.6cm}@{}}
+    \textbf{Người dùng} & \textbf{Nhu cầu} & \textbf{Chức năng đáp ứng} \\[2pt]
+    \hline\\[-6pt]
+    Bệnh nhân & Không biết khám khoa nào & Gợi ý khoa (RAG) \\
+    Bệnh nhân & Đặt lịch phiền & Đặt lịch hội thoại \\
+    Bệnh nhân & Lo triệu chứng, sợ SXH & Sàng lọc SXHD (QĐ 2760) \\
+    Bệnh nhân & Tra thuốc/dịch không đáng tin & Tra thuốc + số ca dịch (có nguồn) \\
+    Bác sĩ & Dễ kê nhầm thuốc dị ứng & Cảnh báo dị ứng 3 tầng \\
+    Bác sĩ & Nhập phiếu XN thủ công & Đọc CBC từ ảnh (OCR) \\
+    Bác sĩ & Hồ sơ rời rạc & Tóm tắt hồ sơ + kết thúc khám \\
+  \end{tabular}
+  \end{center}
+\end{frame}
+
+% --- Lý do FHIR R5 + Aidbox ---
+\begin{frame}{Nền tảng dữ liệu: vì sao FHIR R5 + Aidbox}
+  \small
+  \begin{columns}[t]
+    \column{0.48\textwidth}
+      \textbf{\color{hustprimary}FHIR R5 — chọn CHUẨN}
+      \begin{itemize}
+        \item Chuẩn trao đổi dữ liệu y tế quốc tế (HL7)
+        \item Có sẵn mô hình lâm sàng (Patient, Observation…) → không tự thiết kế schema
+        \item R5 = bản chính thức mới nhất; prototype mới → không cần hợp R4
+      \end{itemize}
+    \column{0.48\textwidth}
+      \textbf{\color{hustprimary}Aidbox — chọn CÔNG CỤ}
+      \begin{itemize}
+        \item FHIR server hiện thực chuẩn — không tự code
+        \item Hỗ trợ R5 đầy đủ; REST API + search + admin
+        \item Dưới là PostgreSQL → vẫn query SQL được
+      \end{itemize}
+  \end{columns}
+  \vspace{0.25cm}
+  \begin{center}\color{hustprimary}\textbf{→ Chuẩn hoá + Liên thông; Aidbox lo hạ tầng để tập trung vào AI agent.}\end{center}
+\end{frame}
+
+% --- Cách tiếp cận Agent + Tool-calling ---
+\begin{frame}{Cách tiếp cận: Agent + Tool-Calling}
+  \small
+  \begin{itemize}
+    \item LLM \textbf{tự chọn công cụ} (tool) để hoàn thành yêu cầu — không theo kịch bản cứng.
+    \item Vòng lặp: \emph{LLM đòi tool → hệ thực thi → trả kết quả → LLM tổng hợp} (lặp tới khi đủ).
+    \item Mỗi tool là 1 module Python độc lập → thêm chức năng = thêm file (Open/Closed).
+    \item \textbf{Quyết định lâm sàng nằm trong tool (luật)}; LLM chỉ điều phối.
+  \end{itemize}
+  \vspace{0.2cm}
+  \begin{center}\color{hustprimary}\textbf{Linh hoạt như hội thoại, an toàn như luật.}\end{center}
+\end{frame}
+
+% ================= C. CHỨC NĂNG =================
+\section{Chức năng chính}
+\hustsectionpage{Chức năng chính}
+
+% --- BN: Gợi ý khoa + Đặt lịch ---
+\begin{frame}{Bệnh nhân: Gợi ý khoa (RAG) + Đặt lịch}
+  \small
+  \begin{columns}[c]
+    \column{0.5\textwidth}
+      \begin{itemize}
+        \item Tả triệu chứng tự nhiên → \textbf{RAG gợi ý đúng khoa} (dù không gõ tên khoa)
+        \item Đăng nhập → agent tự đặt lịch: \emph{chọn slot → tạo lịch}, không hỏi lại tên
+        \item Lịch ở trạng thái \emph{chờ bác sĩ duyệt}
+      \end{itemize}
+    \column{0.5\textwidth}
+      \imgph[1.0]{Chat gợi ý khoa + đặt lịch}
+  \end{columns}
+\end{frame}
+
+% --- BN: Sàng lọc SXHD ---
+\begin{frame}{Bệnh nhân: Sàng lọc Sốt xuất huyết}
+  \small
+  \begin{columns}[c]
+    \column{0.5\textwidth}
+      \begin{itemize}
+        \item Nhận diện triệu chứng → hiện \textbf{phiếu tích} dịch tễ / triệu chứng / dấu hiệu cảnh báo
+        \item Phân độ bằng \textbf{luật theo QĐ 2760/QĐ-BYT} — không phải LLM tự phán
+        \item Khuyến cáo + trích nguồn; cảnh báo → đề xuất đặt lịch khẩn
+      \end{itemize}
+    \column{0.5\textwidth}
+      \imgph[1.0]{Phiếu SXHD + kết quả phân độ}
+  \end{columns}
+\end{frame}
+
+% --- BN: Tra thuốc + số ca dịch ---
+\begin{frame}{Bệnh nhân: Tra thuốc \& Số ca dịch bệnh}
+  \small
+  \begin{columns}[c]
+    \column{0.5\textwidth}
+      \begin{itemize}
+        \item \textbf{Tra thuốc}: RAG tra NCBI (PubMed/StatPearls), mỗi ý kèm \textbf{trích dẫn [n]} → chống bịa liều
+        \item \textbf{Số ca dịch}: lấy số thật từ \textbf{HCDC}, có tuần + nguồn; thiếu dữ liệu thì báo, không bịa
+      \end{itemize}
+    \column{0.5\textwidth}
+      \imgph[1.0]{Trả lời thuốc có [n] nguồn}
+  \end{columns}
+\end{frame}
+
+% --- BS: Cảnh báo dị ứng 3 tầng ---
+\begin{frame}{Bác sĩ: Cảnh báo dị ứng khi kê đơn (3 tầng)}
+  \small
+  \begin{columns}[c]
+    \column{0.46\textwidth}
+      Bệnh nhân dị ứng \textbf{Penicillin}:
+      \begin{itemize}
+        \item \textbf{Tier 1} — banner cảnh báo sớm đầu form
+        \item \textbf{Tier 2} — chọn Cefuroxime → cảnh báo \emph{phản ứng chéo}, cần lý do override
+        \item \textbf{Tier 3} — chọn Amoxicillin → \emph{chặn kê}
+      \end{itemize}
+      \textit{Bắt cả phản ứng chéo, không chỉ trùng tên (Stockley's, BNF).}
+    \column{0.54\textwidth}
+      \imgph[1.0]{Modal kê đơn: banner + dòng chặn/cảnh báo}
+  \end{columns}
+\end{frame}
+
+% --- BS: CBC ảnh + Kết thúc khám ---
+\begin{frame}{Bác sĩ: CBC từ ảnh (OCR) \& Kết thúc khám}
+  \small
+  \begin{columns}[c]
+    \column{0.5\textwidth}
+      \begin{itemize}
+        \item Upload ảnh phiếu → \textbf{OCR} trích PLT/WBC/HCT → lưu FHIR → tự sàng lọc SXHD
+        \item Kết thúc khám: tạo \emph{ClinicalImpression} (chẩn đoán + kế hoạch) + gửi email tóm tắt cho bệnh nhân
+      \end{itemize}
+    \column{0.5\textwidth}
+      \imgph[1.0]{CBC từ ảnh / Kết thúc khám}
+  \end{columns}
+\end{frame}
+
+% ================= D. KỸ THUẬT NỔI BẬT =================
+\section{Điểm kỹ thuật nổi bật}
+\hustsectionpage{Điểm kỹ thuật nổi bật}
+
+\begin{frame}{Điểm kỹ thuật cốt lõi}
+  \begin{itemize}
+    \item \textbf{Agent tool-calling}: LLM tự chuỗi công cụ; thêm chức năng bằng plugin (Open/Closed).
+    \item \textbf{2 kiểu RAG}: vector (gợi ý khoa) + tra API có trích dẫn (thông tin thuốc).
+    \item \textbf{Luật lâm sàng có nguồn}: QĐ 2760 (SXHD), Stockley's/BNF (dị ứng) → chống ảo giác.
+    \item \textbf{OCR-first}: đọc số bằng model chuyên dụng trước, chính xác hơn cho xét nghiệm.
+    \item \textbf{Phân quyền 2 lớp}: prompt + code (ép patient\_id từ session) → chống prompt injection.
+  \end{itemize}
+  \vspace{0.2cm}
+  \begin{center}\color{hustprimary}\large\textbf{LLM điều phối — LUẬT quyết định → đáng tin, không ảo giác.}\end{center}
+\end{frame}
+
+% ================= E. ĐÁNH GIÁ & KẾT =================
+\section{Kiểm thử \& Kết luận}
+\hustsectionpage{Kiểm thử \& Kết luận}
+
+% --- Kiểm thử & hiệu năng ---
+\begin{frame}{Kiểm thử \& hiệu năng}
+  \small
+  \begin{itemize}
+    \item \textbf{9 luồng chức năng (A–I)}: đạt toàn bộ.
+    \item \textbf{Đánh giá nguy cơ SXHD từ CBC}: kết quả khớp ngưỡng QĐ 2760 (Bảng 4.1).
+    \item \textbf{Cảnh báo dị ứng 3 tầng}: 5/5 ca đúng kỳ vọng (chặn/cảnh báo/an toàn).
+    \item \textbf{Phân quyền}: bệnh nhân không truy được hồ sơ người khác (code ép patient\_id).
+    \item \textbf{Thời gian phản hồi}: luật cục bộ <1.5s; gọi API ngoài ~3–4.8s.
+  \end{itemize}
+\end{frame}
+
+% --- Hạn chế & hướng phát triển ---
+\begin{frame}{Hạn chế \& hướng phát triển}
+  \small
+  \begin{columns}[t]
+    \column{0.48\textwidth}
+      \textbf{\color{hustprimary}Hạn chế}
+      \begin{itemize}
+        \item LLM chạy qua API cloud → dữ liệu ra ngoài viện
+        \item Mới kiểm thử kỹ thuật, chưa kiểm định lâm sàng
+        \item Sàng lọc mới cho SXHD
+      \end{itemize}
+    \column{0.48\textwidth}
+      \textbf{\color{hustprimary}Hướng phát triển}
+      \begin{itemize}
+        \item LLM tiếng Việt \textbf{on-premise} (bảo mật dữ liệu)
+        \item \textbf{Kiểm định lâm sàng} trước triển khai
+        \item Mở rộng bệnh (COVID-19, sốt rét, viêm phổi)
+        \item Fine-tune y khoa VN, multi-agent, app di động
+      \end{itemize}
+  \end{columns}
+\end{frame}
+
+% --- Kết luận ---
+\begin{frame}{Kết luận}
+  \begin{itemize}
+    \item Xây dựng thành công \textbf{trợ lý AI hội thoại} cho HIS: hỗ trợ bệnh nhân \& bác sĩ.
+    \item Điểm cốt lõi: \textbf{hiểu ngôn ngữ tự nhiên} nhưng \textbf{an toàn nhờ luật có nguồn}, chuẩn FHIR R5.
+    \item Kiến trúc plugin + phân quyền \textbf{sẵn sàng mở rộng}.
+  \end{itemize}
+  \vspace{0.3cm}
+  \begin{center}\color{hustprimary}\large\textbf{AI hiểu ngôn ngữ — Luật đảm bảo an toàn.}\end{center}
+\end{frame}
+
+% ================= CẢM ƠN =================
+\hustthankyou
+
+\end{document}

@@ -1,0 +1,6 @@
+\babel@toc {vietnamese}{}\relax 
+\beamer@sectionintoc {1}{Đặt vấn đề}{3}{0}{1}
+\beamer@sectionintoc {2}{Giải pháp \& Công nghệ}{7}{0}{2}
+\beamer@sectionintoc {3}{Chức năng chính}{12}{0}{3}
+\beamer@sectionintoc {4}{Điểm kỹ thuật nổi bật}{18}{0}{4}
+\beamer@sectionintoc {5}{Kiểm thử \& Kết luận}{20}{0}{5}
