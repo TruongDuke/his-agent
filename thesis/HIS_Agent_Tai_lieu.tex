@@ -1,0 +1,707 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage[utf8]{vietnam}
+\usepackage[utf8]{inputenc}
+\usepackage[top=2.2cm, bottom=2.2cm, left=2.5cm, right=2.5cm]{geometry}
+\usepackage{amssymb}
+\DeclareUnicodeCharacter{2713}{\ensuremath{\checkmark}}   % map ✓ (U+2713)
+\usepackage{xcolor}
+% Đưa mọi màu trong sơ đồ về đen trắng cho đồng nhất khi in
+\colorlet{blue}{black}\colorlet{green}{black}\colorlet{orange}{black}
+\colorlet{red}{black}\colorlet{purple}{black}\colorlet{cyan}{black}\colorlet{yellow}{black}
+\usepackage{graphicx}
+\graphicspath{{images/}{./}}
+\newcommand{\safeimg}[2]{\IfFileExists{images/#1}{\includegraphics[width=#2]{#1}}{\fbox{\parbox[c][3cm][c]{#2}{\centering\itshape [Ảnh minh hoạ: #1]}}}}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{multirow}
+\usepackage{enumitem}
+\usepackage{float}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, shapes.symbols, shapes.misc, positioning, fit, arrows.meta, calc}
+\usepackage[font=small,labelfont=bf]{caption}
+\usepackage{parskip}
+\usepackage[hidelinks]{hyperref}
+
+\titleformat{\section}{\Large\bfseries}{\thesection.}{0.5em}{}
+\titleformat{\subsection}{\large\bfseries}{\thesubsection}{0.6em}{}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small HIS Agent --- Tài liệu chức năng}
+\fancyhead[R]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\setlength{\parskip}{6pt}
+
+\begin{document}
+
+% ============================ TRANG BÌA ============================
+\begin{titlepage}
+\centering
+\vspace*{3cm}
+{\Huge\bfseries HIS Agent\par}
+\vspace{0.6cm}
+{\LARGE Trợ lý AI cho Hệ thống Thông tin Bệnh viện\par}
+\vspace{2cm}
+{\Large\bfseries TÀI LIỆU GIỚI THIỆU DỰ ÁN\\[4pt] \& ĐẶC TẢ CHỨC NĂNG\par}
+\vspace{0.4cm}
+{\large (Dành cho đội Kiểm thử / QA)\par}
+\vspace{3cm}
+\begin{tabular}{rl}
+\textbf{Phiên bản:} & 1.0 \\[4pt]
+\textbf{Cập nhật:}  & Tháng 8/2026 \\[4pt]
+\textbf{Phạm vi:}   & Tài liệu nội bộ --- đặc tả chức năng \& luồng nghiệp vụ \\
+\end{tabular}
+\vfill
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+% ============================ 1. GIỚI THIỆU ============================
+\section{Giới thiệu dự án}
+
+\textbf{HIS Agent} là một trợ lý AI hội thoại bằng tiếng Việt, tích hợp vào Hệ thống Thông tin Bệnh viện (\textit{Hospital Information System}). Hệ thống cho phép người dùng thao tác với dữ liệu lâm sàng thông qua ngôn ngữ tự nhiên thay vì form phức tạp, phục vụ hai nhóm người dùng chính là \textbf{bệnh nhân} và \textbf{bác sĩ}.
+
+Toàn bộ dữ liệu lâm sàng được lưu theo chuẩn quốc tế \textbf{HL7 FHIR R5} (trên Aidbox); tài khoản đăng nhập lưu tách biệt trong SQLite. Lõi hệ thống là một \textit{agent} sử dụng mô hình ngôn ngữ lớn (LLM) kết hợp cơ chế \textit{tool calling}: LLM phân tích yêu cầu, tự quyết định gọi công cụ phù hợp (đặt lịch, triage, tra cứu hồ sơ\ldots) rồi tổng hợp câu trả lời.
+
+\subsection{Mục tiêu người dùng}
+\begin{itemize}[leftmargin=1.4em]
+  \item \textbf{Bệnh nhân}: tự phục vụ --- đặt/hủy/xem lịch khám, phân loại mức độ ưu tiên (triage) theo triệu chứng, gợi ý khoa khám, sàng lọc sốt xuất huyết, tra cứu thông tin thuốc và số liệu dịch bệnh có dẫn nguồn, xem hồ sơ của chính mình.
+  \item \textbf{Bác sĩ}: tra cứu hồ sơ/xét nghiệm bệnh nhân, phân tích chỉ số máu (CBC) từ ảnh, ghi nhận dị ứng, kê đơn thuốc có kiểm tra dị ứng nhiều lớp, duyệt lịch hẹn và hoàn tất khám kèm email tóm tắt cho bệnh nhân.
+\end{itemize}
+
+\subsection{Đặc điểm cần lưu ý khi kiểm thử}
+\begin{itemize}[leftmargin=1.4em]
+  \item Phản hồi trả về theo thời gian thực qua \textbf{SSE streaming} (hiển thị dần từng đoạn, kèm badge ``đang gọi công cụ'').
+  \item Hệ thống \textbf{phân quyền nghiêm ngặt theo vai trò}: một số chức năng (vd phân tích CBC) chỉ bác sĩ mới dùng được.
+  \item Mọi khẳng định y khoa đều kèm \textbf{trích dẫn nguồn}; hệ thống được thiết kế để \textbf{không bịa số liệu}.
+\end{itemize}
+
+% ============================ 2. CÔNG NGHỆ ============================
+\section{Công nghệ \& môi trường}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|l|p{6.2cm}|}
+\hline
+\textbf{Thành phần} & \textbf{Công nghệ} & \textbf{Ghi chú} \\
+\hline
+LLM            & Qwen3-VL-Plus            & OpenAI-compatible; hỗ trợ vision (đọc ảnh) \\ \hline
+Backend API    & FastAPI (Python 3.11+)   & REST + SSE streaming, bất đồng bộ \\ \hline
+FHIR server    & Aidbox (Health Samurai)  & Chuẩn FHIR R5, chạy Docker \\ \hline
+CSDL tài khoản & SQLite + bcrypt          & Lưu người dùng, mật khẩu băm \\ \hline
+Gợi ý khoa     & sentence-transformers    & RAG (MiniLM) theo triệu chứng \\ \hline
+Frontend       & React + TypeScript (Vite)& SPA, cập nhật token qua SSE \\ \hline
+Email          & Gmail SMTP (TLS 587)     & Xác nhận lịch \& tóm tắt khám \\ \hline
+\end{tabular}
+\caption{Ngăn xếp công nghệ của hệ thống}
+\end{table}
+
+\noindent\textbf{Điểm truy cập chính (tham khảo khi test API):}
+\begin{itemize}[leftmargin=1.4em]
+  \item \texttt{POST /api/login} --- đăng nhập theo số điện thoại.
+  \item \texttt{POST /chat/stream} --- gửi tin nhắn hội thoại (kèm header \texttt{X-Session-Token}); nhận SSE.
+  \item \texttt{POST /api/complete-appointment/\{id\}} --- hoàn tất khám (chẩn đoán + đơn thuốc + email).
+  \item \texttt{POST /api/prescription}, \texttt{POST /api/check-allergy} --- kê đơn \& kiểm tra dị ứng.
+\end{itemize}
+
+\subsection{Kiến trúc \& cách agent xử lý}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  layer/.style={rectangle, draw=gray!60, fill=gray!10, rounded corners=3pt,
+                minimum width=13cm, minimum height=1.1cm, font=\small, text centered}
+]
+\node[layer, fill=blue!10]   (ui)    at (0,4.5) {Lớp giao diện: React + TypeScript (bệnh nhân / bác sĩ)};
+\node[layer, fill=green!10]  (api)   at (0,3.1) {Lớp API: FastAPI (chat, fhir, auth, appointments, ui)};
+\node[layer, fill=orange!10] (agent) at (0,1.7) {Lớp Agent: OpenAI-compatible LLM + Tool-Calling Loop};
+\node[layer, fill=red!10]    (data)  at (0,0.3) {Lớp dữ liệu: Aidbox FHIR R5 \quad|\quad SQLite (Users)};
+\draw[->, thick, gray] (ui) -- (api);
+\draw[->, thick, gray] (api) -- (agent);
+\draw[->, thick, gray] (agent) -- (data);
+\end{tikzpicture}
+\caption{Kiến trúc phân lớp hệ thống HIS Agent}
+\label{fig:architecture}
+\end{figure}
+
+Hình bên dưới mô tả vòng lặp gọi công cụ (tool-calling loop) của agent.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  startstop/.style={rounded rectangle, draw=black, fill=black!10,
+                    minimum width=3cm, minimum height=0.8cm, font=\small, text centered},
+  process/.style={rectangle, draw=black, fill=white, align=center,
+                  text width=4.2cm, minimum height=0.8cm, font=\small},
+  rproc/.style={rectangle, draw=black, fill=white, align=center,
+                text width=3.4cm, minimum height=0.8cm, font=\small},
+  decision/.style={diamond, draw=black, fill=black!8, aspect=1.9,
+                   font=\small, align=center, inner sep=2pt},
+  io/.style={trapezium, trapezium left angle=70, trapezium right angle=110,
+             trapezium stretches=true, draw=black, fill=black!6,
+             text width=4.0cm, minimum height=0.8cm, font=\small, align=center, inner sep=2pt},
+  arr/.style={-{Stealth}, thick},
+  lbl/.style={font=\scriptsize, fill=white, inner sep=1.5pt}
+]
+% Mạch chính (dọc)
+\node[startstop] (start) at (0, 0)    {Bắt đầu};
+\node[io]        (input) at (0,-1.6)  {Nhận message + role + history};
+\node[process]   (sp)    at (0,-3.2)  {Chọn system prompt và tools cho role};
+\node[process]   (llm1)  at (0,-4.8)  {Gọi LLM API (messages + tools)};
+\node[decision]  (dec1)  at (0,-6.8)  {finish\_reason\\= tool\_calls?};
+\node[process]   (stream)at (0,-9.0)  {Stream tokens về client (SSE)};
+\node[process]   (save)  at (0,-10.6) {Lưu session vào disk};
+\node[startstop] (end)   at (0,-12.2) {Kết thúc};
+% Nhánh có tool call (phải)
+\node[rproc]     (exec)  at (6.2,-6.8) {Thực thi từng tool call};
+\node[rproc]     (app)   at (6.2,-9.0) {Append tool\_result vào history};
+% Mũi tên
+\draw[arr] (start) -- (input);
+\draw[arr] (input) -- (sp);
+\draw[arr] (sp)    -- (llm1);
+\draw[arr] (llm1)  -- (dec1);
+\draw[arr] (dec1.east) -- node[lbl,above]{Có} (exec.west);
+\draw[arr] (exec)  -- (app);
+\draw[arr] (app.east) -- ++(1.0,0) |- node[lbl,above,pos=0.25]{lặp} (llm1.east);
+\draw[arr] (dec1.south) -- node[lbl,right]{Không} (stream.north);
+\draw[arr] (stream)-- (save);
+\draw[arr] (save)  -- (end);
+\end{tikzpicture}
+\caption{Lưu đồ vòng lặp Agent (Tool-Calling Loop)}
+\label{fig:agent-loop}
+\end{figure}
+
+% ============================ 3. VAI TRÒ ============================
+\section{Vai trò người dùng \& phân quyền}
+
+Hệ thống có 5 vai trò (role); mỗi vai trò chỉ ``nhìn thấy'' tập công cụ phù hợp (nguyên tắc \textit{least privilege}).
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|>{\raggedright\arraybackslash}p{3.6cm}|p{9.5cm}|}
+\hline
+\textbf{Vai trò} & \textbf{Phạm vi được phép} \\
+\hline
+patient               & Triage, gợi ý khoa, tìm/đặt/hủy/xem lịch, sàng lọc SXHD, tra thuốc/dịch bệnh, xem hồ sơ của chính mình. \\ \hline
+doctor                & Toàn bộ công cụ (không giới hạn). \\ \hline
+doctor\_records       & Tìm bệnh nhân, xem hồ sơ/xét nghiệm/lịch hẹn, lịch bác sĩ. \\ \hline
+doctor\_cbc           & Tìm bệnh nhân, tạo/xem CBC, phân tích nguy cơ SXHD, đặt lịch. \\ \hline
+doctor\_appointments  & Xem/xác nhận/từ chối lịch chờ, lịch làm việc. \\ \hline
+\end{tabular}
+\caption{Năm vai trò và phạm vi tương ứng}
+\end{table}
+
+\noindent\textbf{Hai lớp bảo vệ cổng bệnh nhân} (cần kiểm thử kỹ):
+\begin{enumerate}[leftmargin=1.6em]
+  \item \textbf{Lớp prompt}: khi bệnh nhân đã đăng nhập, hệ thống chèn danh tính đã xác thực vào đầu chỉ dẫn và cấm truy cập hồ sơ người khác.
+  \item \textbf{Lớp code (hard block)}: 6 công cụ đọc dữ liệu cá nhân luôn bị \textit{ghi đè cứng} \texttt{patient\_id} về đúng người đang đăng nhập --- kể cả khi client cố gửi ID người khác.
+\end{enumerate}
+
+% ============================ 4. USE CASE ============================
+\section{Sơ đồ Use Case tổng thể}
+
+Hình~\ref{fig:usecase} tổng hợp các nhóm chức năng chính theo hai tác nhân Bệnh nhân và Bác sĩ.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  uc/.style={ellipse, draw=black, fill=white, align=center,
+             minimum width=3.9cm, minimum height=0.95cm, font=\scriptsize},
+  ext/.style={rectangle, draw=black, fill=black!4, rounded corners=2pt,
+              minimum width=1.9cm, minimum height=0.8cm, align=center,
+              font=\scriptsize\bfseries},
+  assoc/.style={thick}
+]
+% Actor: Bệnh nhân
+\begin{scope}[shift={(-6,3.4)}, thick]
+  \draw (0,0.6) circle (0.2); \draw (0,0.4) -- (0,-0.2);
+  \draw (-0.3,0.15) -- (0.3,0.15);
+  \draw (0,-0.2) -- (-0.25,-0.65); \draw (0,-0.2) -- (0.25,-0.65);
+\end{scope}
+\node[font=\scriptsize\bfseries] at (-6,2.3) {Bệnh nhân};
+\coordinate (BN) at (-6,3.3);
+% Actor: Bác sĩ
+\begin{scope}[shift={(-6,-3.4)}, thick]
+  \draw (0,0.6) circle (0.2); \draw (0,0.4) -- (0,-0.2);
+  \draw (-0.3,0.15) -- (0.3,0.15);
+  \draw (0,-0.2) -- (-0.25,-0.65); \draw (0,-0.2) -- (0.25,-0.65);
+\end{scope}
+\node[font=\scriptsize\bfseries] at (-6,-4.5) {Bác sĩ};
+\coordinate (BS) at (-6,-3.4);
+% Use cases
+\node[uc] (up1) at (0, 5.0)  {Đặt lịch \& triage khám};
+\node[uc] (up2) at (0, 3.4)  {Sàng lọc sốt xuất huyết};
+\node[uc] (up3) at (0, 1.8)  {Xem hồ sơ cá nhân};
+\node[uc] (sh)  at (0, 0.1)  {Tra cứu tri thức y khoa\\(thuốc, dịch bệnh)};
+\node[uc] (ud1) at (0,-1.7)  {Tra cứu hồ sơ \& xét nghiệm};
+\node[uc] (ud2) at (0,-3.3)  {Phân tích CBC};
+\node[uc] (ud3) at (0,-4.9)  {Hỗ trợ kê đơn an toàn (CDS)};
+\node[uc] (ud4) at (0,-6.5)  {Quản lý lịch \& hoàn tất khám};
+% System boundary
+\node[draw=black, thick, rounded corners=2pt, fit=(up1)(ud4),
+      inner xsep=7mm, inner ysep=14mm] (sys) {};
+\node[anchor=north, align=center] at ([shift={(0,-2.5mm)}]sys.north)
+  {{\scriptsize\itshape «hệ thống»}\\[3pt]{\small\bfseries HIS Agent}};
+% Associations
+\foreach \u in {up1,up2,up3,sh} { \draw[assoc] (BN) -- (\u); }
+\foreach \u in {sh,ud1,ud2,ud3,ud4} { \draw[assoc] (BS) -- (\u); }
+% Kho lưu trữ
+\node[ext] (FHIR) at (6, -0.5) {Aidbox\\FHIR};
+\draw[assoc] (up1) -- (FHIR); \draw[assoc] (up3) -- (FHIR);
+\draw[assoc] (ud1) -- (FHIR); \draw[assoc] (ud2) -- (FHIR);
+\draw[assoc] (ud3) -- (FHIR); \draw[assoc] (ud4) -- (FHIR);
+\end{tikzpicture}
+\caption{Sơ đồ use case tổng quan (chi tiết chức năng xem mục~\ref{sec:func})}
+\label{fig:usecase}
+\end{figure}
+
+% ============================ 5. DANH SÁCH CHỨC NĂNG ============================
+\section{Danh sách chức năng}\label{sec:func}
+
+\subsection{Nhóm bệnh nhân}
+\begin{longtable}{|l|p{4cm}|p{8cm}|}
+\hline
+\textbf{ID} & \textbf{Chức năng} & \textbf{Mô tả} \\ \hline \endhead
+F-P01 & Đặt lịch khám & Cung cấp triệu chứng hoặc khoa/ngày/giờ; hệ thống đặt lịch và gửi email xác nhận. \\ \hline
+F-P02 & Hủy lịch hẹn & Cung cấp tên; hệ thống tra cứu và hủy lịch phù hợp. \\ \hline
+F-P03 & Xem lịch hẹn & Hỏi lịch sắp tới; trả về danh sách. \\ \hline
+F-P04 & Triage thông minh & Phân loại mức ưu tiên (EMERGENCY / URGENT / SEMI\_URGENT / ROUTINE) và gợi ý khoa. \\ \hline
+F-P05 & Gợi ý khoa & Gợi ý khoa phù hợp với triệu chứng (RAG). \\ \hline
+F-P06 & Sàng lọc SXHD & Hội thoại 2 lượt thu thập thông tin, phân loại mức độ sốt xuất huyết. \\ \hline
+F-P07 & Đăng ký bệnh nhân mới & Thu thập thông tin và tạo hồ sơ bệnh nhân trong FHIR. \\ \hline
+F-P08 & Xem dị ứng của mình & Tra cứu dị ứng theo \texttt{patient\_id} từ phiên đăng nhập. \\ \hline
+F-P09 & Xem đơn thuốc của mình & Tra cứu đơn thuốc nhóm theo lần khám. \\ \hline
+F-P10 & Xem ghi chú khám & Xem chẩn đoán + kế hoạch + đơn thuốc trong thẻ tóm tắt lần khám. \\ \hline
+F-P11 & Nhận email tóm tắt khám & Nhận email HTML sau khi bác sĩ hoàn tất khám. \\ \hline
+F-P12 & Tra cứu thông tin thuốc & Hỏi liều/tác dụng phụ/tương tác; trả lời có thẻ nguồn và chip trích dẫn. \\ \hline
+F-P13 & Tra cứu số liệu dịch bệnh & Hỏi số ca mắc theo tuần (HCDC); trả lời kèm nguồn và ghi chú phạm vi. \\ \hline
+\end{longtable}
+
+\subsection{Nhóm bác sĩ}
+\begin{longtable}{|l|p{4cm}|p{8cm}|}
+\hline
+\textbf{ID} & \textbf{Chức năng} & \textbf{Mô tả} \\ \hline \endhead
+F-D01 & Tra cứu hồ sơ bệnh nhân & Tìm theo tên/BHYT/CCCD; xem lịch sử khám, thuốc, xét nghiệm. \\ \hline
+F-D02 & Xem kết quả xét nghiệm & Xem kết quả theo danh mục, đánh dấu bất thường. \\ \hline
+F-D03 & Phân tích CBC & Upload ảnh phiếu XN hoặc nhập tay; trích chỉ số, lưu FHIR, đánh giá nguy cơ SXHD. \\ \hline
+F-D04 & Duyệt lịch hẹn & Xem lịch chờ, xác nhận/từ chối, gửi email thông báo. \\ \hline
+F-D05 & Xem lịch khám & Xem lịch làm việc theo ngày/tuần. \\ \hline
+F-D06 & Đặt lịch tái khám CBC & Sau kết quả CBC nguy cơ cao, gợi ý và đặt lịch tái khám. \\ \hline
+F-D08 & Ghi nhận dị ứng & Nhập chất gây dị ứng/mức độ/phản ứng; lưu FHIR AllergyIntolerance. \\ \hline
+F-D09 & Kê đơn có kiểm tra dị ứng & Chọn thuốc; kiểm tra 4 lớp, hiển thị cảnh báo 3 tầng (banner, real-time, hard stop). \\ \hline
+F-D10 & Hoàn tất khám & Modal đa năng: chẩn đoán + ghi chú + đơn thuốc; lưu atomic; tự gửi email. \\ \hline
+F-D11 & Xem lịch sử khám tổng hợp & Panel bệnh nhân: dị ứng, đơn thuốc, ghi chú lâm sàng. \\ \hline
+F-D12 & Tra cứu thông tin thuốc & Tra liều/tác dụng phụ/tương tác, có dẫn nguồn kiểm chứng được. \\ \hline
+F-D13 & Tra cứu số liệu dịch bệnh & Tra số ca theo tuần kèm so sánh tuần-trên-tuần và nguồn. \\ \hline
+\end{longtable}
+
+% ============================ 6. LUỒNG NGHIỆP VỤ ============================
+\section{Các luồng nghiệp vụ chính}
+
+Mỗi luồng mô tả: \textit{tác nhân}, \textit{tiền điều kiện}, \textit{các bước}, \textit{kết quả mong đợi} --- dùng trực tiếp làm cơ sở viết test case.
+
+\subsection{Flow A --- Đặt lịch khám trực tiếp (bệnh nhân)}
+\textbf{Tiền điều kiện:} bệnh nhân đã biết khoa/ngày mong muốn.\\
+\textbf{Các bước:} nhập yêu cầu đặt lịch $\to$ hệ thống gợi ý khoa (nếu cần) $\to$ tìm khung giờ trống $\to$ hỏi email $\to$ tạo lịch hẹn.\\
+\textbf{Kết quả mong đợi:} lịch hẹn được tạo (trạng thái chờ duyệt), có mã đặt lịch/số thứ tự, email xác nhận được gửi.
+
+\begin{figure}[H]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[
+  lifeline/.style={thick},
+  box/.style={rectangle, draw=blue!60, fill=blue!8, rounded corners=2pt,
+              minimum width=2.2cm, minimum height=0.55cm, font=\scriptsize, text centered},
+  msg/.style={-{Stealth[scale=0.8]}, thin},
+  ret/.style={-{Stealth[scale=0.8]}, thin, dashed, gray},
+  note/.style={font=\scriptsize, above, fill=white, inner sep=1.5pt}
+]
+% Lifeline headers
+\node[box] (bn)    at (0,    0) {Bệnh nhân};
+\node[box] (fe)    at (3,    0) {Frontend};
+\node[box] (api)   at (6,    0) {FastAPI};
+\node[box] (ag)    at (9,    0) {Agent};
+\node[box] (llm)   at (12,   0) {LLM};
+\node[box] (fhir)  at (15,   0) {Aidbox FHIR};
+
+% Lifelines (vertical dashed)
+\foreach \x in {0,3,6,9,12,15} {
+  \draw[dashed, gray!60] (\x,-0.35) -- (\x,-9.5);
+}
+
+% Messages
+\draw[msg] (0,-1.0) -- node[note]{nhập ``Đặt lịch khám''} (3,-1.0);
+\draw[msg] (3,-1.6) -- node[note]{POST /chat/stream} (6,-1.6);
+\draw[msg] (6,-2.2) -- node[note]{chat\_stream(role=patient)} (9,-2.2);
+\draw[msg] (9,-2.8) -- node[note]{messages + tools} (12,-2.8);
+\draw[ret] (12,-3.4) -- node[note]{tool\_call: fhir\_suggest\_department} (9,-3.4);
+\draw[msg] (9,-4.0) -- node[note]{query triệu chứng} (15,-4.0);
+\draw[ret] (15,-4.6) -- node[note]{danh sách khoa} (9,-4.6);
+\draw[msg] (9,-5.2) -- node[note]{tool\_call: fhir\_get\_next\_available\_slot} (12,-5.2);
+\draw[ret] (12,-5.8) -- node[note]{\{slot, doctor, time\}} (9,-5.8);
+\draw[msg] (9,-6.4) -- node[note]{tool\_call: fhir\_create\_appointment} (15,-6.4);
+\draw[ret] (15,-7.0) -- node[note]{Appointment created (FHIR)} (9,-7.0);
+\draw[msg] (9,-7.6) -- node[note]{stream tokens (phản hồi)} (6,-7.6);
+\draw[ret] (6,-8.2) -- node[note]{SSE events} (3,-8.2);
+\draw[ret] (3,-8.8) -- node[note]{hiển thị xác nhận lịch} (0,-8.8);
+\end{tikzpicture}%
+}
+\caption{Sơ đồ tuần tự Flow A --- Bệnh nhân đặt lịch khám qua hội thoại}
+\label{fig:seq-flow-a}
+\end{figure}
+
+\subsection{Flow B --- Triage từ triệu chứng (bệnh nhân)}
+\textbf{Tiền điều kiện:} người dùng chỉ mô tả triệu chứng, chưa rõ khoa.\\
+\textbf{Các bước:} nhập triệu chứng $\to$ gọi công cụ triage $\to$ trả về mức ưu tiên + khoa gợi ý.\\
+\textbf{Kết quả mong đợi:} hiển thị đúng một trong 4 mức ưu tiên và khoa phù hợp; ca nặng phải cảnh báo rõ ràng.
+
+\begin{figure}[H]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[
+  box/.style={rectangle, draw=blue!60, fill=blue!8, rounded corners=2pt,
+              minimum width=2.2cm, minimum height=0.55cm, font=\scriptsize, text centered},
+  msg/.style={-{Stealth[scale=0.8]}, thin},
+  ret/.style={-{Stealth[scale=0.8]}, thin, dashed, gray},
+  note/.style={font=\scriptsize, above, fill=white, inner sep=1.5pt}
+]
+\node[box] (bn)   at (0,   0) {Bệnh nhân};
+\node[box] (fe)   at (3,   0) {Frontend};
+\node[box] (ag)   at (6,   0) {Agent};
+\node[box] (llm)  at (9,   0) {LLM};
+\node[box] (tool) at (12.5,0) {fhir\_triage};
+
+\foreach \x in {0,3,6,9,12.5} {
+  \draw[dashed, gray!60] (\x,-0.35) -- (\x,-8.5);
+}
+
+\draw[msg] (0,-1.0) -- node[note]{``Tôi đau bụng dữ dội, buồn nôn''} (3,-1.0);
+\draw[msg] (3,-1.6) -- node[note]{POST /chat/stream} (6,-1.6);
+\draw[msg] (6,-2.2) -- node[note]{messages + tools} (9,-2.2);
+\draw[ret] (9,-2.8) -- node[note]{tool\_call: fhir\_triage\_assessment} (6,-2.8);
+\draw[msg] (6,-3.4) -- node[note]{\{symptoms: [``đau bụng'', ``buồn nôn'']\}} (12.5,-3.4);
+\draw[ret] (12.5,-4.0) -- node[note]{\{priority: URGENT, dept: Tiêu hóa\}} (6,-4.0);
+\draw[msg] (6,-4.6) -- node[note]{tool\_call: fhir\_suggest\_department (RAG)} (9,-4.6);
+\draw[ret] (9,-5.2) -- node[note]{\{departments: [Tiêu hóa, Sản phụ khoa]\}} (6,-5.2);
+\draw[msg] (6,-5.8) -- node[note]{stream tokens} (9,-5.8);
+\draw[ret] (9,-6.4) -- node[note]{``Ưu tiên URGENT --- Khoa Tiêu hóa''} (6,-6.4);
+\draw[ret] (6,-7.0) -- node[note]{SSE events} (3,-7.0);
+\draw[ret] (3,-7.6) -- node[note]{hiển thị mức ưu tiên + gợi ý khoa} (0,-7.6);
+\end{tikzpicture}%
+}
+\caption{Sơ đồ tuần tự Flow B --- Triage thông minh phân loại mức độ ưu tiên}
+\label{fig:seq-flow-b}
+\end{figure}
+
+\subsection{Flow C --- Gợi ý khoa bằng RAG (bệnh nhân)}
+\textbf{Các bước:} mô tả triệu chứng $\to$ hệ thống tính độ tương đồng ngữ nghĩa $\to$ trả về khoa phù hợp nhất kèm phương án thay thế.\\
+\textbf{Kết quả mong đợi:} khoa gợi ý hợp lý; sau đó hệ thống hỏi có muốn đặt lịch không.
+
+\begin{figure}[H]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[
+  box/.style={rectangle, draw=blue!60, fill=blue!8, rounded corners=2pt,
+              minimum width=2.3cm, minimum height=0.55cm, font=\scriptsize, text centered},
+  msg/.style={-{Stealth[scale=0.8]}, thin},
+  ret/.style={-{Stealth[scale=0.8]}, thin, dashed, gray},
+  note/.style={font=\scriptsize, above, fill=white, inner sep=1.5pt}
+]
+\node[box] (bn)   at (0,   0) {Bệnh nhân};
+\node[box] (fe)   at (3,   0) {Frontend};
+\node[box] (ag)   at (6,   0) {Agent};
+\node[box] (llm)  at (9,   0) {LLM};
+\node[box] (rag)  at (13,  0) {RAG Module};
+
+\foreach \x in {0,3,6,9,13} {
+  \draw[dashed, gray!60] (\x,-0.35) -- (\x,-9.0);
+}
+
+\draw[msg] (0,-1.0) -- node[note]{``Tôi bị ho nhiều, khó thở nhẹ''} (3,-1.0);
+\draw[msg] (3,-1.6) -- node[note]{POST /chat/stream} (6,-1.6);
+\draw[msg] (6,-2.2) -- node[note]{messages + tools} (9,-2.2);
+\draw[ret] (9,-2.8) -- node[note]{tool\_call: fhir\_suggest\_department} (6,-2.8);
+\draw[msg] (6,-3.4) -- node[note]{\{query: ``ho, khó thở''\}} (13,-3.4);
+\draw[msg] (13,-4.0) -- node[note]{encode query (MiniLM)} (13,-4.0);
+\draw[msg] (13,-4.6) -- node[note]{cosine\_sim(query, kb\_embeddings)} (13,-4.6);
+\draw[ret] (13,-5.2) -- node[note]{\{Hô hấp: 3.24, Tim mạch: 1.20, Cấp cứu: 0.65\}} (6,-5.2);
+\draw[msg] (6,-5.8) -- node[note]{tool result $\to$ LLM context} (9,-5.8);
+\draw[ret] (9,-6.4) -- node[note]{stream tokens} (6,-6.4);
+\draw[ret] (6,-7.0) -- node[note]{``Khoa Hô hấp (phù hợp nhất) / Khoa Tim mạch (thay thế)''} (3,-7.0);
+\draw[ret] (3,-7.6) -- node[note]{SSE events} (0,-7.6);
+\draw[msg] (0,-8.4) -- node[note]{``Bạn có muốn đặt lịch không?''} (3,-8.4);
+\end{tikzpicture}%
+}
+\caption{Sơ đồ tuần tự Flow C --- Gợi ý khoa bằng RAG từ mô tả triệu chứng}
+\label{fig:seq-flow-c}
+\end{figure}
+
+\subsection{Flow D --- Sàng lọc sốt xuất huyết (bệnh nhân, 2 lượt)}
+\textbf{Các bước:} lượt 1 mô tả triệu chứng $\to$ hệ thống hỏi bổ sung (dấu hiệu cảnh báo, xuất huyết\ldots) $\to$ lượt 2 trả lời $\to$ gọi công cụ sàng lọc.\\
+\textbf{Kết quả mong đợi:} phân mức (mild/warning/severe\ldots) kèm khuyến cáo và disclaimer; trích nguồn phác đồ.
+
+\begin{figure}[H]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[
+  box/.style={rectangle, draw=blue!60, fill=blue!8, rounded corners=2pt,
+              minimum width=2.1cm, minimum height=0.55cm, font=\scriptsize, text centered},
+  msg/.style={-{Stealth[scale=0.8]}, thin},
+  ret/.style={-{Stealth[scale=0.8]}, thin, dashed, gray},
+  note/.style={font=\scriptsize, above, fill=white, inner sep=1.5pt}
+]
+\node[box] (bn)  at (0,   0) {Bệnh nhân};
+\node[box] (fe)  at (3.2, 0) {Frontend};
+\node[box] (ag)  at (6.4, 0) {Agent};
+\node[box] (llm) at (9.6, 0) {LLM};
+\node[box] (tool)at (12.8,0) {dengue\_symptom};
+
+\foreach \x in {0,3.2,6.4,9.6,12.8} {
+  \draw[dashed, gray!60] (\x,-0.35) -- (\x,-10.2);
+}
+% Turn 1
+\draw[msg] (0,-1.0) -- node[note]{``Tôi sốt 3 ngày, đau đầu''} (3.2,-1.0);
+\draw[msg] (3.2,-1.6) -- node[note]{POST /chat/stream} (6.4,-1.6);
+\draw[msg] (6.4,-2.2) -- node[note]{messages} (9.6,-2.2);
+\draw[ret] (9.6,-2.8) -- node[note]{``Bạn có xuất huyết không?''} (6.4,-2.8);
+\draw[ret] (6.4,-3.4) -- node[note]{SSE stream} (3.2,-3.4);
+\draw[ret] (3.2,-4.0) -- node[note]{hiển thị câu hỏi} (0,-4.0);
+% Turn 2
+\draw[msg] (0,-4.8) -- node[note]{``Có nổi đốm đỏ, nôn''} (3.2,-4.8);
+\draw[msg] (3.2,-5.4) -- node[note]{POST /chat/stream} (6.4,-5.4);
+\draw[msg] (6.4,-6.0) -- node[note]{messages + tools} (9.6,-6.0);
+\draw[ret] (9.6,-6.6) -- node[note]{tool\_call: dengue\_symptom\_assessment} (6.4,-6.6);
+\draw[msg] (6.4,-7.2) -- node[note]{\{in\_epidemic\_area, fever\_days, symptoms, warning\_signs\}} (12.8,-7.2);
+\draw[ret] (12.8,-7.8) -- node[note]{\{severity: warning, recommend: đến viện trong ngày\}} (6.4,-7.8);
+\draw[msg] (6.4,-8.4) -- node[note]{stream kết quả + khuyến cáo} (9.6,-8.4);
+\draw[ret] (9.6,-9.0) -- node[note]{phản hồi tổng hợp} (6.4,-9.0);
+\draw[ret] (6.4,-9.6) -- node[note]{SSE stream} (3.2,-9.6);
+\end{tikzpicture}%
+}
+\caption{Sơ đồ tuần tự Flow D --- Sàng lọc SXHD qua hội thoại 2 lượt}
+\label{fig:seq-flow-d}
+\end{figure}
+
+\subsection{Flow E --- Phân tích CBC từ ảnh (bác sĩ)}
+\textbf{Tiền điều kiện:} đăng nhập vai trò bác sĩ; nút upload ảnh chỉ hiện với bác sĩ.\\
+\textbf{Các bước:} upload ảnh phiếu CBC $\to$ hệ thống trích PLT/WBC/HCT\ldots $\to$ tìm bệnh nhân $\to$ lưu FHIR $\to$ đánh giá nguy cơ SXHD.\\
+\textbf{Kết quả mong đợi:} hiển thị các chỉ số đã đọc + mức nguy cơ; dữ liệu được lưu vào FHIR.
+
+\begin{figure}[H]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[
+  box/.style={rectangle, draw=orange!70, fill=orange!8, rounded corners=2pt,
+              minimum width=2.0cm, minimum height=0.55cm, font=\scriptsize, text centered},
+  msg/.style={-{Stealth[scale=0.8]}, thin},
+  ret/.style={-{Stealth[scale=0.8]}, thin, dashed, gray},
+  note/.style={font=\scriptsize, above, fill=white, inner sep=1.5pt}
+]
+\node[box] (bs)   at (0,    0) {Bác sĩ};
+\node[box] (fe)   at (2.8,  0) {Frontend};
+\node[box] (api)  at (5.6,  0) {FastAPI};
+\node[box] (ag)   at (8.4,  0) {Agent};
+\node[box] (llm)  at (11.2, 0) {LLM};
+\node[box] (fhir) at (14.0, 0) {Aidbox FHIR};
+
+\foreach \x in {0,2.8,5.6,8.4,11.2,14.0} {
+  \draw[dashed, gray!60] (\x,-0.35) -- (\x,-13.0);
+}
+
+\draw[msg] (0,-1.0)    -- node[note]{upload ảnh CBC + ``Phân tích giúp tôi''} (2.8,-1.0);
+\draw[msg] (2.8,-1.6)  -- node[note]{POST /chat/stream (role=doctor\_cbc, image\_b64)} (5.6,-1.6);
+\draw[msg] (5.6,-2.2)  -- node[note]{chat\_stream(role, image)} (8.4,-2.2);
+\draw[msg] (8.4,-2.8)  -- node[note]{messages + tools + image (vision content)} (11.2,-2.8);
+\draw[ret] (11.2,-3.4) -- node[note]{tool\_call: fhir\_search\_patient \{name: ...\}} (8.4,-3.4);
+\draw[msg] (8.4,-4.0)  -- node[note]{GET /fhir/Patient?name=...} (14.0,-4.0);
+\draw[ret] (14.0,-4.6) -- node[note]{\{patient\_id: P001, name: ...\}} (8.4,-4.6);
+\draw[msg] (8.4,-5.2)  -- node[note]{tool\_result $\to$ LLM context} (11.2,-5.2);
+\draw[ret] (11.2,-5.8) -- node[note]{tool\_call: fhir\_create\_cbc \{PLT=48, WBC=2.8, HCT=48\}} (8.4,-5.8);
+\draw[msg] (8.4,-6.4)  -- node[note]{POST /fhir/Observation (mã LOINC)} (14.0,-6.4);
+\draw[ret] (14.0,-7.0) -- node[note]{\{observation\_id: OBS-0123\}} (8.4,-7.0);
+\draw[msg] (8.4,-7.6)  -- node[note]{tool\_result $\to$ LLM context} (11.2,-7.6);
+\draw[ret] (11.2,-8.2) -- node[note]{tool\_call: dengue\_cbc\_predict \{PLT, WBC, HCT\}} (8.4,-8.2);
+\node[draw=gray!30, fill=gray!8, rounded corners=1pt, font=\tiny] at (9.8,-8.8) {tính điểm CBC (local)};
+\draw[msg] (8.4,-9.4)  -- node[note]{tool\_result: \{likelihood: ``likely'', reason: PLT$<$50\}} (11.2,-9.4);
+\draw[ret] (11.2,-10.0)-- node[note]{stream tokens (phân tích kết quả)} (8.4,-10.0);
+\draw[ret] (8.4,-10.6) -- node[note]{SSE events} (5.6,-10.6);
+\draw[ret] (5.6,-11.2) -- node[note]{SSE events} (2.8,-11.2);
+\draw[ret] (2.8,-11.8) -- node[note]{hiển thị CBC + đánh giá nguy cơ SXHD} (0,-11.8);
+\end{tikzpicture}%
+}
+\caption{Sơ đồ tuần tự Flow E --- Bác sĩ phân tích CBC từ ảnh upload (Doctor Only)}
+\label{fig:seq-flow-e}
+\end{figure}
+
+\subsection{Flow F --- Duyệt / từ chối lịch hẹn (bác sĩ)}
+\textbf{Các bước:} xem danh sách lịch chờ $\to$ xác nhận hoặc từ chối $\to$ gửi email thông báo cho bệnh nhân.\\
+\textbf{Kết quả mong đợi:} trạng thái lịch cập nhật đúng; email gửi tương ứng.
+
+\subsection{Flow G --- Hủy lịch hẹn (bệnh nhân)}
+\textbf{Các bước:} cung cấp tên $\to$ hệ thống tìm lịch $\to$ hủy lịch đang chờ.\\
+\textbf{Kết quả mong đợi:} lịch chuyển trạng thái hủy; phản hồi xác nhận.
+
+\subsection{Flow H --- Xem kết quả xét nghiệm (bác sĩ)}
+\textbf{Các bước:} tìm bệnh nhân $\to$ lấy danh sách kết quả xét nghiệm.\\
+\textbf{Kết quả mong đợi:} liệt kê đúng kết quả của bệnh nhân, đánh dấu giá trị bất thường.
+
+\subsection{Flow I --- Bệnh nhân đăng nhập xem hồ sơ của mình}
+\textbf{Tiền điều kiện:} đã đăng nhập, có session token hợp lệ.\\
+\textbf{Các bước:} mở ``Hồ sơ của tôi'' $\to$ hệ thống dùng token lấy đúng \texttt{patient\_id} $\to$ hiển thị CBC \& lịch hẹn của chính mình.\\
+\textbf{Kết quả mong đợi:} chỉ thấy dữ liệu của bản thân; không truy cập được hồ sơ người khác.
+
+\subsection{Flow Rx --- Kê đơn với cảnh báo dị ứng 3 tầng (bác sĩ)}
+\textbf{Tiền điều kiện:} bệnh nhân có dị ứng đã ghi nhận (vd Penicillin).\\
+\textbf{Các bước \& kết quả mong đợi:}
+\begin{itemize}[leftmargin=1.4em]
+  \item \textbf{Tier 1 (banner):} mở modal kê đơn $\to$ banner đỏ liệt kê dị ứng ngay đầu form.
+  \item \textbf{Tier 2 (real-time):} chọn thuốc cùng nhóm/phản ứng chéo $\to$ hiện cảnh báo tức thời kèm gợi ý thuốc thay thế.
+  \item \textbf{Tier 3 (hard stop):} bấm Lưu khi có thuốc bị chặn mà chưa nhập lý do override ($\geq$5 ký tự) $\to$ chặn submit; nhập lý do hợp lệ $\to$ lưu kèm ghi chú override để audit.
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[
+  box/.style={rectangle, draw=blue!60, fill=blue!8, rounded corners=2pt,
+              minimum width=2.0cm, minimum height=0.55cm, font=\scriptsize, text centered},
+  tier/.style={rectangle, draw=red!50, fill=red!5, rounded corners=2pt,
+               font=\scriptsize\bfseries, text centered, minimum width=1.6cm, minimum height=0.5cm},
+  msg/.style={-{Stealth[scale=0.8]}, thin},
+  ret/.style={-{Stealth[scale=0.8]}, thin, dashed, gray},
+  note/.style={font=\scriptsize, above, fill=white, inner sep=1.5pt}
+]
+\node[box] (bs)   at (0,    0) {Bác sĩ};
+\node[box] (fe)   at (2.6,  0) {UI Modal};
+\node[box] (api)  at (5.4,  0) {FastAPI};
+\node[box] (check)at (8.4,  0) {check\_allergy};
+\node[box] (rx)   at (11.4, 0) {create\_prescription};
+\node[box] (fhir) at (14.2, 0) {Aidbox};
+
+\foreach \x in {0,2.6,5.4,8.4,11.4,14.2} {
+  \draw[dashed, gray!60] (\x,-0.35) -- (\x,-12.5);
+}
+
+% TIER 1 - banner ngay khi mo modal
+\node[tier] at (-1.6,-0.9) {Tier 1};
+\draw[msg] (0,-0.9) -- node[note]{mở modal kê đơn} (2.6,-0.9);
+\draw[msg] (2.6,-1.5) -- node[note]{GET /api/allergies/\{pid\}} (5.4,-1.5);
+\draw[msg] (5.4,-2.1) -- node[note]{fetch AllergyIntolerance} (14.2,-2.1);
+\draw[ret] (14.2,-2.7) -- node[note]{[\{Penicillin, severe\}]} (5.4,-2.7);
+\draw[ret] (5.4,-3.3) -- node[note]{hiển thị banner đỏ đầu form} (2.6,-3.3);
+\draw[ret] (2.6,-3.9) -- node[note]{``$\triangle$ DỊ ỨNG: Penicillin (Nặng)''} (0,-3.9);
+
+% TIER 2 - real-time khi chon thuoc
+\node[tier] at (-1.6,-4.7) {Tier 2};
+\draw[msg] (0,-4.7) -- node[note]{chọn ``Amoxicillin 500mg''} (2.6,-4.7);
+\draw[msg] (2.6,-5.3) -- node[note]{POST /api/check-allergy \{drug\_id\}} (5.4,-5.3);
+\draw[msg] (5.4,-5.9) -- node[note]{check 4-layer} (8.4,-5.9);
+\draw[ret] (8.4,-6.5) -- node[note]{\{verdict: ``block'', alternatives: [...]\}} (5.4,-6.5);
+\draw[ret] (5.4,-7.1) -- node[note]{block đỏ + 4 nút thay thế} (2.6,-7.1);
+\draw[ret] (2.6,-7.7) -- node[note]{``KHÔNG được kê -- chọn thay thế?''} (0,-7.7);
+\draw[msg] (0,-8.3) -- node[note]{click ``Azithromycin 500mg''} (2.6,-8.3);
+\draw[msg] (2.6,-8.9) -- node[note]{re-check} (5.4,-8.9);
+\draw[ret] (5.4,-9.5) -- node[note]{\{verdict: ``clear''\}} (2.6,-9.5);
+
+% TIER 3 - submit
+\node[tier] at (-1.6,-10.3) {Tier 3};
+\draw[msg] (0,-10.3) -- node[note]{bấm Lưu đơn} (2.6,-10.3);
+\draw[msg] (2.6,-10.9) -- node[note]{POST /api/prescription \{meds[]\}} (5.4,-10.9);
+\draw[msg] (5.4,-11.5) -- node[note]{server-side re-validate} (11.4,-11.5);
+\draw[msg] (11.4,-12.1)-- node[note]{POST MedicationRequest} (14.2,-12.1);
+\end{tikzpicture}%
+}
+\caption{Sơ đồ tuần tự 3-tier allergy check khi kê đơn cho BN dị ứng Penicillin}
+\label{fig:seq-flow-rx}
+\end{figure}
+
+\subsection{Flow Complete Visit --- Hoàn tất khám (bác sĩ)}
+\textbf{Các bước:} nhập chẩn đoán + ghi chú + (tuỳ chọn) đơn thuốc + tích gửi email $\to$ bấm ``Lưu \& Kết thúc khám''.\\
+\textbf{Kết quả mong đợi (atomic):} lịch hẹn chuyển \texttt{fulfilled}; lưu ghi chú lâm sàng; lưu đơn thuốc (nếu có); gửi email tóm tắt cho bệnh nhân.
+
+\begin{figure}[H]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[
+  box/.style={rectangle, draw=blue!60, fill=blue!8, rounded corners=2pt,
+              minimum width=2.1cm, minimum height=0.55cm, font=\scriptsize, text centered},
+  msg/.style={-{Stealth[scale=0.8]}, thin},
+  ret/.style={-{Stealth[scale=0.8]}, thin, dashed, gray},
+  note/.style={font=\scriptsize, above, fill=white, inner sep=1.5pt}
+]
+\node[box] (bs)   at (0,    0) {Bác sĩ};
+\node[box] (fe)   at (2.8,  0) {Frontend};
+\node[box] (api)  at (5.6,  0) {FastAPI};
+\node[box] (fhir) at (8.6,  0) {Aidbox};
+\node[box] (rx)   at (11.4, 0) {/api/prescription};
+\node[box] (smtp) at (14.2, 0) {Gmail SMTP};
+
+\foreach \x in {0,2.8,5.6,8.6,11.4,14.2} {
+  \draw[dashed, gray!60] (\x,-0.35) -- (\x,-11.5);
+}
+
+\draw[msg] (0,-0.9) -- node[note]{bấm ``Lưu \& Kết thúc khám''} (2.8,-0.9);
+\draw[msg] (2.8,-1.5) -- node[note]{POST /api/complete-appointment/\{id\}} (5.6,-1.5);
+
+% Step 1: Set Appointment status = fulfilled
+\node[font=\scriptsize\bfseries, anchor=west] at (5.7,-2.0) {Step 1: Cập nhật trạng thái lịch hẹn};
+\draw[msg] (5.6,-2.5) -- node[note]{PUT /Appointment/\{id\} status=``fulfilled''} (8.6,-2.5);
+\draw[ret] (8.6,-3.1) -- node[note]{OK} (5.6,-3.1);
+
+% Step 2: Create ClinicalImpression
+\node[font=\scriptsize\bfseries, anchor=west] at (5.7,-3.6) {Step 2: Lưu ClinicalImpression};
+\draw[msg] (5.6,-4.1) -- node[note]{POST /ClinicalImpression \{description, note\}} (8.6,-4.1);
+\draw[ret] (8.6,-4.7) -- node[note]{\{ci\_id\}} (5.6,-4.7);
+
+% Step 3: Front-end calls prescription endpoint
+\node[font=\scriptsize\bfseries, anchor=west] at (5.7,-5.2) {Step 3: Kê đơn (nếu có thuốc)};
+\draw[msg] (2.8,-5.7) -- node[note]{POST /api/prescription \{meds[]\}} (11.4,-5.7);
+\draw[msg] (11.4,-6.3)-- node[note]{check\_allergy mỗi thuốc + POST N MedicationRequest} (8.6,-6.3);
+\draw[ret] (8.6,-6.9) -- node[note]{N $\times$ \{mr\_id\} với cùng groupIdentifier} (11.4,-6.9);
+\draw[ret] (11.4,-7.5)-- node[note]{\{rx\_id, medications[]\}} (2.8,-7.5);
+
+% Step 4: Send email
+\node[font=\scriptsize\bfseries, anchor=west] at (5.7,-8.0) {Step 4: Gửi email tóm tắt};
+\draw[msg] (5.6,-8.5) -- node[note]{fhir\_send\_visit\_summary (template HTML)} (14.2,-8.5);
+\draw[msg] (14.2,-9.1)-- node[note]{SMTP TLS port 587} (14.2,-9.1);
+\draw[ret] (14.2,-9.7) -- node[note]{\{sent\_to, subject\}} (5.6,-9.7);
+
+% Response
+\draw[ret] (5.6,-10.3) -- node[note]{\{ok: true, ci\_id, email\}} (2.8,-10.3);
+\draw[ret] (2.8,-10.9) -- node[note]{Toast: ``✓ chẩn đoán + N thuốc · email gửi''} (0,-10.9);
+\end{tikzpicture}%
+}
+\caption{Sơ đồ tuần tự Complete Visit Modal --- 4 hành động atomic khi bác sĩ kết thúc khám}
+\label{fig:seq-flow-complete}
+\end{figure}
+
+% ============================ 7. CHECKLIST ============================
+\section{Gợi ý checklist kiểm thử}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|p{5.2cm}|p{8cm}|}
+\hline
+\textbf{Hạng mục} & \textbf{Điểm cần kiểm tra} \\
+\hline
+Phân quyền vai trò & Bệnh nhân KHÔNG dùng được chức năng bác sĩ (CBC, duyệt lịch, xem hồ sơ người khác). \\ \hline
+Bảo vệ cổng bệnh nhân & Gửi thẳng API với \texttt{patient\_id} người khác $\to$ phải bị backend ghi đè/chặn. \\ \hline
+Cảnh báo dị ứng & Đủ 3 tầng (banner / real-time / hard stop); override phải yêu cầu lý do. \\ \hline
+Chống bịa số liệu & Tuần không tồn tại $\to$ báo ``không lấy được'', không sinh số giả. \\ \hline
+Trích dẫn nguồn & Câu trả lời tra thuốc/dịch bệnh phải có thẻ nguồn \& chip \texttt{[n]} trỏ đúng tài liệu. \\ \hline
+SSE streaming & Phản hồi hiển thị dần; có badge ``đang gọi công cụ''; kết thúc đúng. \\ \hline
+Email & Xác nhận lịch \& tóm tắt khám gửi đúng, render đẹp trên Gmail/Outlook. \\ \hline
+Đa phương thức (vision) & Ảnh CBC không rõ/không phải phiếu XN $\to$ hệ thống xử lý an toàn, không bịa chỉ số. \\ \hline
+\end{tabular}
+\caption{Checklist các điểm trọng yếu khi kiểm thử}
+\end{table}
+
+\vspace{1cm}
+\noindent\textit{--- Hết tài liệu ---}
+
+\end{document}

@@ -1,33 +1,32 @@
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {1.1}{\ignorespaces Số ca mắc sốt xuất huyết Dengue tại Việt Nam giai đoạn 2019--2023 (Nguồn: Cục Y tế dự phòng -- Bộ Y tế)}}{2}{figure.caption.5}%
+\contentsline {figure}{\numberline {1.1}{\ignorespaces Số ca mắc sốt xuất huyết Dengue tại Việt Nam giai đoạn 2019--2023 (Nguồn: Cục Y tế Dự phòng -- Bộ Y tế\nobreakspace \cite {dengue_stats})}}{2}{figure.caption.7}%
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {2.1}{\ignorespaces Sơ đồ Use Case toàn bộ hệ thống HIS Agent (26 use cases, trong đó 9 use case CDS và 4 use case tra cứu tri thức ngoài: thuốc qua NCBI, dịch bệnh qua HCDC)}}{7}{figure.caption.8}%
-\contentsline {figure}{\numberline {2.2}{\ignorespaces Kiến trúc phân lớp hệ thống HIS Agent}}{10}{figure.caption.11}%
-\contentsline {figure}{\numberline {2.3}{\ignorespaces Sơ đồ tuần tự Flow A --- Bệnh nhân đặt lịch khám qua hội thoại}}{11}{figure.caption.12}%
-\contentsline {figure}{\numberline {2.4}{\ignorespaces Sơ đồ tuần tự Flow B --- Triage thông minh phân loại mức độ ưu tiên}}{12}{figure.caption.13}%
-\contentsline {figure}{\numberline {2.5}{\ignorespaces Cấu trúc system prompt lắp ghép động theo vai trò: khối đăng nhập (A) $+$ prompt nền (B) $+$ context bổ sung (C)}}{13}{figure.caption.14}%
-\contentsline {figure}{\numberline {2.6}{\ignorespaces Cây quyết định phân loại mức độ SXHD theo QĐ 2760}}{22}{figure.caption.17}%
-\contentsline {figure}{\numberline {2.7}{\ignorespaces Sơ đồ tuần tự Flow D --- Sàng lọc SXHD qua hội thoại 2 lượt}}{22}{figure.caption.18}%
-\contentsline {figure}{\numberline {2.8}{\ignorespaces Luồng xử lý truy vấn số liệu dịch bệnh (lazy-refresh + tra cứu động)}}{24}{figure.caption.19}%
-\contentsline {figure}{\numberline {2.9}{\ignorespaces Pipeline RAG gợi ý khoa phù hợp dựa trên triệu chứng}}{25}{figure.caption.20}%
-\contentsline {figure}{\numberline {2.10}{\ignorespaces Sơ đồ tuần tự Flow C --- Gợi ý khoa bằng RAG từ mô tả triệu chứng}}{26}{figure.caption.21}%
-\contentsline {figure}{\numberline {2.11}{\ignorespaces Sơ đồ tuần tự 3-tier allergy check khi kê đơn cho BN dị ứng Penicillin}}{31}{figure.caption.24}%
-\contentsline {figure}{\numberline {2.12}{\ignorespaces Sơ đồ tuần tự Complete Visit Modal --- 4 hành động atomic khi bác sĩ kết thúc khám}}{33}{figure.caption.25}%
+\contentsline {figure}{\numberline {2.1}{\ignorespaces Sơ đồ use case tổng quan hệ thống HIS Agent (các nhóm chức năng chính; chi tiết 26 chức năng xem mục Yêu cầu chức năng)}}{6}{figure.caption.10}%
+\contentsline {figure}{\numberline {2.2}{\ignorespaces Kiến trúc phân lớp hệ thống HIS Agent}}{9}{figure.caption.13}%
+\contentsline {figure}{\numberline {2.3}{\ignorespaces Sơ đồ tuần tự Flow A --- Bệnh nhân đặt lịch khám qua hội thoại}}{10}{figure.caption.14}%
+\contentsline {figure}{\numberline {2.4}{\ignorespaces Sơ đồ tuần tự Flow B --- Triage thông minh phân loại mức độ ưu tiên}}{11}{figure.caption.15}%
+\contentsline {figure}{\numberline {2.5}{\ignorespaces Cấu trúc system prompt lắp ghép động theo vai trò: khối đăng nhập (A) $+$ prompt nền (B) $+$ context bổ sung (C)}}{12}{figure.caption.16}%
+\contentsline {figure}{\numberline {2.6}{\ignorespaces Cây quyết định phân loại mức độ SXHD theo QĐ 2760}}{21}{figure.caption.19}%
+\contentsline {figure}{\numberline {2.7}{\ignorespaces Sơ đồ tuần tự Flow D --- Sàng lọc SXHD qua hội thoại 2 lượt}}{22}{figure.caption.20}%
+\contentsline {figure}{\numberline {2.8}{\ignorespaces Sơ đồ tuần tự Flow E --- Bác sĩ phân tích CBC từ ảnh upload (Doctor Only)}}{23}{figure.caption.21}%
+\contentsline {figure}{\numberline {2.9}{\ignorespaces Luồng xử lý truy vấn số liệu dịch bệnh (lazy-refresh + tra cứu động)}}{25}{figure.caption.22}%
+\contentsline {figure}{\numberline {2.10}{\ignorespaces Pipeline RAG gợi ý khoa phù hợp dựa trên triệu chứng}}{26}{figure.caption.23}%
+\contentsline {figure}{\numberline {2.11}{\ignorespaces Sơ đồ tuần tự Flow C --- Gợi ý khoa bằng RAG từ mô tả triệu chứng}}{27}{figure.caption.24}%
+\contentsline {figure}{\numberline {2.12}{\ignorespaces Sơ đồ tuần tự 3-tier allergy check khi kê đơn cho BN dị ứng Penicillin}}{31}{figure.caption.27}%
+\contentsline {figure}{\numberline {2.13}{\ignorespaces Sơ đồ tuần tự Complete Visit Modal --- 4 hành động atomic khi bác sĩ kết thúc khám}}{33}{figure.caption.28}%
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {3.1}{\ignorespaces Cấu trúc bảng SQLite và liên kết với FHIR resource}}{39}{figure.caption.28}%
-\contentsline {figure}{\numberline {3.2}{\ignorespaces Lưu đồ vòng lặp Agent (Tool-Calling Loop)}}{41}{figure.caption.29}%
-\contentsline {figure}{\numberline {3.3}{\ignorespaces Sơ đồ tuần tự Flow E --- Bác sĩ phân tích CBC từ ảnh upload (Doctor Only)}}{44}{figure.caption.30}%
-\contentsline {figure}{\numberline {3.4}{\ignorespaces Giao diện hội thoại bệnh nhân}}{52}{figure.caption.33}%
-\contentsline {figure}{\numberline {3.5}{\ignorespaces Giao diện tổng quan dành cho bác sĩ}}{52}{figure.caption.34}%
-\contentsline {figure}{\numberline {3.6}{\ignorespaces Phân loại mức độ ưu tiên (triage) và gợi ý khoa khám bằng RAG (F-P04, F-P05)}}{53}{figure.caption.35}%
-\contentsline {figure}{\numberline {3.7}{\ignorespaces Đặt lịch khám ngay trong hội thoại (F-P01)}}{53}{figure.caption.36}%
-\contentsline {figure}{\numberline {3.8}{\ignorespaces Sàng lọc sốt xuất huyết từ triệu chứng với phân độ cảnh báo theo QĐ 2760 (F-P06)}}{54}{figure.caption.37}%
-\contentsline {figure}{\numberline {3.9}{\ignorespaces Tra cứu thông tin thuốc kèm thẻ nguồn NCBI và chip trích dẫn $[n]$ kiểm chứng được (F-P12)}}{54}{figure.caption.38}%
-\contentsline {figure}{\numberline {3.10}{\ignorespaces Tra cứu số ca sốt xuất huyết thực tế từ HCDC kèm trích dẫn nguồn (F-P13)}}{55}{figure.caption.39}%
-\contentsline {figure}{\numberline {3.11}{\ignorespaces Email tóm tắt lần khám gửi tự động cho bệnh nhân (F-P11)}}{55}{figure.caption.40}%
-\contentsline {figure}{\numberline {3.12}{\ignorespaces Phân tích chỉ số CBC và đánh giá nguy cơ sốt xuất huyết (F-D03)}}{56}{figure.caption.41}%
-\contentsline {figure}{\numberline {3.13}{\ignorespaces Ghi nhận sinh hiệu với cảnh báo bất thường tự động theo NEWS2 và QĐ 3192 (F-D07)}}{57}{figure.caption.42}%
-\contentsline {figure}{\numberline {3.14}{\ignorespaces Cảnh báo dị ứng khi kê đơn --- phản ứng chéo Penicillin--Cephalosporin (F-D09)}}{58}{figure.caption.43}%
+\contentsline {figure}{\numberline {3.1}{\ignorespaces Sơ đồ quan hệ tham chiếu giữa các FHIR resource --- Patient là thanh trung tâm, mỗi mũi tên là một trường \textit {reference}. (Ngoài ra MedicationRequest và ClinicalImpression còn ghi bác sĩ phụ trách qua requester/performer; DiagnosticReport là thiết kế mở rộng, chưa dùng.)}}{39}{figure.caption.31}%
+\contentsline {figure}{\numberline {3.2}{\ignorespaces Cấu trúc bảng SQLite và liên kết với FHIR resource}}{39}{figure.caption.32}%
+\contentsline {figure}{\numberline {3.3}{\ignorespaces Lưu đồ vòng lặp Agent (Tool-Calling Loop)}}{40}{figure.caption.33}%
+\contentsline {figure}{\numberline {3.4}{\ignorespaces Giao diện hội thoại bệnh nhân}}{46}{figure.caption.36}%
+\contentsline {figure}{\numberline {3.5}{\ignorespaces Giao diện tổng quan dành cho bác sĩ}}{47}{figure.caption.37}%
+\contentsline {figure}{\numberline {3.6}{\ignorespaces Phân loại mức độ ưu tiên (triage) và gợi ý khoa khám bằng RAG (F-P04, F-P05)}}{47}{figure.caption.38}%
+\contentsline {figure}{\numberline {3.7}{\ignorespaces Đặt lịch khám ngay trong hội thoại (F-P01)}}{48}{figure.caption.39}%
+\contentsline {figure}{\numberline {3.8}{\ignorespaces Sàng lọc sốt xuất huyết từ triệu chứng với phân độ cảnh báo theo QĐ 2760 (F-P06)}}{48}{figure.caption.40}%
+\contentsline {figure}{\numberline {3.9}{\ignorespaces Tra cứu thông tin thuốc kèm thẻ nguồn NCBI và chip trích dẫn $[n]$ kiểm chứng được (F-P12)}}{49}{figure.caption.41}%
+\contentsline {figure}{\numberline {3.10}{\ignorespaces Tra cứu số ca sốt xuất huyết thực tế từ HCDC kèm trích dẫn nguồn (F-P13)}}{49}{figure.caption.42}%
+\contentsline {figure}{\numberline {3.11}{\ignorespaces Email tóm tắt lần khám gửi tự động cho bệnh nhân (F-P11)}}{50}{figure.caption.43}%
+\contentsline {figure}{\numberline {3.12}{\ignorespaces Phân tích chỉ số CBC và đánh giá nguy cơ sốt xuất huyết (F-D03)}}{51}{figure.caption.44}%
+\contentsline {figure}{\numberline {3.13}{\ignorespaces Cảnh báo dị ứng khi kê đơn --- phản ứng chéo Penicillin--Cephalosporin (F-D09)}}{52}{figure.caption.45}%
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {4.1}{\ignorespaces Sơ đồ triển khai hệ thống HIS Agent}}{67}{figure.caption.53}%
 \contentsfinish 

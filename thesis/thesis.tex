@@ -21,6 +21,14 @@
 % Layout & formatting
 \usepackage{xurl}
 \usepackage{xcolor}
+% Ép mọi màu trong sơ đồ về thang xám (đen trắng) cho đồng nhất, đỡ "giống AI"
+\colorlet{blue}{black}
+\colorlet{green}{black}
+\colorlet{orange}{black}
+\colorlet{red}{black}
+\colorlet{purple}{black}
+\colorlet{cyan}{black}
+\colorlet{yellow}{black}
 \usepackage{graphicx}
 \graphicspath{{images/}{./}}   % ảnh để trong thư mục images/
 % Chèn ảnh an toàn: thiếu file thì hiện ô placeholder thay vì lỗi build
@@ -96,17 +104,16 @@
 	\renewcommand{\footrulewidth}{0pt}}
 \setlength{\headheight}{15pt}
 
-\def\TITLE{XÂY DỰNG TRỢ LÝ AI CHO HỆ THỐNG THÔNG TIN BỆNH VIỆN}
+\def\TITLE{Trợ lý AI Bệnh viện Platform-HIS --- AI Agent tích hợp hệ thống thông tin bệnh viện theo tiêu chuẩn FHIR}
 \def\AUTHOR{Trương Công Thái Đức}
 
 % ===================================================
 % Chapter / section titles
 \usepackage{titlesec}
-\titleformat{\chapter}[hang]{\centering\bfseries}{CHƯƠNG \thechapter.\ }{0pt}{}[]
-\titleformat{\chapter}[hang]{\centering\bfseries}{CHƯƠNG \thechapter.\ }{0pt}{}[]
+\titleformat{\chapter}[hang]{\centering\bfseries\Large}{CHƯƠNG \thechapter.\ }{0pt}{}[]
 \titlespacing*{\chapter}{0pt}{-20pt}{20pt}
 
-\titleformat{\section}[hang]{\bfseries}{\thechapter.\arabic{section}\ \ \ \ }{0pt}{}[]
+\titleformat{\section}[hang]{\bfseries\large}{\thechapter.\arabic{section}\ \ \ \ }{0pt}{}[]
 \titlespacing{\section}{0pt}{\parskip}{0.5\parskip}
 
 \titleformat{\subsection}[hang]{\bfseries}{\thechapter.\arabic{section}.\arabic{subsection}\ \ \ \ }{0pt}{}[]
@@ -173,102 +180,84 @@
 
 \begin{document}
 
-	\thispagestyle{empty}
-	\pagenumbering{gobble}
-	\begin{tikzpicture}[remember picture,overlay,inner sep=0,outer sep=0]
-	\draw[blue!70!black,line width=2.5pt] ([xshift=-1cm,yshift=-2cm]current page.north east) coordinate (A)--([xshift=2cm,yshift=-2cm]current page.north west) coordinate(B)--([xshift=2cm,yshift=2cm]current page.south west) coordinate (C)--([xshift=-1cm,yshift=2cm]current page.south east) coordinate(D)--cycle;
-	\end{tikzpicture}
-	\begin{center}
-		\Large
-		\vspace{0.8cm}
-		{\bfseries ĐẠI HỌC BÁCH KHOA HÀ NỘI}\\
-		{\bfseries KHOA CÔNG NGHỆ THÔNG TIN}
-
-	\end{center}
-	\vspace{1cm}
-	\begin{center}
-		\fontsize{17pt}{15pt}\selectfont
-		\IfFileExists{images/hust.jpg}{\includegraphics[scale=0.5]{hust.jpg}}{\vspace{2cm}}
-		\vspace{1cm}
-
-		\fontsize{22pt}{15pt}\selectfont
-		\bfseries XÂY DỰNG TRỢ LÝ AI CHO HỆ THỐNG THÔNG TIN BỆNH VIỆN
-	\end{center}
-
-	\vspace{0.8cm}
-	\begin{center}
-		\fontsize{16pt}{16pt}\selectfont
-		{\bfseries ĐỒ ÁN TỐT NGHIỆP}\\
-		\fontsize{14pt}{16pt}\selectfont
-		{\bfseries Chuyên ngành: Công nghệ Thông tin}\\
-	\end{center}
-
-	\vspace{2cm}
-	\begin{center}
-		\fontsize{13pt}{16pt}\selectfont
-		\textbf{\begin{tabular}{l l}
-				Giảng viên hướng dẫn:& PGS.TS Nguyễn Hồng Quang\\
-				Sinh viên thực hiện:& Trương Công Thái Đức \\
-				Mã số sinh viên:& 20225815\\
-		\end{tabular}}
-
-	\end{center}
-	\vspace{0cm}
-	\begin{center}
-		\LARGE HÀ NỘI -- 2026
-	\end{center}
-
-	\newpage
-
-% =====================================================================
-%  NHẬN XÉT GIẢNG VIÊN HƯỚNG DẪN
-% =====================================================================
-\pagestyle{empty}
 \pagenumbering{gobble}
-\thisfancypage{\setlength{\fboxsep}{0.5cm}\fbox}{}
 
-\fontsize{13pt}{16pt}\selectfont
-\bigbreak
+% =====================================================================
+%  TRANG BÌA (Bia.tex)
+% =====================================================================
+\begin{titlepage}
+\thispagestyle{empty}
 \begin{center}
-	{\bfseries NHẬN XÉT CỦA GIẢNG VIÊN HƯỚNG DẪN}
-\end{center}
-\bigbreak
 
-\fontsize{12pt}{14pt}\selectfont
-\begin{enumerate}
-	\item [{\bfseries 1.}]{\bfseries Mục tiêu và nội dung của đồ án}
-	\begin{enumerate}
-		\item Mục tiêu: .
-		\item Nội dung: .
-	\end{enumerate}
-	\item [{\bfseries 2.}] {\bfseries Kết quả đạt được}
-	\begin{enumerate}
-		\item 1.
-		\item 2.
-		\item 3.
-	\end{enumerate}
-	\item [{\bfseries 3.}]{\bfseries Ý thức làm việc của sinh viên:}
-\end{enumerate}
-\hspace{0.5\textwidth}
-\begin{minipage}{0.5\textwidth}
-	\noindent\begin{center}
-		\textit{Hà Nội, tháng \hspace{0.4cm} năm 2026} \\
-		Giảng viên hướng dẫn\\ \vspace{2cm}
-		\textbf{PGS.TS Nguyễn Hồng Quang}
-	\end{center}
-\end{minipage}
+{\textbf{\large{ĐẠI HỌC BÁCH KHOA HÀ NỘI}}}\\[2.5cm]
+
+{\textbf{\huge{ ĐỒ ÁN TỐT NGHIỆP}}}\\[1cm]
+{\textbf{\Large{Trợ lý AI Bệnh viện Platform-HIS\\ AI Agent tích hợp hệ thống thông tin bệnh viện theo tiêu chuẩn FHIR}}\\[1cm]
+
+{\textbf{\large{TRƯƠNG CÔNG THÁI ĐỨC}}}\\
+{\large{Duc.TCT225815@sis.hust.edu.vn}}\\[0.5cm]
+
+{\textbf{\large{Chương trình đào tạo: Công nghệ thông tin Việt-Nhật}}}\\
+
+\vspace{4cm}
+\begin{table}[H]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{ll}
+ \multicolumn{1}{c}{\textbf{Giảng viên hướng dẫn:}} & PGS. TS. Nguyễn Hồng Quang \hspace{0.5cm}
+  \\[0.5cm]
+ \multicolumn{1}{l}{\textbf{Khoa:}} & Công nghệ Thông tin Việt-Nhật \hspace{0.5cm} \\ [0.5cm]
+ \multicolumn{1}{l}{\textbf{Trường:}} & Công nghệ thông tin và Truyền thông \hspace{0.5cm} \\ [4.5cm]
+\multicolumn{2}{c}{\textbf{HÀ NỘI, 07/2026}}
+\end{tabular}%
+}
+\end{table}}
+\end{center}
+\end{titlepage}
+
+% =====================================================================
+%  TRANG PHỤ BÌA (Bia_lot.tex)
+% =====================================================================
+\begin{titlepage}
+\thispagestyle{empty}
+\begin{center}
+
+{\textbf{\large{ĐẠI HỌC BÁCH KHOA HÀ NỘI}}}\\[2.5cm]
+
+{\textbf{\huge{ ĐỒ ÁN TỐT NGHIỆP}}}\\[1cm]
+{\textbf{\Large{Trợ lý AI Bệnh viện Platform-HIS\\ AI Agent tích hợp hệ thống thông tin bệnh viện theo tiêu chuẩn FHIR}}\\[1cm]
+
+{\textbf{\large{TRƯƠNG CÔNG THÁI ĐỨC}}}\\
+{\large{Duc.TCT225815@sis.hust.edu.vn}}\\[0.5cm]
+
+{\textbf{\large{Chương trình đào tạo: Công nghệ thông tin Việt-Nhật}}}\\
+
+\vspace{4cm}
+\begin{table}[H]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{ll}
+\multicolumn{1}{c}{\textbf{Giảng viên hướng dẫn:}} & PGS. TS. Nguyễn Hồng Quang \hspace{0.5cm} \underline{\hspace{3cm}}  \\[0.5cm]
+  & \multicolumn{1}{r}{Chữ kí GVHD}     \\[0.5cm]
+\textbf{Khoa:} & Công nghệ Thông tin Việt-Nhật                 \\[0.5cm]
+\textbf{Trường:} & Công nghệ Thông tin và Truyền thông \\[4cm]
+\multicolumn{2}{c}{\textbf{HÀ NỘI, 07/2026}}
+\end{tabular}%
+}
+\end{table}}
+\end{center}
+\end{titlepage}
 
 % =====================================================================
 %  LỜI CẢM ƠN
 % =====================================================================
-\newpage
 \pagenumbering{gobble}
 \fontsize{22pt}{16pt}\selectfont
 {\bfseries Lời cảm ơn}
 \fontsize{13pt}{16pt}\selectfont
 \bigskip
 
-Trước hết, em xin được bày tỏ lòng biết ơn sâu sắc tới Thầy/Cô giảng viên hướng dẫn, người đã tận tình chỉ bảo, định hướng khoa học và đồng hành cùng em trong suốt quá trình thực hiện đồ án. Sự hỗ trợ và kinh nghiệm quý báu của Thầy/Cô là nền tảng vững chắc để em có thể hoàn thành công trình này.
+Trước hết, em xin được bày tỏ lòng biết ơn sâu sắc tới thầy PGS.TS Nguyễn Hồng Quang, giảng viên hướng dẫn, người đã tận tình chỉ bảo, định hướng khoa học và đồng hành cùng em trong suốt quá trình thực hiện đồ án. Sự hỗ trợ và kinh nghiệm quý báu của thầy là nền tảng vững chắc để em có thể hoàn thành công trình này.
 
 Em cũng xin chân thành cảm ơn quý Thầy, Cô trong Khoa Công nghệ Thông tin, Trường Đại học Bách Khoa Hà Nội đã truyền đạt kiến thức, phương pháp nghiên cứu trong suốt những năm học. Những bài giảng và thực hành đã trang bị cho em nền tảng kỹ thuật cần thiết để tiếp cận bài toán phức tạp trong lĩnh vực y tế số.
 
@@ -282,7 +271,7 @@ Một lần nữa, em xin chân thành cảm ơn!
 \hspace{0.5\textwidth}
 \begin{minipage}{0.5\textwidth}
     \begin{center}
-        \textit{Hà Nội, tháng \hspace{0.4cm} năm 2026} \\
+        \textit{Hà Nội, tháng 7 năm 2026} \\
         Tác giả Đồ án \\
         \vspace{2cm}
         \textbf{Trương Công Thái Đức}
@@ -309,15 +298,48 @@ Nội dung đồ án được triển khai qua ba phần chính:
 
 \item \textbf{Phân tích và thiết kế hệ thống:} Phân tích yêu cầu chức năng và phi chức năng; thiết kế kiến trúc phân lớp, agent loop, phân quyền theo vai trò, module sàng lọc sốt xuất huyết Dengue, và RAG gợi ý khoa.
 
-\item \textbf{Xây dựng hệ thống:} Triển khai đầy đủ các thành phần: 26 công cụ FHIR (bao gồm Clinical Decision Support cho sinh hiệu, dị ứng và kê đơn thuốc), module phân tích CBC, API SSE streaming với FastAPI, giao diện web React + TypeScript, xác thực hai lớp cho cổng bệnh nhân, và gửi email tóm tắt khám tự động.
+\item \textbf{Xây dựng hệ thống:} Triển khai đầy đủ các thành phần: 29 công cụ FHIR (bao gồm Clinical Decision Support cho dị ứng và kê đơn thuốc), module phân tích CBC, API SSE streaming với FastAPI, giao diện web React + TypeScript, xác thực hai lớp cho cổng bệnh nhân, và gửi email tóm tắt khám tự động.
 \end{enumerate}
 
 \hspace{0.5\textwidth}
 \begin{minipage}{0.5\textwidth}
 	\noindent\begin{center}
 		\vspace{1cm}
-		\textit{Hà Nội, tháng \hspace{0.4cm} năm 2026} \\
+		\textit{Hà Nội, tháng 7 năm 2026} \\
 		Tác giả đồ án\\ \vspace{2cm}
+		\textbf{Trương Công Thái Đức}
+	\end{center}
+\end{minipage}
+
+% =====================================================================
+%  TÓM TẮT NỘI DUNG (TIẾNG ANH)
+% =====================================================================
+\newpage
+\pagenumbering{gobble}
+\fontsize{22pt}{16pt}\selectfont
+{\bfseries Abstract}
+\fontsize{13pt}{16pt}\selectfont
+\bigskip
+\bigskip
+
+This thesis presents the development of \textbf{HIS Agent} --- an AI assistant integrated into the Hospital Information System (HIS) of Hanoi General Hospital. The system is designed for two main user groups, patients and doctors, through a natural Vietnamese conversational interface.
+
+The work is organized into three main parts:
+
+\begin{enumerate}
+\item \textbf{Overview and survey:} Surveying the current state of Hospital Information Systems in Vietnam, large language models (LLMs) applied in healthcare, the HL7 FHIR standard, and the agent architecture with tool calling.
+
+\item \textbf{System analysis and design:} Analyzing functional and non-functional requirements; designing the layered architecture, the agent loop, role-based access control, the Dengue hemorrhagic fever screening module, and the RAG-based department recommendation.
+
+\item \textbf{System implementation:} Implementing all components: 29 FHIR tools (including Clinical Decision Support for allergies and prescriptions), a CBC analysis module, an SSE streaming API with FastAPI, a React + TypeScript web interface, two-layer authentication for the patient portal, and automatic visit-summary emails.
+\end{enumerate}
+
+\hspace{0.5\textwidth}
+\begin{minipage}{0.5\textwidth}
+	\noindent\begin{center}
+		\vspace{1cm}
+		\textit{Hanoi, July 2026} \\
+		Author\\ \vspace{2cm}
 		\textbf{Trương Công Thái Đức}
 	\end{center}
 \end{minipage}
@@ -412,14 +434,7 @@ WBC   & White Blood Cell --- Bạch cầu \\
 
 Hệ thống thông tin bệnh viện (Hospital Information System --- HIS) đóng vai trò trung tâm trong quản lý hoạt động y tế, từ lưu trữ hồ sơ bệnh nhân, theo dõi xét nghiệm, đến quản lý lịch hẹn và thanh toán. Tuy nhiên, phần lớn các hệ thống HIS hiện tại tại Việt Nam vẫn yêu cầu người dùng tương tác qua giao diện form phức tạp, đòi hỏi đào tạo chuyên sâu, và thiếu khả năng hỗ trợ ra quyết định lâm sàng.
 
-Trong bối cảnh bùng nổ của các mô hình ngôn ngữ lớn (Large Language Model --- LLM), đặc biệt là các mô hình hỗ trợ tương tác hội thoại tự nhiên, cơ hội xây dựng một lớp trợ lý AI tích hợp vào HIS là rất khả thi. Trợ lý AI có thể giúp:
-
-\begin{itemize}
-  \item Bệnh nhân tự phục vụ (đặt lịch, kiểm tra lịch hẹn) mà không cần gọi điện hay đến quầy lễ tân.
-  \item Triage thông minh: phân loại mức độ ưu tiên dựa trên triệu chứng, gợi ý khoa phù hợp.
-  \item Sàng lọc dịch bệnh (sốt xuất huyết Dengue) theo phác đồ chuẩn của Bộ Y tế.
-  \item Bác sĩ tra cứu hồ sơ, xem kết quả xét nghiệm, phân tích CBC nhanh chóng qua ngôn ngữ tự nhiên.
-\end{itemize}
+Trong bối cảnh bùng nổ của các mô hình ngôn ngữ lớn (Large Language Model --- LLM), đặc biệt là các mô hình hỗ trợ tương tác hội thoại tự nhiên, cơ hội xây dựng một lớp trợ lý AI tích hợp vào HIS là rất khả thi. Trợ lý AI có thể giúp bệnh nhân tự phục vụ --- đặt lịch và kiểm tra lịch hẹn mà không cần gọi điện hay đến quầy lễ tân; phân loại mức độ ưu tiên (triage) dựa trên triệu chứng và gợi ý khoa khám phù hợp; sàng lọc dịch bệnh (sốt xuất huyết Dengue) theo phác đồ chuẩn của Bộ Y tế; đồng thời hỗ trợ bác sĩ tra cứu hồ sơ, xem kết quả xét nghiệm và phân tích CBC nhanh chóng qua ngôn ngữ tự nhiên.
 
 Việt Nam đang đối mặt với gánh nặng dịch bệnh sốt xuất huyết Dengue (SXHD) tái diễn hàng năm. Theo số liệu của Bộ Y tế, mỗi năm có hàng chục nghìn ca mắc, với nhiều trường hợp nhập viện muộn do nhận biết triệu chứng chưa đúng. Việc tích hợp module sàng lọc SXHD tự động vào giao diện hội thoại của bệnh nhân có thể giúp phát hiện sớm và giảm tải cho cơ sở y tế.
 
@@ -427,30 +442,30 @@ Việt Nam đang đối mặt với gánh nặng dịch bệnh sốt xuất huy�
 \centering
 \begin{tikzpicture}[scale=0.88]
   % Axes
-  \draw[->, thick] (0,0) -- (0,5.8) node[above, font=\small] {Số ca (nghìn)};
+  \draw[->, thick] (0,0) -- (0,8.8) node[above, font=\small] {Số ca (nghìn)};
   \draw[->, thick] (0,0) -- (10.5,0) node[right, font=\small] {Năm};
   % Y gridlines and labels
-  \foreach \y/\label in {0/0, 1/50, 2/100, 3/150, 4/200, 5/250} {
+  \foreach \y/\label in {0/0, 1/50, 2/100, 3/150, 4/200, 5/250, 6/300, 7/350, 8/400} {
     \draw[gray!40] (0,\y) -- (10,\y);
     \node[left, font=\scriptsize] at (-0.1,\y) {\label};
   }
-  % Bars (scale: 1 unit = 50 000 cases)
-  % 2019: 320k  2020: 96k   2021: 82k   2022: 370k  2023: 168k
-  \fill[blue!60!white] (0.8,0) rectangle (1.8, 4.40) node[above, font=\scriptsize] {220k};
-  \fill[blue!60!white] (2.4,0) rectangle (3.4, 1.92) node[above, font=\scriptsize] {96k};
-  \fill[blue!60!white] (4.0,0) rectangle (5.0, 1.64) node[above, font=\scriptsize] {82k};
-  \fill[blue!60!white] (5.6,0) rectangle (6.6, 5.20) node[above, font=\scriptsize] {260k};
-  \fill[blue!60!white] (7.2,0) rectangle (8.2, 3.36) node[above, font=\scriptsize] {168k};
+  % Bars (scale: 1 unit = 50 000 cases). Số liệu Cục Y tế Dự phòng / GSO:
+  % 2019: 334k  2020: 131k  2021: 72k  2022: 368k (367.729)  2023: 172k
+  \fill[blue!60!white] (0.8,0) rectangle (1.8, 6.68) node[above, font=\scriptsize] {334k};
+  \fill[blue!60!white] (2.4,0) rectangle (3.4, 2.62) node[above, font=\scriptsize] {131k};
+  \fill[blue!60!white] (4.0,0) rectangle (5.0, 1.44) node[above, font=\scriptsize] {72k};
+  \fill[blue!60!white] (5.6,0) rectangle (6.6, 7.35) node[above, font=\scriptsize] {368k};
+  \fill[blue!60!white] (7.2,0) rectangle (8.2, 3.44) node[above, font=\scriptsize] {172k};
   % X labels
   \foreach \x/\yr in {1.3/2019, 2.9/2020, 4.5/2021, 6.1/2022, 7.7/2023} {
     \node[below, font=\small] at (\x,-0.2) {\yr};
   }
 \end{tikzpicture}
-\caption{Số ca mắc sốt xuất huyết Dengue tại Việt Nam giai đoạn 2019--2023 (Nguồn: Cục Y tế dự phòng -- Bộ Y tế)}
+\caption{Số ca mắc sốt xuất huyết Dengue tại Việt Nam giai đoạn 2019--2023 (Nguồn: Cục Y tế Dự phòng -- Bộ Y tế~\cite{dengue_stats})}
 \label{fig:dengue-stats}
 \end{figure}
 
-Hình~\ref{fig:dengue-stats} minh họa xu hướng dịch bệnh SXHD trong 5 năm gần đây. Năm 2022 là đỉnh dịch với hơn 370.000 ca mắc và 143 trường hợp tử vong. Sự biến động theo chu kỳ của SXHD đặt ra nhu cầu cấp thiết về công cụ sàng lọc tự động, nhất là trong bối cảnh nguồn lực y tế còn hạn chế.
+Hình~\ref{fig:dengue-stats} minh họa xu hướng dịch bệnh SXHD trong 5 năm gần đây~\cite{dengue_stats}. Năm 2022 là đỉnh dịch với 367.729 ca mắc --- mức cao kỷ lục trong giai đoạn 1980--2023; đến năm 2023 số ca giảm còn khoảng 172.000 với 43 trường hợp tử vong. Sự biến động theo chu kỳ của SXHD đặt ra nhu cầu cấp thiết về công cụ sàng lọc tự động, nhất là trong bối cảnh nguồn lực y tế còn hạn chế.
 
 \section{Phạm vi và mục tiêu đồ án}
 
@@ -462,7 +477,7 @@ Phạm vi chức năng bao gồm:
 \begin{itemize}
   \item Đặt lịch khám, hủy lịch, xem lịch hẹn cho bệnh nhân.
   \item Triage thông minh: phân loại mức độ ưu tiên và gợi ý khoa.
-  \item Sàng lọc sốt xuất huyết Dengue theo QĐ 2760/QĐ-BYT 2023.
+  \item Sàng lọc sốt xuất huyết Dengue theo QĐ 2760/QĐ-BYT 2023~\cite{qd2760}.
   \item Phân tích kết quả xét nghiệm CBC hỗ trợ đánh giá nguy cơ SXHD --- chức năng dành riêng cho bác sĩ.
   \item Tra cứu hồ sơ bệnh nhân, kết quả xét nghiệm cho bác sĩ.
   \item Quản lý lịch hẹn (duyệt/từ chối) cho bác sĩ.
@@ -484,8 +499,7 @@ Mục tiêu được chia thành 2 giai đoạn:
 
 \textbf{Giai đoạn 2 --- Clinical Decision Support (CDS):}
 \begin{enumerate}\setcounter{enumi}{5}
-  \item Mở rộng hệ thống để đóng vòng lặp lâm sàng đầy đủ: đo sinh hiệu $\to$ ghi nhận dị ứng $\to$ kê đơn thuốc $\to$ hoàn tất khám $\to$ gửi email cho BN.
-  \item Triển khai cảnh báo bất thường sinh hiệu theo 3 nguồn quốc tế và Việt Nam: BYT 3192/QĐ-BYT 2010 (huyết áp), NEWS2 RCP UK 2017 (mạch/nhịp thở/SpO2), Harrison's 21st ed (nhiệt độ).
+  \item Mở rộng hệ thống để đóng vòng lặp lâm sàng: ghi nhận dị ứng $\to$ kê đơn thuốc $\to$ hoàn tất khám $\to$ gửi email cho BN.
   \item Triển khai kiểm tra dị ứng thuốc \textit{four-layer} (direct match, same class, cross-reactivity, clear) với \textit{three-tier alert} (passive banner, active real-time, hard stop) theo pattern Epic SmartChart / Cerner PowerChart.
   \item Bảo vệ cổng bệnh nhân hai lớp độc lập (prompt-level + tool-level enforcement) chống prompt injection.
   \item Tự động gửi email HTML tóm tắt lần khám cho bệnh nhân qua Gmail SMTP, gồm chẩn đoán, ghi chú, kế hoạch tái khám và bảng đơn thuốc.
@@ -506,11 +520,17 @@ Bảng~\ref{tab:his-compare} so sánh các hệ thống HIS tiêu biểu tại V
 \textbf{Tiêu chí} & \textbf{HIS-EMR Bạch Mai} & \textbf{eHospital} & \textbf{Medisoft} & \textbf{HIS Agent (đồ án)} \\
 \hline
 Giao diện hội thoại & Không & Không & Không & \textbf{Có (Tiếng Việt)} \\
+\hline
 AI hỗ trợ quyết định & Không & Giới hạn & Không & \textbf{Có (LLM + tool)} \\
+\hline
 Chuẩn HL7 FHIR & Một phần & Một phần & Không & \textbf{FHIR R5 đầy đủ} \\
+\hline
 Sàng lọc SXHD & Không & Không & Không & \textbf{Có (QĐ 2760)} \\
+\hline
 Phân tích CBC tự động & Không & Không & Không & \textbf{Có (bác sĩ)} \\
+\hline
 Đặt lịch tự phục vụ & Giới hạn & Có & Có & \textbf{Có (hội thoại)} \\
+\hline
 Nguồn mở / tùy biến & Không & Không & Không & \textbf{Có (Python)} \\
 \hline
 \end{tabular}
@@ -525,7 +545,7 @@ Trên thế giới, một số mô hình LLM chuyên biệt cho y tế đã đư
 \begin{itemize}
   \item \textbf{Med-PaLM 2} (Google)~\cite{medpalm}: đạt điểm tương đương bác sĩ trong bài kiểm tra USMLE, nhưng chưa hỗ trợ tiếng Việt và chưa tích hợp với FHIR.
   \item \textbf{ClinicalBERT}: mô hình BERT tiền huấn luyện trên ghi chú lâm sàng MIMIC-III, phù hợp phân loại văn bản y tế nhưng không có khả năng hội thoại.
-  \item \textbf{GPT-4 / Claude (Anthropic)}~\cite{anthropic}: mô hình đa năng có khả năng xử lý ảnh (vision), hội thoại tiếng Việt tốt, hỗ trợ function calling. Phù hợp làm backbone cho hệ thống agent.
+  \item \textbf{GPT-4 / Claude (Anthropic)}: mô hình đa năng có khả năng xử lý ảnh (vision), hội thoại tiếng Việt tốt, hỗ trợ function calling. Phù hợp làm backbone cho hệ thống agent.
 \end{itemize}
 
 Bảng~\ref{tab:llm-compare} so sánh các mô hình LLM dưới góc độ ứng dụng trong hệ thống HIS Agent:
@@ -538,10 +558,15 @@ Bảng~\ref{tab:llm-compare} so sánh các mô hình LLM dưới góc độ ứn
 \textbf{Tiêu chí} & \textbf{Med-PaLM 2} & \textbf{ClinicalBERT} & \textbf{GPT-4o} & \textbf{Qwen3-VL-Plus} & \textbf{Viet-mistral} \\
 \hline
 Tool calling & Không & Không & Có & \textbf{Có} & Giới hạn \\
+\hline
 Vision (ảnh) & Có & Không & Có & \textbf{Có} & Không \\
+\hline
 Tiếng Việt & Kém & Kém & Tốt & \textbf{Tốt} & Tốt \\
+\hline
 Tốc độ & Chậm & Nhanh & Trung bình & \textbf{Nhanh} & Nhanh \\
+\hline
 Chi phí & Cao & Thấp & Cao & \textbf{Thấp} & Miễn phí \\
+\hline
 On-premise & Không & Có & Không & Không & \textbf{Có} \\
 \hline
 \end{tabular}%
@@ -563,13 +588,13 @@ Mô hình agent với vòng lặp gọi công cụ (tool-calling loop) là hư�
   \item LLM tổng hợp kết quả và sinh phản hồi tự nhiên.
 \end{enumerate}
 
-OpenAI API và các API tương thích (bao gồm Alibaba DashScope, OpenRouter) đều hỗ trợ cơ chế \texttt{function\_calling} / \texttt{tool\_use}~\cite{openai-fc}, giúp triển khai kiến trúc agent một cách có cấu trúc.
+OpenAI API và các API tương thích (bao gồm Alibaba DashScope, OpenRouter) đều hỗ trợ cơ chế \texttt{function\_calling} / \texttt{tool\_use}, giúp triển khai kiến trúc agent một cách có cấu trúc.
 
 \subsection{Chuẩn HL7 FHIR}
 
 HL7 FHIR (Fast Healthcare Interoperability Resources) là tiêu chuẩn trao đổi dữ liệu y tế hiện đại nhất, được phát triển bởi tổ chức HL7 International~\cite{fhir-r5}. FHIR R5 định nghĩa các resource như Patient, Appointment, Observation, Practitioner theo định dạng JSON/XML, với REST API chuẩn hóa.
 
-Aidbox của Medplum~\cite{aidbox} là một nền tảng FHIR server mã nguồn mở, hỗ trợ triển khai cục bộ qua Docker, tuân thủ FHIR R5, cung cấp REST API đầy đủ và công cụ quản trị trực quan.
+Aidbox của Health Samurai~\cite{aidbox} là một nền tảng FHIR server mã nguồn mở, hỗ trợ triển khai cục bộ qua Docker, tuân thủ FHIR R5, cung cấp REST API đầy đủ và công cụ quản trị trực quan.
 
 \section{Hướng tiếp cận của đồ án}
 
@@ -589,124 +614,66 @@ Hình~\ref{fig:usecase} trình bày sơ đồ Use Case mô tả toàn bộ chứ
 \begin{figure}[H]
 \centering
 \begin{tikzpicture}[
-  % Actor boxes
-  act/.style={rectangle, draw=black!60, rounded corners=3pt,
-              minimum width=1.8cm, minimum height=0.6cm,
-              font=\scriptsize\bfseries, align=center, text width=1.6cm},
-  % Use case ellipses
-  uc/.style={ellipse, draw=blue!55, fill=blue!6,
-             minimum width=3.4cm, minimum height=0.55cm,
-             font=\scriptsize, text centered},
-  % New use case ellipses (giai đoạn 2)
-  ucn/.style={ellipse, draw=red!70, fill=red!6, very thick,
-             minimum width=3.4cm, minimum height=0.55cm,
-             font=\scriptsize, text centered},
-  grp/.style={font=\scriptsize\bfseries, gray!60},
-  arr/.style={->, thin, gray!60}
+  uc/.style={ellipse, draw=black, fill=white, align=center,
+             minimum width=3.9cm, minimum height=0.95cm, font=\scriptsize},
+  ext/.style={rectangle, draw=black, fill=black!4, rounded corners=2pt,
+              minimum width=1.9cm, minimum height=0.8cm, align=center,
+              font=\scriptsize\bfseries},
+  assoc/.style={thick}
 ]
+% ---- Actor: Bệnh nhân (người que, trái-trên) ----
+\begin{scope}[shift={(-6,3.4)}, thick]
+  \draw (0,0.6) circle (0.2);
+  \draw (0,0.4) -- (0,-0.2);
+  \draw (-0.3,0.15) -- (0.3,0.15);
+  \draw (0,-0.2) -- (-0.25,-0.65);
+  \draw (0,-0.2) -- (0.25,-0.65);
+\end{scope}
+\node[font=\scriptsize\bfseries] at (-6,2.3) {Bệnh nhân};
+\coordinate (BN) at (-6,3.3);
+% ---- Actor: Bác sĩ (người que, trái-dưới) ----
+\begin{scope}[shift={(-6,-3.4)}, thick]
+  \draw (0,0.6) circle (0.2);
+  \draw (0,0.4) -- (0,-0.2);
+  \draw (-0.3,0.15) -- (0.3,0.15);
+  \draw (0,-0.2) -- (-0.25,-0.65);
+  \draw (0,-0.2) -- (0.25,-0.65);
+\end{scope}
+\node[font=\scriptsize\bfseries] at (-6,-4.5) {Bác sĩ};
+\coordinate (BS) at (-6,-3.4);
 
-%------------------------------------------------------------
-% System boundary
-%------------------------------------------------------------
-\draw[dashed, gray!60, rounded corners=8pt]
-  (0.8,-9.2) rectangle (10.2, 9.0);
-\node[font=\small\bfseries] at (5.5, 9.35) {Hệ thống HIS Agent};
+% ---- Use cases (nhóm) ----
+\node[uc] (up1) at (0, 5.0)  {Đặt lịch \& triage khám};
+\node[uc] (up2) at (0, 3.4)  {Sàng lọc sốt xuất huyết};
+\node[uc] (up3) at (0, 1.8)  {Xem hồ sơ cá nhân};
+\node[uc] (sh)  at (0, 0.1)  {Tra cứu tri thức y khoa\\(thuốc, dịch bệnh)};
+\node[uc] (ud1) at (0,-1.7)  {Tra cứu hồ sơ \& xét nghiệm};
+\node[uc] (ud2) at (0,-3.3)  {Phân tích CBC};
+\node[uc] (ud3) at (0,-4.9)  {Hỗ trợ kê đơn an toàn (CDS)};
+\node[uc] (ud4) at (0,-6.5)  {Quản lý lịch \& hoàn tất khám};
 
-%------------------------------------------------------------
-% External actors
-%------------------------------------------------------------
-\node[act, fill=green!12]  (BN)   at (-1.8,  4.4) {Bệnh\\nhân};
-\node[act, fill=orange!12] (BS)   at (-1.8, -4.0) {Bác sĩ};
-\node[act, fill=gray!18]   (FHIR) at (12.0,  5.0) {Aidbox\\FHIR};
-\node[act, fill=purple!10] (LLM)  at (12.0,  2.5) {LLM\\API};
-\node[act, fill=cyan!15]   (NCBI) at (12.0,  0.0) {NCBI};
-\node[act, fill=red!10]    (HCDC) at (12.0, -2.5) {HCDC};
-\node[act, fill=yellow!20] (SMTP) at (12.0, -5.0) {Gmail\\SMTP};
+% ---- System boundary ----
+\node[draw=black, thick, rounded corners=2pt, fit=(up1)(ud4),
+      inner xsep=7mm, inner ysep=14mm] (sys) {};
+\node[anchor=north, align=center] at ([shift={(0,-2.5mm)}]sys.north)
+  {{\scriptsize\itshape «subsystem»}\\[3pt]{\small\bfseries Hệ thống HIS Agent}};
 
-%------------------------------------------------------------
-% === PATIENT use cases ===
-%------------------------------------------------------------
-\node[grp] at (5.5, 8.6) {--- Bệnh nhân ---};
+% ---- Association: actor -- use case (không mũi tên) ----
+\foreach \u in {up1,up2,up3,sh} { \draw[assoc] (BN) -- (\u); }
+\foreach \u in {sh,ud1,ud2,ud3,ud4} { \draw[assoc] (BS) -- (\u); }
 
-\node[uc]  (p1)  at (5.5,  8.0) {F-P01 ~ Đặt lịch khám};
-\node[uc]  (p2)  at (5.5,  7.4) {F-P02 ~ Hủy lịch hẹn};
-\node[uc]  (p3)  at (5.5,  6.8) {F-P03 ~ Xem lịch hẹn};
-\node[uc]  (p4)  at (5.5,  6.2) {F-P04 ~ Triage thông minh};
-\node[uc]  (p5)  at (5.5,  5.6) {F-P05 ~ Gợi ý khoa (RAG)};
-\node[uc]  (p6)  at (5.5,  5.0) {F-P06 ~ Sàng lọc SXHD};
-\node[uc]  (p7)  at (5.5,  4.4) {F-P07 ~ Đăng ký BN mới};
-\node[ucn] (p8)  at (5.5,  3.8) {F-P08 ~ Xem dị ứng của mình};
-\node[ucn] (p9)  at (5.5,  3.2) {F-P09 ~ Xem đơn thuốc của mình};
-\node[ucn] (p10) at (5.5,  2.6) {F-P10 ~ Xem ghi chú khám};
-\node[ucn] (p11) at (5.5,  2.0) {F-P11 ~ Nhận email tóm tắt khám};
-\node[uc]  (p12) at (5.5,  1.4) {F-P12 ~ Tra cứu thông tin thuốc};
-\node[uc]  (p13) at (5.5,  0.8) {F-P13 ~ Tra cứu số liệu dịch bệnh};
+% ---- Hệ thống lưu trữ (phải) ----
+\node[ext] (FHIR) at (6, -0.5) {Aidbox\\FHIR};
 
-%------------------------------------------------------------
-% === DOCTOR use cases ===
-%------------------------------------------------------------
-\node[grp] at (5.5, 0.2) {--- Bác sĩ ---};
-
-\node[uc]  (d1)  at (5.5, -0.4) {F-D01 ~ Tra cứu hồ sơ BN};
-\node[uc]  (d2)  at (5.5, -1.0) {F-D02 ~ Xem kết quả xét nghiệm};
-\node[uc]  (d3)  at (5.5, -1.6) {F-D03 ~ Phân tích CBC từ ảnh};
-\node[uc]  (d4)  at (5.5, -2.2) {F-D04 ~ Duyệt / từ chối lịch};
-\node[uc]  (d5)  at (5.5, -2.8) {F-D05 ~ Xem lịch làm việc};
-\node[uc]  (d6)  at (5.5, -3.4) {F-D06 ~ Đặt lịch tái khám CBC};
-\node[ucn] (d7)  at (5.5, -4.0) {F-D07 ~ Ghi sinh hiệu (CDS)};
-\node[ucn] (d8)  at (5.5, -4.6) {F-D08 ~ Ghi nhận dị ứng};
-\node[ucn] (d9)  at (5.5, -5.2) {F-D09 ~ Kê đơn 3-tier};
-\node[ucn] (d10) at (5.5, -5.8) {F-D10 ~ Hoàn tất khám};
-\node[ucn] (d11) at (5.5, -6.4) {F-D11 ~ Xem hồ sơ tổng hợp};
-\node[uc]  (d12) at (5.5, -7.0) {F-D12 ~ Tra cứu thông tin thuốc};
-\node[uc]  (d13) at (5.5, -7.6) {F-D13 ~ Tra cứu số liệu dịch bệnh};
-
-%------------------------------------------------------------
-% Patient connections (BN -> p*)
-%------------------------------------------------------------
-\foreach \uc in {p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12,p13} {
-  \draw[arr] (BN) -- (\uc);
-}
-
-%------------------------------------------------------------
-% Doctor connections
-%------------------------------------------------------------
-\foreach \uc in {d1,d2,d3,d4,d5,d6,d7,d8,d9,d10,d11,d12,d13} {
-  \draw[arr] (BS) -- (\uc);
-}
-
-%------------------------------------------------------------
-% External system connections (right side)
-%------------------------------------------------------------
-% FHIR (most use cases need it)
-\foreach \uc in {p1,p2,p3,p7,p8,p9,p10,d1,d2,d3,d4,d5,d6,d7,d8,d9,d10,d11} {
-  \draw[arr, blue!30] (\uc) -- (FHIR);
-}
-% LLM (AI-driven use cases)
-\foreach \uc in {p4,p5,p6,p12,p13,d3,d10,d12,d13} {
-  \draw[arr, purple!30] (\uc) -- (LLM);
-}
-% NCBI (tra cứu thông tin thuốc)
-\foreach \uc in {p12,d12} {
-  \draw[arr, cyan!60] (\uc) -- (NCBI);
-}
-% HCDC (tra cứu số liệu dịch bệnh)
-\foreach \uc in {p13,d13} {
-  \draw[arr, red!45] (\uc) -- (HCDC);
-}
-% SMTP (email use cases)
-\foreach \uc in {p1,p11,d4,d10} {
-  \draw[arr, orange!40] (\uc) -- (SMTP);
-}
-
-%------------------------------------------------------------
-% Legend
-%------------------------------------------------------------
-\node[font=\scriptsize, align=left, anchor=west] at (-2.5, -8.6)
-  {\textcolor{red!70}{$\bigcirc$} Use case mới (nhóm CDS)};
-
+% ---- Liên kết use case -- hệ thống lưu trữ ----
+\draw[assoc] (up1) -- (FHIR);
+\draw[assoc] (up3) -- (FHIR);
+\draw[assoc] (ud1) -- (FHIR);
+\draw[assoc] (ud2) -- (FHIR);
+\draw[assoc] (ud3) -- (FHIR);
+\draw[assoc] (ud4) -- (FHIR);
 \end{tikzpicture}
-\caption{Sơ đồ Use Case toàn bộ hệ thống HIS Agent (26 use cases, trong đó 9 use case CDS và 4 use case tra cứu tri thức ngoài: thuốc qua NCBI, dịch bệnh qua HCDC)}
+\caption{Sơ đồ use case tổng quan hệ thống HIS Agent (các nhóm chức năng chính; chi tiết 26 chức năng xem mục Yêu cầu chức năng)}
 \label{fig:usecase}
 \end{figure}
 
@@ -720,6 +687,8 @@ Hình~\ref{fig:usecase} trình bày sơ đồ Use Case mô tả toàn bộ chứ
 \hline
 \textbf{ID} & \textbf{Tên chức năng} & \textbf{Mô tả} \\
 \hline
+\multicolumn{3}{|l|}{\textbf{Nhóm 1 --- Đặt lịch \& triage khám}} \\
+\hline
 F-P01 & Đặt lịch khám & Bệnh nhân cung cấp triệu chứng hoặc khoa/ngày/giờ, agent đặt lịch và gửi email xác nhận. \\
 \hline
 F-P02 & Hủy lịch hẹn & Bệnh nhân cung cấp tên, agent tra cứu và hủy lịch phù hợp. \\
@@ -730,9 +699,13 @@ F-P04 & Triage thông minh & Agent phân loại mức độ ưu tiên (EMERGENCY
 \hline
 F-P05 & Gợi ý khoa & Agent gợi ý khoa phù hợp dựa trên triệu chứng, sử dụng RAG. \\
 \hline
+F-P07 & Đăng ký bệnh nhân mới & Agent thu thập thông tin và tạo hồ sơ bệnh nhân mới trong FHIR. \\
+\hline
+\multicolumn{3}{|l|}{\textbf{Nhóm 2 --- Sàng lọc sốt xuất huyết}} \\
+\hline
 F-P06 & Sàng lọc SXHD & Agent thực hiện hội thoại 2 lượt để thu thập thông tin, phân loại mức độ SXHD. \\
 \hline
-F-P07 & Đăng ký bệnh nhân mới & Agent thu thập thông tin và tạo hồ sơ bệnh nhân mới trong FHIR. \\
+\multicolumn{3}{|l|}{\textbf{Nhóm 3 --- Xem hồ sơ cá nhân}} \\
 \hline
 F-P08 & Xem dị ứng của mình & BN hỏi ``tôi dị ứng gì''; agent tra cứu FHIR AllergyIntolerance theo \texttt{patient\_id} từ session. \\
 \hline
@@ -741,6 +714,8 @@ F-P09 & Xem đơn thuốc của mình & BN hỏi đơn thuốc; agent tra cứu 
 F-P10 & Xem ghi chú khám của bác sĩ & BN xem chẩn đoán + kế hoạch + đơn thuốc trong card tóm tắt lần khám. \\
 \hline
 F-P11 & Nhận email tóm tắt khám & BN nhận email HTML sau khi bác sĩ hoàn tất khám, gồm chẩn đoán + bảng thuốc + cách dùng. \\
+\hline
+\multicolumn{3}{|l|}{\textbf{Nhóm 4 --- Tra cứu tri thức y khoa}} \\
 \hline
 F-P12 & Tra cứu thông tin thuốc & BN hỏi liều/tác dụng phụ/tương tác của một thuốc; agent truy hồi NCBI (StatPearls, PubMed), trả lời tiếng Việt kèm thẻ nguồn và chip trích dẫn. \\
 \hline
@@ -757,11 +732,25 @@ F-P13 & Tra cứu số liệu dịch bệnh & BN hỏi số ca mắc (``hiện c
 \hline
 \textbf{ID} & \textbf{Tên chức năng} & \textbf{Mô tả} \\
 \hline
+\multicolumn{3}{|l|}{\textbf{Nhóm 1 --- Tra cứu hồ sơ \& xét nghiệm}} \\
+\hline
 F-D01 & Tra cứu hồ sơ bệnh nhân & Tìm kiếm theo tên/BHYT/CCCD, xem lịch sử khám, thuốc, xét nghiệm. \\
 \hline
-F-D02 & Xem kết quả xét nghiệm & Xem kết quả xét nghiệm và sinh hiệu theo danh mục, đánh dấu bất thường. \\
+F-D02 & Xem kết quả xét nghiệm & Xem kết quả xét nghiệm theo danh mục, đánh dấu bất thường. \\
+\hline
+F-D11 & Xem lịch sử khám tổng hợp & Bác sĩ xem panel BN với dị ứng, đơn thuốc, ghi chú lâm sàng. \\
+\hline
+\multicolumn{3}{|l|}{\textbf{Nhóm 2 --- Phân tích CBC}} \\
 \hline
 F-D03 & Phân tích CBC & Upload ảnh phiếu xét nghiệm hoặc nhập tay, agent trích xuất chỉ số, lưu FHIR, đánh giá nguy cơ SXHD. \\
+\hline
+\multicolumn{3}{|l|}{\textbf{Nhóm 3 --- Hỗ trợ kê đơn an toàn (CDS)}} \\
+\hline
+F-D08 & Ghi nhận dị ứng & Bác sĩ nhập chất gây dị ứng, mức độ, phản ứng; lưu vào FHIR AllergyIntolerance R5. \\
+\hline
+F-D09 & Kê đơn thuốc với check dị ứng 3 lớp & Bác sĩ chọn thuốc; hệ thống kiểm tra dị ứng theo 4-layer model, hiển thị 3-tier alert (banner, real-time, hard stop). \\
+\hline
+\multicolumn{3}{|l|}{\textbf{Nhóm 4 --- Quản lý lịch \& hoàn tất khám}} \\
 \hline
 F-D04 & Duyệt lịch hẹn & Xem danh sách lịch chờ duyệt, xác nhận hoặc từ chối, gửi email thông báo. \\
 \hline
@@ -769,15 +758,9 @@ F-D05 & Xem lịch khám & Xem lịch làm việc của bác sĩ theo ngày/tu�
 \hline
 F-D06 & Đặt lịch tái khám CBC & Sau kết quả CBC nguy cơ cao, agent gợi ý và đặt lịch tái khám. \\
 \hline
-F-D07 & Ghi nhận sinh hiệu với CDS & Bác sĩ nhập HA/mạch/nhiệt độ/SpO2; hệ thống tự cảnh báo bất thường theo BYT 3192, NEWS2 và Harrison's. \\
-\hline
-F-D08 & Ghi nhận dị ứng & Bác sĩ nhập chất gây dị ứng, mức độ, phản ứng; lưu vào FHIR AllergyIntolerance R5. \\
-\hline
-F-D09 & Kê đơn thuốc với check dị ứng 3 lớp & Bác sĩ chọn thuốc; hệ thống kiểm tra dị ứng theo 4-layer model, hiển thị 3-tier alert (banner, real-time, hard stop). \\
-\hline
 F-D10 & Hoàn tất khám & Một modal đa năng: chẩn đoán + ghi chú + đơn thuốc; lưu ClinicalImpression + MedicationRequest atomic; tự động gửi email cho BN. \\
 \hline
-F-D11 & Xem lịch sử khám tổng hợp & Bác sĩ xem panel BN với sinh hiệu, dị ứng, đơn thuốc, ghi chú lâm sàng. \\
+\multicolumn{3}{|l|}{\textbf{Nhóm 5 --- Tra cứu tri thức y khoa}} \\
 \hline
 F-D12 & Tra cứu thông tin thuốc & Bác sĩ tra liều/tác dụng phụ/tương tác của thuốc; agent truy hồi NCBI và trả lời có dẫn nguồn, kiểm chứng được. \\
 \hline
@@ -806,8 +789,8 @@ F-D13 & Tra cứu số liệu dịch bệnh & Bác sĩ tra tình hình dịch (s
 Hệ thống HIS Agent được tổ chức theo kiến trúc phân lớp (layered architecture) gồm bốn lớp chính:
 
 \begin{enumerate}
-  \item \textbf{Lớp giao diện (Presentation Layer)}: Giao diện web React + TypeScript, nhận token thời gian thực qua SSE~\cite{sse}, tách biệt giao diện bệnh nhân và bác sĩ.
-  \item \textbf{Lớp API (Application Layer)}: FastAPI~\cite{fastapi} server cung cấp REST endpoints, xử lý xác thực và định tuyến.
+  \item \textbf{Lớp giao diện (Presentation Layer)}: Giao diện web React + TypeScript, nhận token thời gian thực qua SSE, tách biệt giao diện bệnh nhân và bác sĩ.
+  \item \textbf{Lớp API (Application Layer)}: FastAPI server cung cấp REST endpoints, xử lý xác thực và định tuyến.
   \item \textbf{Lớp Agent (Business Logic Layer)}: Vòng lặp agent với tool-calling, system prompt phân theo vai trò.
   \item \textbf{Lớp dữ liệu (Data Layer)}: Aidbox FHIR R5 (dữ liệu lâm sàng) + SQLite (tài khoản người dùng).
 \end{enumerate}
@@ -854,7 +837,7 @@ Hình~\ref{fig:seq-flow-a} trình bày sơ đồ tuần tự (Sequence Diagram) 
               minimum width=2.2cm, minimum height=0.55cm, font=\scriptsize, text centered},
   msg/.style={-{Stealth[scale=0.8]}, thin},
   ret/.style={-{Stealth[scale=0.8]}, thin, dashed, gray},
-  note/.style={font=\scriptsize, above}
+  note/.style={font=\scriptsize, above, fill=white, inner sep=1.5pt}
 ]
 % Lifeline headers
 \node[box] (bn)    at (0,    0) {Bệnh nhân};
@@ -898,7 +881,7 @@ Hình~\ref{fig:seq-flow-b} mô tả Flow B --- luồng triage thông minh khi b�
               minimum width=2.2cm, minimum height=0.55cm, font=\scriptsize, text centered},
   msg/.style={-{Stealth[scale=0.8]}, thin},
   ret/.style={-{Stealth[scale=0.8]}, thin, dashed, gray},
-  note/.style={font=\scriptsize, above}
+  note/.style={font=\scriptsize, above, fill=white, inner sep=1.5pt}
 ]
 \node[box] (bn)   at (0,   0) {Bệnh nhân};
 \node[box] (fe)   at (3,   0) {Frontend};
@@ -915,17 +898,19 @@ Hình~\ref{fig:seq-flow-b} mô tả Flow B --- luồng triage thông minh khi b�
 \draw[msg] (6,-2.2) -- node[note]{messages + tools} (9,-2.2);
 \draw[ret] (9,-2.8) -- node[note]{tool\_call: fhir\_triage\_assessment} (6,-2.8);
 \draw[msg] (6,-3.4) -- node[note]{\{symptoms: [``đau bụng'', ``buồn nôn'']\}} (12.5,-3.4);
-\draw[ret] (12.5,-4.0) -- node[note]{\{priority: URGENT, dept: Ngoại tổng hợp\}} (6,-4.0);
+\draw[ret] (12.5,-4.0) -- node[note]{\{priority: URGENT, dept: Tiêu hóa\}} (6,-4.0);
 \draw[msg] (6,-4.6) -- node[note]{tool\_call: fhir\_suggest\_department (RAG)} (9,-4.6);
-\draw[ret] (9,-5.2) -- node[note]{\{departments: [Ngoại, Tiêu hóa]\}} (6,-5.2);
+\draw[ret] (9,-5.2) -- node[note]{\{departments: [Tiêu hóa, Sản phụ khoa]\}} (6,-5.2);
 \draw[msg] (6,-5.8) -- node[note]{stream tokens} (9,-5.8);
-\draw[ret] (9,-6.4) -- node[note]{``Ưu tiên URGENT --- Khoa Ngoại''} (6,-6.4);
+\draw[ret] (9,-6.4) -- node[note]{``Ưu tiên URGENT --- Khoa Tiêu hóa''} (6,-6.4);
 \draw[ret] (6,-7.0) -- node[note]{SSE events} (3,-7.0);
 \draw[ret] (3,-7.6) -- node[note]{hiển thị mức ưu tiên + gợi ý khoa} (0,-7.6);
 \end{tikzpicture}
 \caption{Sơ đồ tuần tự Flow B --- Triage thông minh phân loại mức độ ưu tiên}
 \label{fig:seq-flow-b}
 \end{figure}
+
+\textbf{Cơ sở tri thức của triage.} Bộ luật phân loại ưu tiên được xây dựng dựa trên hai hệ thống triage cấp cứu được công nhận rộng rãi trên thế giới: \textit{Emergency Severity Index} phiên bản 4 (ESI v4) của Hoa Kỳ~\cite{esi} và \textit{Manchester Triage System} (MTS) của châu Âu~\cite{mts}. Bốn mức ưu tiên của hệ thống (EMERGENCY / URGENT / SEMI\_URGENT / ROUTINE) ánh xạ trực tiếp sang thang 5 mức của ESI (lần lượt ESI 1--2, 3, 4, 5). Các quy tắc nhận diện tổ hợp triệu chứng (\textit{red flag combos}) tương ứng với những protocol lâm sàng cụ thể: \textit{FAST} cho nghi ngờ đột quỵ, \textit{qSOFA} cho nhiễm khuẩn huyết, cùng các tiêu chí kinh điển của hội chứng vành cấp, thuyên tắc phổi và bụng ngoại khoa~\cite{harrison}. Toàn bộ luật được lưu dạng tri thức tường minh trong \texttt{tools/knowledge\_base/triage\_kb.json}, mỗi quy tắc có định danh và thông điệp riêng nên kết luận luôn truy vết được về luật đã khớp --- khác với mô hình học máy hộp đen. \textbf{Giới hạn:} đây là bản đơn giản hóa và chuyển ngữ tiếng Việt cho bối cảnh sàng lọc ngoại trú, chưa qua thẩm định y khoa chính thức; vì vậy hệ thống được định vị là công cụ \textit{pre-triage} hỗ trợ, kèm khuyến cáo rõ ràng rằng quyết định cuối cùng thuộc về nhân viên y tế.
 
 \section{Thiết kế thành phần nền tảng}
 
@@ -973,26 +958,7 @@ Mỗi role có một system prompt riêng, được build động (\textit{dynam
 
 Hai quyết định thiết kế quan trọng nhất là: (i) \textbf{đặt luật phủ định lên đầu} để ràng buộc an toàn được ưu tiên hơn nghiệp vụ; và (ii) \textbf{khối đăng nhập (A) được prepend trước cả base prompt} khi bệnh nhân đã đăng nhập, nhằm \textit{ghi đè} mọi hướng dẫn phía dưới có thể yêu cầu hỏi lại tên --- vừa tránh hỏi thông tin đã biết, vừa chặn rủi ro lộ dữ liệu của bệnh nhân khác. Trích đoạn prompt thật của hai vai trò điển hình được trình bày ở phần sau (xem các đoạn mã \texttt{role=patient} và \texttt{role=doctor\_cbc}).
 
-\textbf{Build prompt động.} Mỗi request, hệ thống thực hiện:
-
-\begin{verbatim}
-def build_system(role, patient_id, patient_name,
-                 doctor_id, doctor_name, extra_system):
-    # 1. Chon base prompt theo role (chen ten/ID bac si neu can)
-    if role in DOCTOR_PROMPTS:
-        system = DOCTOR_PROMPTS[role].format(
-            doctor_name=doctor_name, doctor_id=doctor_id)
-    else:
-        system = SYSTEM_PROMPT
-        # 2. BN da dang nhap -> PREPEND khoi "uu tien tuyet doi"
-        if patient_id:
-            system = build_login_block(patient_name, patient_id) + system
-    # 3. APPEND context dong cua phien (neu co)
-    if extra_system:
-        system += extra_system
-    return system
-\end{verbatim}
-\textit{Đoạn mã: Pipeline build system prompt cho mỗi request.}
+\textbf{Build prompt động.} Mỗi request, system prompt được lắp ghép động (logic nằm trong \texttt{chat\_stream}/\texttt{chat}) theo ba bước. Trước hết, nó chọn base prompt theo vai trò: nếu là vai trò bác sĩ thì lấy prompt tương ứng và chèn tên cùng mã số bác sĩ vào, ngược lại dùng prompt nền của bệnh nhân. Tiếp đó, nếu bệnh nhân đã đăng nhập, hệ thống \textit{prepend} khối ``ưu tiên tuyệt đối'' (chứa danh tính bệnh nhân) vào trước base prompt. Cuối cùng, mọi context động phát sinh trong phiên (nếu có) được \textit{append} vào cuối trước khi trả về.
 
 \subsubsection{Định dạng Input người dùng}
 
@@ -1035,8 +1001,6 @@ fhir\_create\_\newline appointment & patient\_id, department, date, time, patien
 \hline
 fhir\_triage\_\newline assessment & symptoms (text), known\_conditions & \{level, label, action, source\} \\
 \hline
-fhir\_create\_vitals & patient\_id, systolic, diastolic, heart\_rate, temp, spo2, ... & \{saved, observation\_id, vitals\_saved, alerts[], summary\} \\
-\hline
 fhir\_create\_allergy & patient\_id, substance, category, severity, reaction & \{saved, allergy\_id, substance, severity\_vi, criticality\} \\
 \hline
 fhir\_check\_drug\_\newline allergy & patient\_id, drug\_id (hoặc drug\_name) & \{verdict, checks[], suggested\_alternatives[], patient\_allergies[]\} \\
@@ -1060,22 +1024,23 @@ Vòng lặp lặp lại cho tới khi LLM không còn yêu cầu gọi công c�
 
 \begin{verbatim}
 def chat_stream(message, history, role, ...):
-    system = _select_system_prompt(role)   # prompt + bo cong cu theo role
-    tools  = _get_tools_for_role(role)
-    history.append({"role": "user", "content": message})
+    system = _select_system_prompt(role)  # theo role
+    tools  = _get_tools_for_role(role)    # cong cu role
+    history.append(user_msg(message))
 
-    while True:                            # lap den khi LLM het goi tool
-        response = llm.create(model=MODEL, tools=tools,
-            messages=[{"role":"system","content":system}] + history)
+    while True:        # lap den khi LLM het goi tool
+        response = llm.create(
+            model=MODEL, tools=tools,
+            messages=[sys(system)] + history)
 
         if response.finish_reason == "tool_calls":
             for tc in response.tool_calls:
-                yield sse({"type":"tool_call", "label": LABELS[tc.name]})
-                result = execute_tool(tc.name, tc.args)   # vd: query FHIR
-                history.append(tool_result(tc.id, result))
-        else:                              # LLM tra loi -> stream text
-            for token in llm.stream(history, tools=None):
-                yield sse({"type":"text", "delta": token})
+                yield sse(tool_call_event(tc.name))
+                result = execute_tool(tc.name, tc.args)
+                history.append(tool_msg(tc.id, result))
+        else:          # LLM tra loi -> stream text
+            for tok in llm.stream(history):
+                yield sse(text_delta(tok))
             return
 \end{verbatim}
 \textit{Đoạn mã: Thuật toán tool-calling loop (rút gọn).}
@@ -1091,9 +1056,13 @@ Hệ thống có 5 vai trò (role), mỗi vai trò tương ứng với một sys
 \textbf{Role} & \textbf{Tập công cụ được phép} \\
 \hline
 patient & Triage, gợi ý khoa, tìm BN, đặt/hủy/xem lịch, sàng lọc SXHD \\
+\hline
 doctor & Toàn bộ công cụ (không giới hạn) \\
+\hline
 doctor\_records & Tìm BN, xem hồ sơ/xét nghiệm/lịch hẹn, lịch bác sĩ \\
+\hline
 doctor\_cbc & Tìm BN, tạo/xem CBC, đặt lịch \\
+\hline
 doctor\_appointments & Xem/xác nhận/từ chối lịch chờ, lịch bác sĩ \\
 \hline
 \end{tabular}
@@ -1133,45 +1102,18 @@ LUỒNG C --- xem CBC có sẵn của một bệnh nhân \quad\textit{(\dots)}
 \end{quote}
 \textit{Trích đoạn: System prompt của vai trò \texttt{doctor\_cbc} (rút gọn).}
 
-\begin{verbatim}
-# agent.py -- lua chon system prompt theo role
-PROMPTS = {
-    "patient":              SYSTEM_PROMPT,
-    "doctor":               SYSTEM_PROMPT_DOCTOR,
-    "doctor_records":       SYSTEM_PROMPT_DOCTOR_RECORDS,
-    "doctor_cbc":           SYSTEM_PROMPT_DOCTOR_CBC,
-    "doctor_appointments":  SYSTEM_PROMPT_DOCTOR_APPOINTMENTS,
-}
-system = PROMPTS.get(role, SYSTEM_PROMPT).format(
-    doctor_name=doctor_name or "",
-    doctor_id=doctor_id or "",
-)
-tools = _get_tools_for_role(role)
-\end{verbatim}
-\textit{Đoạn mã: Ánh xạ role sang system prompt trong agent.py.}
+Trong \texttt{agent.py}, một dictionary \texttt{PROMPTS} ánh xạ mỗi vai trò (\texttt{patient}, \texttt{doctor}, \texttt{doctor\_records}, \texttt{doctor\_cbc}, \texttt{doctor\_appointments}) tới hằng system prompt tương ứng. Khi xử lý request, hệ thống tra dictionary này theo \texttt{role} (mặc định về prompt bệnh nhân nếu không khớp), điền \texttt{doctor\_name} và \texttt{doctor\_id} vào prompt qua f-string, rồi lấy danh sách công cụ phù hợp với vai trò bằng \texttt{\_get\_tools\_for\_role}.
 
 Sự khác biệt then chốt giữa hai prompt: (1) role \texttt{patient} cấm tường minh mọi chức năng lâm sàng và không có \texttt{dengue\_cbc\_predict} trong toolset; (2) role \texttt{doctor\_cbc} nhận \texttt{doctor\_name} và \texttt{doctor\_id} qua f-string, có quyền truy cập đầy đủ CBC tools, và quy định thứ tự gọi tool nghiêm ngặt để tránh gọi trực tiếp \texttt{dengue\_cbc\_predict} mà không lưu FHIR trước.
 
 \subsection{Thiết kế công cụ FHIR}
 
-Mỗi công cụ FHIR là một module Python độc lập trong thư mục \texttt{tools/fhir/}, tuân theo convention:
+Mỗi công cụ FHIR là một module Python độc lập trong thư mục \texttt{tools/fhir/}, tuân theo một convention thống nhất: module khai báo hằng \texttt{TOOL\_NAME} (tên định danh công cụ), \texttt{DESCRIPTION} (mô tả để LLM hiểu chức năng), \texttt{ARGS\_SCHEMA} (lược đồ tham số đầu vào, ví dụ \texttt{patient\_id}), và một hàm \texttt{run(args)} thực thi logic rồi trả về dictionary kết quả. Nhờ convention này, lõi Agent có thể nạp và gọi mọi công cụ một cách đồng nhất.
 
-\begin{verbatim}
-TOOL_NAME    = "fhir_example"
-DESCRIPTION  = "Mo ta cong cu"
-ARGS_SCHEMA  = {
-    "patient_id": "string -- FHIR Patient ID",
-}
-def run(args: dict) -> dict:
-    ...
-    return {"result": ...}
-\end{verbatim}
-\textit{Đoạn mã: Convention định nghĩa công cụ FHIR.}
-
-Bảng~\ref{tab:fhir-tools} liệt kê đầy đủ 26 công cụ của hệ thống (18 công cụ ban đầu và 8 công cụ mở rộng phục vụ Clinical Decision Support), mô tả chức năng và phân quyền theo vai trò:
+Bảng~\ref{tab:fhir-tools} liệt kê đầy đủ 32 công cụ của hệ thống (30 công cụ FHIR và 2 công cụ sàng lọc SXHD, trong đó có nhóm công cụ Clinical Decision Support), mô tả chức năng và phân quyền theo vai trò:
 
 \begin{longtable}{|>{\raggedright\arraybackslash\renewcommand{\_}{\textunderscore\penalty0}}p{4.3cm}|p{5.4cm}|p{3.6cm}|}
-\caption{Danh sách 26 công cụ của HIS Agent và phân quyền theo vai trò (8 công cụ mới thuộc nhóm CDS)}
+\caption{Danh sách 32 công cụ của HIS Agent và phân quyền theo vai trò}
 \label{tab:fhir-tools} \\
 \hline
 \normalfont\textbf{Tên công cụ} & \textbf{Mô tả} & \textbf{Role được phép} \\
@@ -1199,7 +1141,7 @@ fhir\_get\_patient\_history & Lấy lịch sử khám bệnh (DiagnosticReport) 
 \hline
 fhir\_get\_observations & Lấy kết quả xét nghiệm (Observation) & doctor, doctor\_records \\
 \hline
-fhir\_create\_patient & Tạo hồ sơ bệnh nhân mới trong Aidbox FHIR & doctor \\
+fhir\_register\_new\_patient & Đăng ký hồ sơ bệnh nhân mới trong Aidbox FHIR & patient, doctor \\
 \hline
 fhir\_create\_cbc & Lưu kết quả CBC vào FHIR (Observation) & doctor, doctor\_cbc \\
 \hline
@@ -1217,8 +1159,6 @@ dengue\_symptom\_assessment & Sàng lọc SXHD theo triệu chứng (WHO/QĐ 276
 \hline
 dengue\_cbc\_predict & Đánh giá nguy cơ SXHD từ CBC --- \normalfont\textbf{chỉ bác sĩ} & doctor, doctor\_cbc \\
 \hline
-fhir\_create\_vitals & Lưu sinh hiệu (HA, mạch, nhiệt độ, SpO2...) với cảnh báo tự động & doctor \\
-\hline
 fhir\_create\_allergy & Ghi nhận dị ứng (thuốc/thực phẩm) theo FHIR R5 AllergyIntolerance & doctor \\
 \hline
 fhir\_get\_allergies & Lấy danh sách dị ứng của bệnh nhân & patient (own), doctor \\
@@ -1233,6 +1173,18 @@ fhir\_get\_clinical\_impressions & Lấy ghi chú lâm sàng (ClinicalImpression
 \hline
 fhir\_send\_visit\_summary & Gửi email tóm tắt lần khám qua Gmail SMTP & doctor \\
 \hline
+fhir\_get\_available\_slots & Liệt kê các khung giờ khám trống của một khoa theo ngày & patient, doctor, doctor\_records \\
+\hline
+fhir\_suggest\_doctor & Gợi ý bác sĩ còn lịch trống ở một khoa & doctor, doctor\_records \\
+\hline
+fhir\_list\_departments & Liệt kê danh mục khoa khám của bệnh viện & doctor \\
+\hline
+fhir\_verify\_patient & Xác thực danh tính bệnh nhân trước khi đặt lịch & doctor \\
+\hline
+fhir\_direct\_to\_registration & Hướng bệnh nhân tới quầy đăng ký khi hệ thống gặp lỗi kỹ thuật & doctor \\
+\hline
+fhir\_send\_appointment\_confirmation & Gửi email xác nhận lịch khám sau khi đặt thành công & doctor \\
+\hline
 \end{longtable}
 
 \section{Thiết kế các module nghiệp vụ lâm sàng}
@@ -1243,34 +1195,39 @@ Phần này trình bày thiết kế các module trực tiếp phục vụ chuy�
 
 \subsubsection{Sàng lọc theo triệu chứng (dengue\_symptom\_assessment)}
 
-Module triển khai bộ tiêu chí phân loại SXHD 4 lớp theo Phụ lục 2 của QĐ 2760/QĐ-BYT 2023:
+Module triển khai bộ tiêu chí phân loại SXHD 4 lớp theo Phụ lục 2 của QĐ 2760/QĐ-BYT 2023~\cite{qd2760}:
 
 \begin{figure}[H]
 \centering
 \begin{tikzpicture}[
-  dec/.style={diamond, draw=orange!80, fill=orange!10, aspect=2.8,
-              font=\small, text centered, minimum width=5cm},
-  res/.style={rectangle, draw=green!60, fill=green!5, rounded corners=3pt,
-              font=\small, minimum width=3cm, minimum height=0.7cm, text centered},
-  arr/.style={->, thick}
+  dec/.style={diamond, draw=black, aspect=2.6, font=\small, text centered,
+              inner sep=1pt, minimum width=4.4cm},
+  res/.style={rectangle, draw=black, rounded corners=3pt, font=\small,
+              minimum width=2.4cm, minimum height=0.7cm, text centered},
+  arr/.style={->, thick},
+  lbl/.style={font=\scriptsize, fill=white, inner sep=1.5pt}
 ]
-\node[dec] (epi)    at (0,7.5)  {Dịch tễ + Sốt 1--7 ngày?};
-\node[dec] (sym)    at (0,5.5)  {$\geq$2 triệu chứng cơ bản?};
-\node[dec] (severe) at (0,3.5)  {Có dấu hiệu nặng?};
-\node[dec] (warn)   at (0,1.5)  {Có dấu hiệu cảnh báo?};
-\node[res, fill=gray!15]   at (5,7.5) (n1) {none};
-\node[res, fill=gray!15]   at (5,5.5) (n2) {none};
-\node[res, fill=red!20]    at (5,3.5) (sv) {severe};
-\node[res, fill=orange!20] at (5,1.5) (wr) {warning};
-\node[res, fill=yellow!30] at (0,0)   (ml) {mild};
-\draw[arr] (epi) -- node[above,font=\scriptsize]{Không} (n1);
-\draw[arr] (epi) -- node[left,font=\scriptsize]{Có} (sym);
-\draw[arr] (sym) -- node[above,font=\scriptsize]{Không} (n2);
-\draw[arr] (sym) -- node[left,font=\scriptsize]{Có} (severe);
-\draw[arr] (severe) -- node[above,font=\scriptsize]{Có} (sv);
-\draw[arr] (severe) -- node[left,font=\scriptsize]{Không} (warn);
-\draw[arr] (warn) -- node[above,font=\scriptsize]{Có} (wr);
-\draw[arr] (warn) -- node[left,font=\scriptsize]{Không} (ml);
+% Câu hỏi quyết định (cột trái)
+\node[dec] (d1) at (0, 9) {Dịch tễ + Sốt 1--7 ngày?};
+\node[dec] (d2) at (0, 6) {$\geq$2 triệu chứng cơ bản?};
+\node[dec] (d3) at (0, 3) {Có dấu hiệu nặng?};
+\node[dec] (d4) at (0, 0) {Có dấu hiệu cảnh báo?};
+% Kết quả (cột phải)
+\node[res, fill=black!5]  (r1) at (6.2, 9) {none};
+\node[res, fill=black!5]  (r2) at (6.2, 6) {none};
+\node[res, fill=black!20] (r3) at (6.2, 3) {severe};
+\node[res, fill=black!12] (r4) at (6.2, 0) {warning};
+\node[res, fill=black!8]  (r5) at (0, -2.4) {mild};
+% Nhánh rẽ phải -> kết quả
+\draw[arr] (d1.east) -- node[lbl,above]{Không} (r1.west);
+\draw[arr] (d2.east) -- node[lbl,above]{Không} (r2.west);
+\draw[arr] (d3.east) -- node[lbl,above]{Có}     (r3.west);
+\draw[arr] (d4.east) -- node[lbl,above]{Có}     (r4.west);
+% Đường đi tiếp -> xuống dưới
+\draw[arr] (d1.south) -- node[lbl,right]{Có}    (d2.north);
+\draw[arr] (d2.south) -- node[lbl,right]{Có}    (d3.north);
+\draw[arr] (d3.south) -- node[lbl,right]{Không} (d4.north);
+\draw[arr] (d4.south) -- node[lbl,right]{Không} (r5.north);
 \end{tikzpicture}
 \caption{Cây quyết định phân loại mức độ SXHD theo QĐ 2760}
 \label{fig:dengue-tree}
@@ -1285,7 +1242,7 @@ Hình~\ref{fig:seq-flow-d} mô tả luồng hội thoại sàng lọc SXHD (Flow
               minimum width=2.1cm, minimum height=0.55cm, font=\scriptsize, text centered},
   msg/.style={-{Stealth[scale=0.8]}, thin},
   ret/.style={-{Stealth[scale=0.8]}, thin, dashed, gray},
-  note/.style={font=\scriptsize, above}
+  note/.style={font=\scriptsize, above, fill=white, inner sep=1.5pt}
 ]
 \node[box] (bn)  at (0,   0) {Bệnh nhân};
 \node[box] (fe)  at (3.2, 0) {Frontend};
@@ -1308,8 +1265,8 @@ Hình~\ref{fig:seq-flow-d} mô tả luồng hội thoại sàng lọc SXHD (Flow
 \draw[msg] (3.2,-5.4) -- node[note]{POST /chat/stream} (6.4,-5.4);
 \draw[msg] (6.4,-6.0) -- node[note]{messages + tools} (9.6,-6.0);
 \draw[ret] (9.6,-6.6) -- node[note]{tool\_call: dengue\_symptom\_assessment} (6.4,-6.6);
-\draw[msg] (6.4,-7.2) -- node[note]{\{symptoms, days, hemorrhage\}} (12.8,-7.2);
-\draw[ret] (12.8,-7.8) -- node[note]{\{severity: warning, recommend: nhập viện\}} (6.4,-7.8);
+\draw[msg] (6.4,-7.2) -- node[note]{\{in\_epidemic\_area, fever\_days, symptoms, warning\_signs\}} (12.8,-7.2);
+\draw[ret] (12.8,-7.8) -- node[note]{\{severity: warning, recommend: đến viện trong ngày\}} (6.4,-7.8);
 \draw[msg] (6.4,-8.4) -- node[note]{stream kết quả + khuyến cáo} (9.6,-8.4);
 \draw[ret] (9.6,-9.0) -- node[note]{phản hồi tổng hợp} (6.4,-9.0);
 \draw[ret] (6.4,-9.6) -- node[note]{SSE stream} (3.2,-9.6);
@@ -1320,7 +1277,7 @@ Hình~\ref{fig:seq-flow-d} mô tả luồng hội thoại sàng lọc SXHD (Flow
 
 \subsubsection{Sàng lọc theo CBC (dengue\_cbc\_predict)}
 
-Module phân tích CBC áp dụng 3 tiêu chí cận lâm sàng chính theo QĐ 2760/QĐ-BYT 2023 trang 5:
+Module phân tích CBC áp dụng 3 tiêu chí cận lâm sàng chính theo QĐ 2760/QĐ-BYT 2023~\cite{qd2760} trang 5:
 \begin{enumerate}
   \item \textbf{PLT (Tiểu cầu)}: $< 100$ K/$\mu$L là tiêu chí cận lâm sàng SXHD.
   \item \textbf{WBC (Bạch cầu)}: Giảm dưới 4 K/$\mu$L (leukopenia).
@@ -1328,6 +1285,54 @@ Module phân tích CBC áp dụng 3 tiêu chí cận lâm sàng chính theo QĐ 
 \end{enumerate}
 
 Kết quả đầu ra phân mức: \texttt{unlikely} / \texttt{possible} / \texttt{likely} / \texttt{very\_likely}. \textbf{Chức năng này chỉ khả dụng với bác sĩ}, không bao giờ xuất hiện trong bộ công cụ của bệnh nhân.
+
+\subsubsection{Luồng phân tích CBC từ ảnh (Flow E --- Bác sĩ)}
+
+Hình~\ref{fig:seq-flow-e} mô tả luồng bác sĩ upload ảnh phiếu xét nghiệm CBC để hệ thống trích chỉ số và sàng lọc SXHD. Nút upload ảnh chỉ hiển thị với bác sĩ, bị ẩn trong giao diện bệnh nhân (\texttt{role=patient}).
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  box/.style={rectangle, draw=orange!70, fill=orange!8, rounded corners=2pt,
+              minimum width=2.0cm, minimum height=0.55cm, font=\scriptsize, text centered},
+  msg/.style={-{Stealth[scale=0.8]}, thin},
+  ret/.style={-{Stealth[scale=0.8]}, thin, dashed, gray},
+  note/.style={font=\scriptsize, above, fill=white, inner sep=1.5pt}
+]
+\node[box] (bs)   at (0,    0) {Bác sĩ};
+\node[box] (fe)   at (2.8,  0) {Frontend};
+\node[box] (api)  at (5.6,  0) {FastAPI};
+\node[box] (ag)   at (8.4,  0) {Agent};
+\node[box] (llm)  at (11.2, 0) {LLM};
+\node[box] (fhir) at (14.0, 0) {Aidbox FHIR};
+
+\foreach \x in {0,2.8,5.6,8.4,11.2,14.0} {
+  \draw[dashed, gray!60] (\x,-0.35) -- (\x,-13.0);
+}
+
+\draw[msg] (0,-1.0)    -- node[note]{upload ảnh CBC + ``Phân tích giúp tôi''} (2.8,-1.0);
+\draw[msg] (2.8,-1.6)  -- node[note]{POST /chat/stream (role=doctor\_cbc, image\_b64)} (5.6,-1.6);
+\draw[msg] (5.6,-2.2)  -- node[note]{chat\_stream(role, image)} (8.4,-2.2);
+\draw[msg] (8.4,-2.8)  -- node[note]{messages + tools + image (vision content)} (11.2,-2.8);
+\draw[ret] (11.2,-3.4) -- node[note]{tool\_call: fhir\_search\_patient \{name: ...\}} (8.4,-3.4);
+\draw[msg] (8.4,-4.0)  -- node[note]{GET /fhir/Patient?name=...} (14.0,-4.0);
+\draw[ret] (14.0,-4.6) -- node[note]{\{patient\_id: P001, name: ...\}} (8.4,-4.6);
+\draw[msg] (8.4,-5.2)  -- node[note]{tool\_result $\to$ LLM context} (11.2,-5.2);
+\draw[ret] (11.2,-5.8) -- node[note]{tool\_call: fhir\_create\_cbc \{PLT=48, WBC=2.8, HCT=48\}} (8.4,-5.8);
+\draw[msg] (8.4,-6.4)  -- node[note]{POST /fhir/Observation (mã LOINC)} (14.0,-6.4);
+\draw[ret] (14.0,-7.0) -- node[note]{\{observation\_id: OBS-0123\}} (8.4,-7.0);
+\draw[msg] (8.4,-7.6)  -- node[note]{tool\_result $\to$ LLM context} (11.2,-7.6);
+\draw[ret] (11.2,-8.2) -- node[note]{tool\_call: dengue\_cbc\_predict \{PLT, WBC, HCT\}} (8.4,-8.2);
+\node[draw=gray!30, fill=gray!8, rounded corners=1pt, font=\tiny] at (9.8,-8.8) {tính điểm CBC (local)};
+\draw[msg] (8.4,-9.4)  -- node[note]{tool\_result: \{likelihood: ``likely'', reason: PLT$<$50\}} (11.2,-9.4);
+\draw[ret] (11.2,-10.0)-- node[note]{stream tokens (phân tích kết quả)} (8.4,-10.0);
+\draw[ret] (8.4,-10.6) -- node[note]{SSE events} (5.6,-10.6);
+\draw[ret] (5.6,-11.2) -- node[note]{SSE events} (2.8,-11.2);
+\draw[ret] (2.8,-11.8) -- node[note]{hiển thị CBC + đánh giá nguy cơ SXHD} (0,-11.8);
+\end{tikzpicture}
+\caption{Sơ đồ tuần tự Flow E --- Bác sĩ phân tích CBC từ ảnh upload (Doctor Only)}
+\label{fig:seq-flow-e}
+\end{figure}
 
 \subsection{Thiết kế module tra cứu số liệu dịch bệnh}
 
@@ -1337,11 +1342,7 @@ Khi người dùng hỏi về tình hình dịch bệnh thực tế (``hiện c�
 
 \subsubsection{Đặc điểm nguồn dữ liệu HCDC}
 
-HCDC công bố bản tin dịch bệnh \textbf{định kỳ mỗi tuần} dưới dạng trang HTML. Khảo sát cho thấy hai đặc điểm quyết định khả năng bóc tách tự động:
-\begin{enumerate}
-  \item \textbf{Định dạng URL đồng nhất}: mọi bản tin theo khuôn \texttt{...tinh-den-tuan-\{tuần\}\{năm\}-\{mã\}.html}, trong đó phần mã (shortcode) là ngẫu nhiên nên không thể suy đoán.
-  \item \textbf{Định dạng nội dung đồng nhất}: các câu số liệu trong bài theo mẫu cố định (``ghi nhận N trường hợp...'', ``tích lũy ... là M ca''), cho phép trích xuất bằng biểu thức chính quy (regex).
-\end{enumerate}
+HCDC công bố bản tin dịch bệnh \textbf{định kỳ mỗi tuần} dưới dạng trang HTML. Khảo sát cho thấy hai đặc điểm quyết định khả năng bóc tách tự động. Thứ nhất, \textbf{định dạng URL đồng nhất}: mọi bản tin theo khuôn \texttt{...tinh-den-tuan-\{tuần\}\{năm\}-\{mã\}.html}, trong đó phần mã (shortcode) là ngẫu nhiên nên không thể suy đoán. Thứ hai, \textbf{định dạng nội dung đồng nhất}: các câu số liệu trong bài theo mẫu cố định (``ghi nhận N trường hợp...'', ``tích lũy ... là M ca''), cho phép trích xuất bằng biểu thức chính quy (regex).
 
 Hạn chế của nguồn: trang danh mục (category) của HCDC \textbf{liệt kê thiếu} một số tuần, không có sitemap cũng như API. Tuy nhiên ô tìm kiếm \texttt{/timkiem/} cho phép truy vấn theo từ khóa ``tuan N'' và trả về liên kết bản tin tương ứng --- đây là cơ chế then chốt để tra cứu \textit{bất kỳ} tuần nào.
 
@@ -1397,18 +1398,13 @@ Hình~\ref{fig:outbreak-pipeline} mô tả luồng xử lý một truy vấn s�
 
 \subsubsection{Nguyên tắc chống bịa số}
 
-Để bảo đảm tính chính xác của số liệu y tế, module tuân thủ nguyên tắc \textbf{LLM không thực hiện tính toán trên số liệu}:
-\begin{itemize}
-  \item Phép so sánh tăng/giảm giữa hai tuần được tính bằng mã Python và trả về dưới dạng chuỗi hoàn chỉnh (\texttt{wow\_text}); LLM chỉ hiển thị lại nguyên văn, không tự cộng trừ.
-  \item Hàm \texttt{validate\_parsed} kiểm tra tính hợp lý của số liệu bóc tách (số ca trong khoảng hợp lệ, lũy kế $\geq$ số ca tuần); nếu sai, hệ thống báo ``không lấy được'' thay vì trả số sai.
-  \item System prompt cấm LLM nội suy/ước lượng số ca của tuần không có dữ liệu, đồng thời bắt buộc trích dẫn nguồn (\texttt{source\_url}) và ghi chú độ trễ, phạm vi dữ liệu (chỉ TP.HCM, theo tuần).
-\end{itemize}
+Để bảo đảm tính chính xác của số liệu y tế, module tuân thủ nguyên tắc \textbf{LLM không thực hiện tính toán trên số liệu}. Cụ thể, phép so sánh tăng/giảm giữa hai tuần được tính bằng mã Python và trả về dưới dạng chuỗi hoàn chỉnh (\texttt{wow\_text}) để LLM chỉ hiển thị lại nguyên văn, không tự cộng trừ. Hàm \texttt{validate\_parsed} kiểm tra tính hợp lý của số liệu bóc tách (số ca trong khoảng hợp lệ, lũy kế $\geq$ số ca tuần); nếu sai, hệ thống báo ``không lấy được'' thay vì trả số sai. Ngoài ra, system prompt cấm LLM nội suy hay ước lượng số ca của tuần không có dữ liệu, đồng thời bắt buộc trích dẫn nguồn (\texttt{source\_url}) và ghi chú độ trễ cùng phạm vi dữ liệu (chỉ TP.HCM, theo tuần).
 
 \subsection{Thiết kế RAG cho gợi ý khoa}
 
 Hệ thống sử dụng kỹ thuật RAG~\cite{rag} với mô hình \texttt{paraphrase-multilingual-MiniLM-L12-v2}~\cite{sbert} để gợi ý khoa dựa trên triệu chứng:
 \begin{enumerate}
-  \item Knowledge base: \texttt{symptoms\_departments.json} mô tả triệu chứng và mã khoa.
+  \item Knowledge base: \texttt{symptoms\_departments.json} mô tả triệu chứng và mã khoa, được xây dựng dựa trên danh mục tổ chức chuyên khoa trong Quy chế bệnh viện của Bộ Y tế~\cite{quychebv}.
   \item Tính cosine similarity giữa query embedding và embedding các document triệu chứng.
   \item Weighted voting: tổng điểm cosine theo khoa để xếp hạng.
   \item Ngưỡng $\geq 0.30$ để lọc kết quả không liên quan.
@@ -1417,36 +1413,43 @@ Hệ thống sử dụng kỹ thuật RAG~\cite{rag} với mô hình \texttt{par
 \begin{figure}[H]
 \centering
 \begin{tikzpicture}[
-  blk/.style={rectangle, draw=blue!60, fill=blue!8, rounded corners=4pt,
-              minimum width=3.0cm, minimum height=0.8cm, font=\small, align=center, text width=2.8cm},
-  db/.style={cylinder, shape border rotate=90, draw=green!60, fill=green!8,
-             minimum width=2.4cm, minimum height=0.9cm, font=\small, align=center, text width=2.2cm,
-             aspect=0.25},
-  arr/.style={-{Stealth}, thick, blue!60},
-  lbl/.style={font=\scriptsize, midway, above}
+  font=\small,
+  term/.style={rounded rectangle, draw=black, fill=black!3, align=center,
+               text width=3.2cm, minimum height=0.9cm, inner sep=2pt},
+  proc/.style={rectangle, draw=black, fill=white, align=center,
+               text width=3.6cm, minimum height=0.95cm},
+  data/.style={trapezium, trapezium left angle=70, trapezium right angle=110,
+               trapezium stretches=true, draw=black, fill=black!6, align=center,
+               text width=3.1cm, minimum height=0.9cm, inner sep=2pt},
+  db/.style={cylinder, shape border rotate=90, draw=black, fill=black!8, aspect=0.25,
+             align=center, text width=2.7cm, minimum height=1.0cm},
+  arr/.style={-{Stealth}, thick},
+  lbl/.style={font=\scriptsize}
 ]
-% Nodes
-\node[blk] (q)   at (0,  0)   {Truy vấn người dùng};
-\node[blk] (enc) at (4.5,0)   {Sentence Encoder\\(MiniLM-L12)};
-\node[blk] (qe)  at (9,  0)   {Query Embedding\\(768-dim)};
+% ===== Mạch xử lý trực tuyến (dọc) =====
+\node[term] (q)   at (0, 6.0)  {Truy vấn\\người dùng};
+\node[proc] (enc) at (0, 4.4)  {Sentence Encoder\\(MiniLM-L12)};
+\node[data] (qe)  at (0, 2.8)  {Query\\Embedding\\(384-dim)};
+\node[proc] (cos) at (0, 1.0)  {Cosine Similarity\\Score Matrix};
+\node[proc] (vot) at (0,-0.7)  {Weighted Voting\\theo khoa};
+\node[proc] (top) at (0,-2.4)  {Top-K Khoa\\(score $\geq$ 0.30)};
+\node[term] (res) at (0,-4.0)  {Phản hồi\\gợi ý khoa};
 
-\node[db]  (kb)  at (4.5,-2.5) {Knowledge Base\\(JSON triệu chứng)};
-\node[blk] (de)  at (4.5,-4.5) {Document Embeddings\\(precomputed)};
+% ===== Nhánh chuẩn bị offline (trái) =====
+\node[db]   (kb)  at (-5.2, 3.4) {Knowledge Base\\(JSON triệu chứng)};
+\node[data] (de)  at (-5.2, 1.0) {Document\\Embeddings\\(precomputed)};
+\node[draw, dashed, rounded corners, fit=(kb)(de), inner sep=4mm,
+      label={[font=\scriptsize\itshape]above:Chuẩn bị offline (một lần)}] (off) {};
 
-\node[blk] (cos) at (9,  -2.5) {Cosine Similarity\\Score Matrix};
-\node[blk] (vot) at (9,  -4.5) {Weighted Voting\\theo khoa};
-\node[blk] (out) at (9,  -6.5) {Top-K Khoa\\ (score $\geq$ 0.30)};
-\node[blk] (res) at (4.5,-6.5) {Phản hồi\\gợi ý khoa};
-
-% Arrows
-\draw[arr] (q)   -- node[lbl]{mã hóa} (enc);
+% ===== Mũi tên =====
+\draw[arr] (q)   -- node[lbl,right]{mã hóa} (enc);
 \draw[arr] (enc) -- (qe);
-\draw[arr] (kb)  -- node[lbl]{offline} (de);
 \draw[arr] (qe)  -- (cos);
-\draw[arr] (de)  -- (cos);
 \draw[arr] (cos) -- (vot);
-\draw[arr] (vot) -- (out);
-\draw[arr] (out) -- (res);
+\draw[arr] (vot) -- (top);
+\draw[arr] (top) -- (res);
+\draw[arr] (kb)  -- node[lbl,right]{mã hóa} (de);
+\draw[arr] (de)  -- node[lbl,above]{so khớp} (cos);
 \end{tikzpicture}
 \caption{Pipeline RAG gợi ý khoa phù hợp dựa trên triệu chứng}
 \label{fig:rag-pipeline}
@@ -1461,7 +1464,7 @@ Hình~\ref{fig:seq-flow-c} mô tả Flow C --- luồng gợi ý khoa thuần RAG
               minimum width=2.3cm, minimum height=0.55cm, font=\scriptsize, text centered},
   msg/.style={-{Stealth[scale=0.8]}, thin},
   ret/.style={-{Stealth[scale=0.8]}, thin, dashed, gray},
-  note/.style={font=\scriptsize, above}
+  note/.style={font=\scriptsize, above, fill=white, inner sep=1.5pt}
 ]
 \node[box] (bn)   at (0,   0) {Bệnh nhân};
 \node[box] (fe)   at (3,   0) {Frontend};
@@ -1480,10 +1483,10 @@ Hình~\ref{fig:seq-flow-c} mô tả Flow C --- luồng gợi ý khoa thuần RAG
 \draw[msg] (6,-3.4) -- node[note]{\{query: ``ho, khó thở''\}} (13,-3.4);
 \draw[msg] (13,-4.0) -- node[note]{encode query (MiniLM)} (13,-4.0);
 \draw[msg] (13,-4.6) -- node[note]{cosine\_sim(query, kb\_embeddings)} (13,-4.6);
-\draw[ret] (13,-5.2) -- node[note]{\{Hô hấp: 0.82, Nội: 0.61, Tim mạch: 0.44\}} (6,-5.2);
+\draw[ret] (13,-5.2) -- node[note]{\{Hô hấp: 3.24, Tim mạch: 1.20, Cấp cứu: 0.65\}} (6,-5.2);
 \draw[msg] (6,-5.8) -- node[note]{tool result $\to$ LLM context} (9,-5.8);
 \draw[ret] (9,-6.4) -- node[note]{stream tokens} (6,-6.4);
-\draw[ret] (6,-7.0) -- node[note]{``Khoa Hô hấp (phù hợp nhất) / Khoa Nội tổng hợp (thay thế)''} (3,-7.0);
+\draw[ret] (6,-7.0) -- node[note]{``Khoa Hô hấp (phù hợp nhất) / Khoa Tim mạch (thay thế)''} (3,-7.0);
 \draw[ret] (3,-7.6) -- node[note]{SSE events} (0,-7.6);
 \draw[msg] (0,-8.4) -- node[note]{``Bạn có muốn đặt lịch không?''} (3,-8.4);
 \end{tikzpicture}
@@ -1504,10 +1507,15 @@ Ngoài các luồng nghiệp vụ trên FHIR, hệ thống bổ sung một công
 \textbf{Tiêu chí} & \textbf{RAG vector (dense)} & \textbf{RAG truy hồi qua API (search)} \\
 \hline
 Áp dụng cho & Gợi ý khoa & Tra cứu thông tin thuốc \\
+\hline
 Cơ chế truy hồi & Embedding + cosine similarity & Tìm kiếm từ khóa (lexical) qua API \\
+\hline
 Nguồn tri thức & Corpus nội bộ (\texttt{symptoms\_departments.json}) & NCBI: StatPearls + PubMed \\
+\hline
 Hiểu ngữ nghĩa & Có (gần nghĩa) & Không (khớp từ ngữ) \\
+\hline
 Cập nhật nguồn & Tĩnh, dựng lại thủ công & Trực tuyến theo thời gian thực \\
+\hline
 Module & \texttt{\_rag\_departments.py} & \texttt{drug\_info} \\
 \hline
 \end{tabular}
@@ -1526,26 +1534,6 @@ Module & \texttt{\_rag\_departments.py} & \texttt{drug\_info} \\
 \textbf{Ràng buộc grounding.} Để câu trả lời đáng tin và kiểm chứng được, thiết kế áp ba ràng buộc: (1) LLM chỉ được nêu thông tin có trong \texttt{evidence\_en}, không bổ sung liều/phác đồ từ kiến thức nền; (2) số trích dẫn \texttt{[n]} phải khớp đúng nhãn nguồn (chống lệch trích dẫn); (3) không mô tả nguồn quốc tế là ``hướng dẫn Việt Nam''. Do tìm kiếm là \textit{lexical} (khớp từ ngữ, không hiểu nghĩa), module bổ sung một bảng \textbf{từ đồng nghĩa} (ví dụ \textit{paracetamol} $\to$ \textit{acetaminophen}) để mở rộng truy vấn. Phạm vi tra cứu được giới hạn quanh danh mục 52 thuốc của hệ thống.
 
 \textbf{Giới hạn.} Nguồn NCBI là tiếng Anh và không phải hướng dẫn kê đơn của Bộ Y tế Việt Nam; câu trả lời mang tính tham khảo, kèm khuyến cáo không thay thế chỉ định lâm sàng. Hướng phát triển là bổ sung nguồn trong nước (Dược thư Quốc gia Việt Nam) theo cùng kiến trúc dẫn nguồn.
-
-\subsection{Thiết kế module Sinh hiệu với Clinical Decision Support}
-
-Module sinh hiệu (vital signs) cho phép bác sĩ ghi nhận đầy đủ các chỉ số sống: huyết áp tâm thu/tâm trương, mạch, nhịp thở, nhiệt độ, SpO2, cân nặng, chiều cao. Mỗi lần đo được lưu thành một FHIR \texttt{Observation} với \texttt{category = vital-signs}, sử dụng panel code LOINC \texttt{85353-1} (Vital signs panel), trong đó từng chỉ số con là một \texttt{component[]} với LOINC riêng (\texttt{8480-6}, \texttt{8462-4}, \texttt{8867-4}, v.v.).
-
-\textbf{Hệ thống cảnh báo 5 mức theo HL7 v3 ObservationInterpretation.} Sau khi nhập, hệ thống tự động phân tích và đánh dấu mức bất thường:
-\begin{itemize}
-  \item \texttt{N} (Normal) --- trong khoảng bình thường, không cảnh báo.
-  \item \texttt{H/L} (High/Low) --- bất thường, cảnh báo màu vàng.
-  \item \texttt{HH/LL} (Critical High/Low) --- nguy hiểm, cảnh báo màu đỏ.
-\end{itemize}
-
-\textbf{Ngưỡng cảnh báo} dựa trên các nguồn quốc tế và Việt Nam đã được cite trong code (trường \texttt{\_citation}):
-\begin{itemize}
-  \item \textbf{Huyết áp}: QĐ 3192/QĐ-BYT 2010~\cite{qd3192} và Khuyến cáo VNHA 2022 (đồng bộ ESC/ESH 2018). Hệ thống lấy mức nặng hơn giữa tâm thu và tâm trương để xác định phân độ tăng huyết áp (THA độ 1: 140--159/90--99, THA độ 2: 160--179/100--109, THA độ 3 / cấp cứu: $\geq$180/$\geq$110).
-  \item \textbf{Mạch, nhịp thở, SpO2}: National Early Warning Score 2 (NEWS2) do Royal College of Physicians UK ban hành năm 2017~\cite{news2}. Đây là chuẩn early warning được NHS UK sử dụng chính thức, có validation khoa học rộng rãi.
-  \item \textbf{Nhiệt độ}: Harrison's Principles of Internal Medicine, 21st ed (2022)~\cite{harrison}, chương ``Approach to the patient with fever''.
-\end{itemize}
-
-Ngoài cảnh báo, mỗi chỉ số trong \texttt{Observation.component} đều có \texttt{interpretation} (HL7 code) và \texttt{referenceRange.text} (khoảng tham chiếu kèm nguồn cite) để đảm bảo \textit{interoperability} --- mọi HIS khác đọc record này đều thấy được ngữ cảnh đánh giá.
 
 \subsection{Thiết kế Drug Catalog và Allergy Management}
 
@@ -1591,11 +1579,18 @@ Bảy cặp cross-reactivity được hard-code trong \texttt{tools/shared/\_dru
 \textbf{Cặp dị ứng -- thuốc kê} & \textbf{Mức} & \textbf{Nguồn verified} \\
 \hline
 Penicillin $\leftrightarrow$ Cephalosporin & warning & StatPearls NBK459320 (NIH Bookshelf, open access) \\
+\hline
 NSAID $\leftrightarrow$ Aspirin (AERD) & critical & Laidlaw TM 2024, PMC11695142 \\
+\hline
 NSAID $\leftrightarrow$ COX-2 selective & warning & Stevenson DD 2003, Stockley's~\cite{stockley} \\
+\hline
 Sulfa kháng sinh $\leftrightarrow$ Thiazide & warning & Giles A et al 2019, PMC6789825 \\
+\hline
 Sulfa kháng sinh $\leftrightarrow$ Loop diuretic & warning & Giles A et al 2019 \\
+\hline
 ACE-Inhibitor $\to$ ARB (angioedema) & warning & Sica DA \& Black HR 2002, PMC8099384 \\
+\hline
+Aspirin $\leftrightarrow$ COX-2 selective & warning & Stevenson DD 2003, Stockley's~\cite{stockley} \\
 \hline
 \end{tabular}
 \caption{Bảng 7 cặp cross-reactivity với nguồn open-access đã verify}
@@ -1622,7 +1617,7 @@ Hình~\ref{fig:seq-flow-rx} mô tả sơ đồ tuần tự của 3-tier alert kh
                font=\scriptsize\bfseries, text centered, minimum width=1.6cm, minimum height=0.5cm},
   msg/.style={-{Stealth[scale=0.8]}, thin},
   ret/.style={-{Stealth[scale=0.8]}, thin, dashed, gray},
-  note/.style={font=\scriptsize, above}
+  note/.style={font=\scriptsize, above, fill=white, inner sep=1.5pt}
 ]
 \node[box] (bs)   at (0,    0) {Bác sĩ};
 \node[box] (fe)   at (2.6,  0) {UI Modal};
@@ -1671,15 +1666,7 @@ Hình~\ref{fig:seq-flow-rx} mô tả sơ đồ tuần tự của 3-tier alert kh
 
 \textbf{Vấn đề thiết kế.} Workflow ``kết thúc khám'' ban đầu rời rạc thành 2 bước: bác sĩ phải nhập chẩn đoán ở 1 modal (tạo ClinicalImpression), sau đó mở panel BN riêng để kê đơn (tạo MedicationRequest). Bác sĩ thường phải nhập \textit{lại} chẩn đoán, dễ quên kê đơn, và 2 hành động không atomic.
 
-\textbf{Giải pháp.} Tích hợp thành 1 modal đa năng \texttt{complete-overlay} với các thành phần:
-\begin{itemize}
-  \item Banner Tier 1 dị ứng (đầu form) --- tự load qua \texttt{fhir\_get\_allergies} khi mở modal.
-  \item Nút \textbf{$\Diamond$ AI gợi ý} --- gọi LLM với context (CBC, sinh hiệu, dị ứng đã có) để auto-fill 3 ô chẩn đoán + ghi chú + plan theo phác đồ BYT.
-  \item Ô chẩn đoán + ghi chú lâm sàng (textarea).
-  \item Section đơn thuốc (tùy chọn) với allergy check 3-tier đầy đủ --- reuse component từ modal kê đơn riêng.
-  \item Kế hoạch / tái khám.
-  \item Checkbox $\square$ Gửi email tóm tắt + field email auto-fill từ \texttt{Patient.telecom[email]} của FHIR.
-\end{itemize}
+\textbf{Giải pháp.} Tích hợp thành một modal đa năng (\texttt{complete-overlay}) gồm các thành phần: banner cảnh báo dị ứng (Tier 1) ở đầu form, tự nạp qua \texttt{fhir\_get\_allergies} khi mở modal; nút \textbf{AI gợi ý} gọi LLM với ngữ cảnh sẵn có (CBC, dị ứng) để auto-fill ô chẩn đoán, ghi chú và kế hoạch theo phác đồ Bộ Y tế; các ô chẩn đoán và ghi chú lâm sàng dạng textarea; một section đơn thuốc tùy chọn có kiểm tra dị ứng 3 lớp đầy đủ (tái sử dụng component từ modal kê đơn riêng); mục kế hoạch/tái khám; và checkbox gửi email tóm tắt với địa chỉ email được auto-fill từ \texttt{Patient.telecom} của FHIR.
 
 Khi bác sĩ bấm \textbf{Lưu \& Kết thúc khám}, hệ thống thực hiện 4 hành động atomic trong 1 transaction:
 \begin{enumerate}
@@ -1702,7 +1689,7 @@ Hình~\ref{fig:seq-flow-complete} mô tả luồng atomic 4 hành động khi b�
               minimum width=2.1cm, minimum height=0.55cm, font=\scriptsize, text centered},
   msg/.style={-{Stealth[scale=0.8]}, thin},
   ret/.style={-{Stealth[scale=0.8]}, thin, dashed, gray},
-  note/.style={font=\scriptsize, above}
+  note/.style={font=\scriptsize, above, fill=white, inner sep=1.5pt}
 ]
 \node[box] (bs)   at (0,    0) {Bác sĩ};
 \node[box] (fe)   at (2.8,  0) {Frontend};
@@ -1756,83 +1743,33 @@ Hệ thống áp dụng chiến lược ``lazy registration'': lần đầu đă
 \textbf{Xác thực danh tính bệnh nhân qua Session Token.}
 Sau khi đăng nhập thành công, server tạo một session token ngẫu nhiên (32~byte, \texttt{secrets.token\_urlsafe}) và lưu ánh xạ \texttt{token~$\rightarrow$~\{fhir\_id, name, role\}} trong bộ nhớ RAM (\texttt{api/tokens.py}). Token được trả về cho frontend và lưu trong biến JavaScript \texttt{\_sessionToken}. Mỗi tin nhắn tiếp theo, frontend đính kèm token trong HTTP header \texttt{X-Session-Token}.
 
-Phía backend, trước khi gọi agent, hàm \texttt{\_resolve\_patient()} tra cứu token để lấy \texttt{fhir\_id} thật của bệnh nhân, thay vì tin vào trường \texttt{patient\_id} do frontend tự khai. \texttt{fhir\_id} xác thực này sau đó được inject vào system prompt của agent:
-
-\begin{verbatim}
-if patient_id:
-    system += "Benh nhan: " + patient_name
-    system += " -- FHIR ID: " + patient_id
-    system += " -- KHONG truy cap ho so BN khac."
-\end{verbatim}
-\textit{Đoạn mã: Inject danh tính bệnh nhân vào system prompt.}
+Phía backend, trước khi gọi agent, hàm \texttt{\_resolve\_patient()} tra cứu token để lấy \texttt{fhir\_id} thật của bệnh nhân, thay vì tin vào trường \texttt{patient\_id} do frontend tự khai. \texttt{fhir\_id} xác thực này sau đó được inject vào system prompt của agent: khi đã có \texttt{patient\_id}, hệ thống nối thêm vào prompt tên bệnh nhân, FHIR ID đã xác thực, kèm chỉ thị tuyệt đối không được truy cập hồ sơ của bệnh nhân khác.
 
 \textbf{Hai lớp bảo vệ patient portal.} Để đảm bảo bệnh nhân chỉ truy cập được hồ sơ của chính mình, hệ thống áp dụng \textit{defense-in-depth} với 2 lớp độc lập:
 
 \textit{Lớp 1 --- Prompt-level (LLM behavior).} Hệ thống \textbf{prepend} một khối quy tắc ``ƯU TIÊN TUYỆT ĐỐI'' vào \textit{đầu} system prompt mỗi request, override mọi flow mô tả phía dưới:
 
-\begin{verbatim}
-# (1) Tieu de cap uu tien cao nhat -- LLM uu tien hon
-#     cac flow chi tiet dat phia duoi cua prompt
-=== UU TIEN TUYET DOI ===
-
-# (2) Inject ten + FHIR ID cua BN dang dang nhap.
-#     Lay tu session token, KHONG tin frontend.
-Benh nhan dang chat: Pham Alex (FHIR ID: c0f6...).
-
-# (3) Cac quy tac CAM (negative rules) - LLM tuan theo
-#     tot hon negative rule hon la positive rule dai
-
-- TUYET DOI KHONG hoi 'Ten day du cua ban'.
-  # Tranh viec LLM bi cac flow HOI ten o duoi keo theo
-
-- TUYET DOI KHONG goi fhir_search_patient.
-  # Khong can search vi da co patient_id san
-
-- Khi dat lich: chi HOI EMAIL roi goi tool ngay.
-  # Email la thong tin DUY NHAT can hoi them
-
-- TUYET DOI KHONG tra cuu ho so BN khac.
-  # Quy tac bao mat - lop bao ve so 1 (prompt-level)
-\end{verbatim}
-\textit{Đoạn mã: Khối ưu tiên tuyệt đối được prepend ở đầu prompt khi BN đã đăng nhập.}
+\begin{quote}
+=== ƯU TIÊN TUYỆT ĐỐI ===\\
+Bệnh nhân đang chat: Phạm Alex (FHIR ID: c0f6\dots).\\[3pt]
+-- TUYỆT ĐỐI KHÔNG hỏi lại ``Tên đầy đủ của bạn''.\\
+-- TUYỆT ĐỐI KHÔNG gọi fhir\_search\_patient (đã có sẵn patient\_id).\\
+-- Khi đặt lịch: chỉ hỏi email rồi gọi tool ngay (email là thông tin duy nhất cần hỏi thêm).\\
+-- TUYỆT ĐỐI KHÔNG tra cứu hồ sơ của bệnh nhân khác.
+\end{quote}
+\textit{Trích đoạn: Khối ưu tiên tuyệt đối được prepend ở đầu prompt khi BN đã đăng nhập. Tên và FHIR ID lấy từ session token (không tin frontend); các quy tắc đều ở dạng phủ định vì LLM tuân theo tốt hơn.}
 
 Khối này được đặt ở đầu thay vì cuối prompt vì mô hình LLM thường tuân theo các quy tắc xuất hiện sớm trong context, đặc biệt khi các quy tắc đó được đánh dấu cấp ưu tiên cao (``ƯU TIÊN TUYỆT ĐỐI''). Thực nghiệm cho thấy việc append cuối prompt khiến LLM vẫn bị các flow chi tiết hơn (vd ``HỎI tên $\to$ fhir\_search\_patient'') kéo theo.
 
-\textit{Lớp 2 --- Tool-level enforcement (hard block).} Đối với 6 tool đọc dữ liệu cá nhân, code chặn ở backend trước khi gọi tool:
-
-\begin{verbatim}
-# Danh sach 6 tool nhay cam can scope theo BN dang dang nhap.
-# Bat ky tool nao trong set nay GOI BOI patient role
-# se bi force patient_id ve BN dang login.
-_PATIENT_SCOPED_TOOLS = {
-    "fhir_get_patient_history",        # tien su benh
-    "fhir_get_observations",           # sinh hieu, xet nghiem
-    "fhir_get_patient_appointments",   # lich hen
-    "fhir_cancel_appointment",         # huy lich
-    "fhir_get_allergies",              # NEW: di ung
-    "fhir_get_prescriptions",          # NEW: don thuoc
-}
-
-# Kiem tra truoc khi goi tool:
-if role == "patient" and tool_name in _PATIENT_SCOPED_TOOLS:
-    # Khach vang lai (chua login) - chan ngay
-    if not patient_id:
-        return {"error": "Can dang nhap"}
-
-    # CRITICAL: override patient_id ve gia tri tu session token.
-    # Du LLM co truyen ID khac (do prompt injection),
-    # dong nay van ghi de ve dung BN dang login.
-    args["patient_id"] = patient_id  # HARD FORCE
-\end{verbatim}
-\textit{Đoạn mã: Force patient\_id về BN đang đăng nhập (lớp bảo vệ thứ 2).}
+\textit{Lớp 2 --- Tool-level enforcement (hard block).} Đối với 6 tool đọc dữ liệu cá nhân (gom trong tập \texttt{\_PATIENT\_SCOPED\_TOOLS}: \texttt{fhir\_get\_patient\_history}, \texttt{fhir\_get\_observations}, \texttt{fhir\_get\_patient\_appointments}, \texttt{fhir\_cancel\_appointment}, \texttt{fhir\_get\_allergies}, \texttt{fhir\_get\_prescriptions}), code chặn ở backend trước khi gọi tool. Khi vai trò là \texttt{patient} và công cụ thuộc tập này, hệ thống từ chối nếu chưa đăng nhập, đồng thời \textit{ghi đè cứng} trường \texttt{patient\_id} trong tham số về đúng ID của bệnh nhân đang đăng nhập --- bất kể giá trị LLM truyền vào.
 
 Lớp 2 không phụ thuộc vào LLM: kể cả nếu LLM bị prompt injection và cố gắng gọi \texttt{fhir\_get\_observations(patient\_id=``id-cua-BN-khac'')}, code vẫn override về \texttt{patient\_id} của BN đang đăng nhập. Đây là biện pháp \textit{fail-safe} cho trường hợp lớp 1 thất bại.
 
-\textbf{Role-based Tool Registry.} Ngoài 2 lớp trên, hệ thống còn áp dụng nguyên tắc \textit{least privilege} qua dictionary \texttt{\_TOOLS\_BY\_ROLE}: mỗi role chỉ ``nhìn thấy'' subset tool phù hợp khi LLM nhận danh sách tool. Patient role có 15 tool gồm 2 tool mới \texttt{fhir\_get\_allergies} và \texttt{fhir\_get\_prescriptions} để hỗ trợ truy vấn chính mình, nhưng \textbf{không có} \texttt{fhir\_search\_patient} --- LLM không biết tool này tồn tại nên không thể gọi.
+\textbf{Role-based Tool Registry.} Ngoài 2 lớp trên, hệ thống còn áp dụng nguyên tắc \textit{least privilege} qua dictionary \texttt{\_TOOLS\_BY\_ROLE}: mỗi role chỉ ``nhìn thấy'' subset tool phù hợp khi LLM nhận danh sách tool. Patient role có 17 tool gồm 2 tool mới \texttt{fhir\_get\_allergies} và \texttt{fhir\_get\_prescriptions} để hỗ trợ truy vấn chính mình, nhưng \textbf{không có} \texttt{fhir\_search\_patient} --- LLM không biết tool này tồn tại nên không thể gọi.
 
 Với khách vãng lai (không có token hợp lệ), \texttt{patient\_id} được đặt rỗng và agent sẽ hỏi tên khi cần tra cứu.
 
-Ngoài ra, giao diện bệnh nhân bổ sung nút \textbf{Hồ sơ của tôi} trong thanh sidebar, chỉ hiển thị khi bệnh nhân đã đăng nhập (có \texttt{currentPatient} trong state). Khi nhấn, hệ thống gọi \texttt{openPatientPanel(currentPatient.id)} để hiển thị slide-over panel chứa sinh hiệu, kết quả CBC và lịch hẹn của chính bệnh nhân đó.
+Ngoài ra, giao diện bệnh nhân bổ sung nút \textbf{Hồ sơ của tôi} trong thanh sidebar, chỉ hiển thị khi bệnh nhân đã đăng nhập (có \texttt{currentPatient} trong state). Khi nhấn, hệ thống gọi \texttt{openPatientPanel(currentPatient.id)} để hiển thị slide-over panel chứa kết quả CBC và lịch hẹn của chính bệnh nhân đó.
 
 % =====================================================================
 %  CHƯƠNG 3 — XÂY DỰNG HỆ THỐNG
@@ -1848,14 +1785,23 @@ Ngoài ra, giao diện bệnh nhân bổ sung nút \textbf{Hồ sơ của tôi} 
 \textbf{Thành phần} & \textbf{Công nghệ} & \textbf{Ghi chú} \\
 \hline
 LLM & Qwen3-VL-Plus & Qua Alibaba DashScope (OpenAI-compatible) \\
+\hline
 LLM SDK & OpenAI-compatible SDK & Tương thích DashScope, OpenRouter và Anthropic \\
+\hline
 Web framework & FastAPI 0.111+ & ASGI, async, SSE \\
-FHIR server & Aidbox (Medplum) & FHIR R5, Docker \\
+\hline
+FHIR server & Aidbox (Health Samurai) & FHIR R5, Docker \\
+\hline
 Database & SQLite + bcrypt & Lưu tài khoản người dùng \\
+\hline
 RAG model & sentence-transformers & paraphrase-multilingual-MiniLM-L12-v2 \\
+\hline
 HTTP client & httpx & Gọi Aidbox REST API \\
+\hline
 Frontend & React + TypeScript (Vite) & Giao diện SPA, cập nhật token theo SSE \\
+\hline
 Email & Gmail SMTP & Gửi xác nhận lịch hẹn \\
+\hline
 Python & 3.11+ & Type hints, asyncio \\
 \hline
 \end{tabular}
@@ -1912,17 +1858,73 @@ Dữ liệu lâm sàng được lưu trữ theo chuẩn FHIR R5 trong Aidbox. C�
 \textbf{Resource FHIR} & \textbf{Mục đích} & \textbf{Trường chính} \\
 \hline
 \texttt{Patient} & Hồ sơ bệnh nhân & name, telecom, birthDate, identifier (BHYT/CCCD) \\
+\hline
 \texttt{Practitioner} & Hồ sơ bác sĩ & name, telecom, qualification \\
+\hline
 \texttt{Appointment} & Lịch hẹn khám & start, end, status, participant, serviceType \\
+\hline
 \texttt{Observation} & Kết quả xét nghiệm & code (LOINC), value, effectiveDateTime, subject \\
+\hline
 \texttt{DiagnosticReport} & Phiếu xét nghiệm & result (Observation refs), conclusion, issued \\
+\hline
 \texttt{Schedule} & Lịch làm việc BS & actor, planningHorizon, serviceType \\
+\hline
 \texttt{Slot} & Khung giờ khám & schedule, start, end, status (free/busy) \\
+\hline
+\texttt{AllergyIntolerance} & Dị ứng BN & patient, code (chất gây dị ứng), criticality, reaction, clinicalStatus \\
+\hline
+\texttt{MedicationRequest} & Đơn thuốc & subject, medicationCodeableConcept, dosageInstruction, status, groupIdentifier \\
+\hline
+\texttt{ClinicalImpression} & Ghi chú khám & subject, summary (chẩn đoán), note (kế hoạch), date \\
 \hline
 \end{tabular}
 \caption{Các FHIR resource sử dụng trong hệ thống}
 \label{tab:fhir-resources}
 \end{table}
+
+Các resource liên kết với nhau qua trường tham chiếu (\textit{reference}): \texttt{Observation}, \texttt{AllergyIntolerance}, \texttt{MedicationRequest} và \texttt{ClinicalImpression} đều trỏ về \texttt{Patient} (qua trường \texttt{subject}/\texttt{patient}); \texttt{Appointment.participant} tham chiếu đồng thời \texttt{Patient} và \texttt{Practitioner}; mỗi \texttt{Slot} thuộc về một \texttt{Schedule} của bác sĩ, còn \texttt{DiagnosticReport.result} gom nhiều \texttt{Observation}. Hệ thống dùng mã danh mục chuẩn quốc tế: kết quả xét nghiệm gắn mã LOINC ở \texttt{Observation.code}, thuốc dùng \texttt{medicationCodeableConcept}. Một đơn nhiều thuốc được lưu thành nhiều \texttt{MedicationRequest} chia sẻ chung \texttt{groupIdentifier} để gom theo lần kê; chẩn đoán và kế hoạch tái khám nằm trong \texttt{ClinicalImpression.summary} và \texttt{ClinicalImpression.note}.
+
+Hình~\ref{fig:fhir-er} mô tả quan hệ tham chiếu giữa các resource FHIR; mỗi mũi tên là một trường \textit{reference} trỏ từ resource nguồn tới resource đích, với \texttt{Patient} đóng vai trò trung tâm.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  ent/.style={rectangle, draw=black, align=center, font=\scriptsize,
+              minimum width=2.5cm, minimum height=1.0cm, inner sep=2pt},
+  hub/.style={rectangle, draw=black, very thick, align=center, font=\small\bfseries,
+              minimum width=11.2cm, minimum height=1.0cm},
+  rel/.style={-{Stealth[scale=0.9]}, semithick, gray!60},
+  rlbl/.style={font=\scriptsize\itshape, fill=white, inner sep=1pt}
+]
+% --- nhóm trên: chuỗi lịch hẹn / lịch làm việc ---
+\node[ent] (prac)  at (-4.6, 4.3) {\textbf{Practitioner}\\(bác sĩ)};
+\node[ent] (sched) at ( 3.9, 4.3) {\textbf{Schedule}\\(lịch làm việc)};
+\node[ent] (appt)  at (-4.6, 2.1) {\textbf{Appointment}\\(lịch hẹn)};
+\node[ent] (slot)  at ( 3.9, 2.1) {\textbf{Slot}\\(khung giờ)};
+% --- thanh trung tâm ---
+\node[hub] (pat)   at ( 0.0, 0.0) {Patient (bệnh nhân)};
+% --- nhóm dưới: các resource trỏ về Patient ---
+\node[ent] (obs)   at (-4.7,-2.4) {\textbf{Observation}\\(KQ xét nghiệm)};
+\node[ent] (alg)   at (-1.6,-2.4) {\textbf{Allergy-}\\\textbf{Intolerance}\\(dị ứng)};
+\node[ent] (med)   at ( 1.6,-2.4) {\textbf{Medication-}\\\textbf{Request}\\(đơn thuốc)};
+\node[ent] (ci)    at ( 4.7,-2.4) {\textbf{Clinical-}\\\textbf{Impression}\\(ghi chú)};
+\node[ent] (dr)    at (-4.7,-4.7) {\textbf{DiagnosticReport}};
+% --- quan hệ: chỉ dùng đường ngang/dọc (orthogonal) ---
+\draw[rel] (sched.west)  -- node[rlbl]{actor}       (prac.east);
+\draw[rel] (slot.north)  -- node[rlbl]{schedule}    (sched.south);
+\draw[rel] (appt.east)   -- node[rlbl]{slot}        (slot.west);
+\draw[rel] (appt.north)  -- node[rlbl]{participant} (prac.south);
+\draw[rel] (appt.south)  -- node[rlbl,pos=0.65]{participant} (appt.south |- pat.north);
+\draw[rel] (obs.north)   -- node[rlbl]{subject}  (obs.north |- pat.south);
+\draw[rel] (alg.north)   -- node[rlbl]{patient}  (alg.north |- pat.south);
+\draw[rel] (med.north)   -- node[rlbl]{subject}  (med.north |- pat.south);
+\draw[rel] (ci.north)    -- node[rlbl]{subject}  (ci.north  |- pat.south);
+\draw[rel] (dr.north)    -- node[rlbl]{result[]} (obs.south);
+\end{tikzpicture}
+\caption{Sơ đồ quan hệ tham chiếu giữa các FHIR resource --- Patient là thanh trung tâm, mỗi mũi tên là một trường \textit{reference}. (Ngoài ra \texttt{MedicationRequest} và \texttt{ClinicalImpression} còn ghi bác sĩ phụ trách qua \texttt{requester}/\texttt{performer}; \texttt{DiagnosticReport} là thiết kế mở rộng, chưa dùng.)}
+\label{fig:fhir-er}
+\end{figure}
+
 
 \subsection{Lớp xác thực --- SQLite}
 
@@ -1931,62 +1933,36 @@ Cơ sở dữ liệu SQLite lưu thông tin tài khoản người dùng, tách b
 \begin{figure}[H]
 \centering
 \begin{tikzpicture}[
-  tbl/.style={rectangle, draw=blue!60, fill=blue!8, rounded corners=3pt, font=\small},
-  hdr/.style={fill=blue!30, font=\small\bfseries, text centered, minimum width=5cm,
-              minimum height=0.6cm},
-  row/.style={font=\scriptsize, minimum height=0.5cm, text width=4.5cm}
+  hdr/.style={draw=black, fill=black!8, font=\small\bfseries, text centered,
+              minimum width=5cm, minimum height=0.6cm},
+  row/.style={draw=black, fill=white, font=\scriptsize, minimum height=0.5cm,
+              text width=4.5cm, minimum width=5cm}
 ]
 % Users table
 \node[hdr] (h1) at (0,0) {users};
-\node[row, below=0pt of h1, draw=blue!30, fill=blue!4, minimum width=5cm] (r1) {phone TEXT PRIMARY KEY};
-\node[row, below=0pt of r1, draw=blue!30, fill=blue!4, minimum width=5cm] (r2) {password TEXT (bcrypt hash)};
-\node[row, below=0pt of r2, draw=blue!30, fill=blue!4, minimum width=5cm] (r3) {fhir\_id TEXT};
-\node[row, below=0pt of r3, draw=blue!30, fill=blue!4, minimum width=5cm] (r4) {role TEXT};
-\node[row, below=0pt of r4, draw=blue!30, fill=blue!4, minimum width=5cm] (r5) {name TEXT};
-\draw[blue!40, thick] (h1.north west) -- (r5.south west) -- (r5.south east) -- (h1.north east) -- cycle;
+\node[row, below=0pt of h1] (r1) {phone TEXT PRIMARY KEY};
+\node[row, below=0pt of r1] (r2) {password TEXT (bcrypt hash)};
+\node[row, below=0pt of r2] (r3) {fhir\_id TEXT};
+\node[row, below=0pt of r3] (r4) {role TEXT};
+\node[row, below=0pt of r4] (r5) {name TEXT};
 
 % FHIR note
-\node[draw=green!50, fill=green!8, rounded corners=4pt, font=\scriptsize,
+\node[draw=black, fill=white, rounded corners=4pt, font=\scriptsize,
       text width=4.5cm, text centered, minimum height=2cm] (fhir)
       at (7.5,-1.0) {Aidbox FHIR R5\\(Patient / Practitioner)\\fhir\_id $\to$ Patient.id\\hoặc Practitioner.id};
-\draw[->, thick, gray!60] (r3.east) -- ++(0.5,0) -- (fhir.west);
+\draw[->, thick, black] (r3.east) -- ++(0.5,0) -- (fhir.west);
 \end{tikzpicture}
 \caption{Cấu trúc bảng SQLite và liên kết với FHIR resource}
 \label{fig:er-sqlite}
 \end{figure}
 
+Mỗi bản ghi trong bảng \texttt{users} gồm năm trường: \texttt{phone} --- số điện thoại làm khóa chính kiêm định danh đăng nhập; \texttt{password} --- mật khẩu đã băm bằng bcrypt (không lưu dạng plaintext); \texttt{fhir\_id} --- khóa ngoại logic trỏ tới \texttt{Patient.id} hoặc \texttt{Practitioner.id} bên Aidbox; \texttt{role} --- vai trò dùng để phân quyền (\textit{patient}, \textit{doctor} và các sub-role); và \texttt{name} --- tên hiển thị trên giao diện. Việc tách bảng tài khoản (SQLite) khỏi dữ liệu lâm sàng (FHIR) giúp dữ liệu y tế tuân thủ chuẩn quốc tế, đồng thời cô lập thông tin nhạy cảm như mật khẩu khỏi hồ sơ bệnh án.
+
 Chiến lược ``lazy registration'' hoạt động như sau: lần đầu đăng nhập với số điện thoại, hệ thống tra cứu trong Aidbox tìm Practitioner hoặc Patient có telecom khớp. Nếu tìm thấy, tự động tạo bản ghi trong SQLite với mật khẩu mặc định và \texttt{fhir\_id} tương ứng. Người dùng có thể đổi mật khẩu ở lần đăng nhập tiếp theo.
 
 \section{Cài đặt lớp Agent}
 
-\subsection{Nạp động công cụ}
-
-Hệ thống nạp động tất cả công cụ từ \texttt{tools/fhir/} và \texttt{tools/dengue/} khi khởi động:
-
-\begin{verbatim}
-def _load_tool_modules() -> dict[str, Any]:
-    modules = {}
-
-    # Thu muc goc chua tools (tools/fhir/, tools/dengue/)
-    tools_dir = Path(__file__).parent / "tools"
-
-    # Quet 2 subpackage voi pattern file tuong ung
-    subpackages = {"fhir": "fhir_*.py", "dengue": "dengue_*.py"}
-
-    for pkg, pattern in subpackages.items():
-        # Iterate qua tat ca file Python match pattern
-        for path in sorted((tools_dir / pkg).glob(pattern)):
-            # Import dynamically vd: tools.fhir.fhir_create_vitals
-            mod = importlib.import_module(f"tools.{pkg}.{path.stem}")
-
-            # Chi nap module co convention TOOL_NAME + run()
-            # -> tu dong skip helper file (_*.py)
-            if hasattr(mod, "TOOL_NAME") and hasattr(mod, "run"):
-                modules[mod.TOOL_NAME] = mod  # Dang ky vao registry
-
-    return modules  # Dict {tool_name: module}
-\end{verbatim}
-\textit{Đoạn mã: Nạp động công cụ từ filesystem.}
+\textbf{Nạp động công cụ.} Hệ thống nạp động tất cả công cụ từ \texttt{tools/fhir/}, \texttt{tools/dengue/}, \texttt{tools/outbreak/} và \texttt{tools/knowledge/} khi khởi động. Hàm \texttt{\_load\_tool\_modules} quét bốn subpackage này theo mẫu tên file tương ứng (\texttt{fhir\_*.py}, \texttt{dengue\_*.py}, \texttt{outbreak\_*.py}, \texttt{*\_info.py}), \texttt{import} động từng module khớp mẫu, rồi chỉ đăng ký vào registry những module có đủ convention \texttt{TOOL\_NAME} và \texttt{run()} --- nhờ vậy tự động bỏ qua các file helper (\texttt{\_*.py}). Kết quả là một dictionary ánh xạ tên công cụ tới module.
 
 Điều này cho phép thêm công cụ mới chỉ cần tạo file Python mới theo convention, không cần sửa core.
 
@@ -1997,36 +1973,41 @@ Hình~\ref{fig:agent-loop} mô tả chi tiết vòng lặp tool-calling của ag
 \begin{figure}[H]
 \centering
 \begin{tikzpicture}[
-  startstop/.style={rectangle, draw=gray!70, fill=gray!20, rounded corners=8pt,
-                    minimum width=3.2cm, minimum height=0.7cm, font=\small, text centered},
-  process/.style={rectangle, draw=blue!60, fill=blue!8, rounded corners=3pt,
-                  minimum width=4.5cm, minimum height=0.7cm, font=\small, text centered},
-  decision/.style={diamond, draw=orange!70, fill=orange!10, aspect=2.5,
-                   font=\small, text centered, minimum width=4.5cm},
+  startstop/.style={rounded rectangle, draw=black, fill=black!10,
+                    minimum width=3cm, minimum height=0.8cm, font=\small, text centered},
+  process/.style={rectangle, draw=black, fill=white, align=center,
+                  text width=4.2cm, minimum height=0.8cm, font=\small},
+  rproc/.style={rectangle, draw=black, fill=white, align=center,
+                text width=3.4cm, minimum height=0.8cm, font=\small},
+  decision/.style={diamond, draw=black, fill=black!8, aspect=1.9,
+                   font=\small, align=center, inner sep=2pt},
   io/.style={trapezium, trapezium left angle=70, trapezium right angle=110,
-             draw=green!60, fill=green!8, minimum width=4cm, minimum height=0.7cm,
-             font=\small, text centered},
-  arr/.style={-{Stealth}, thick}
+             trapezium stretches=true, draw=black, fill=black!6,
+             text width=4.0cm, minimum height=0.8cm, font=\small, align=center, inner sep=2pt},
+  arr/.style={-{Stealth}, thick},
+  lbl/.style={font=\scriptsize, fill=white, inner sep=1.5pt}
 ]
+% Mạch chính (dọc)
 \node[startstop] (start) at (0, 0)    {Bắt đầu};
-\node[io]        (input) at (0,-1.4)  {Nhận message + role + history};
-\node[process]   (sp)    at (0,-2.8)  {Chọn system prompt và tools cho role};
-\node[process]   (llm1)  at (0,-4.2)  {Gọi LLM API (messages + tools)};
-\node[decision]  (dec1)  at (0,-5.8)  {finish\_reason = tool\_calls?};
-\node[process]   (exec)  at (5,-5.8)  {Thực thi từng tool call};
-\node[process]   (app)   at (5,-7.2)  {Append tool\_result vào history};
-\node[process]   (stream)at (0,-7.2)  {Stream tokens về client (SSE)};
-\node[process]   (save)  at (0,-8.6)  {Lưu session vào disk};
-\node[startstop] (end)   at (0,-10.0) {Kết thúc};
-
+\node[io]        (input) at (0,-1.6)  {Nhận message + role + history};
+\node[process]   (sp)    at (0,-3.2)  {Chọn system prompt và tools cho role};
+\node[process]   (llm1)  at (0,-4.8)  {Gọi LLM API (messages + tools)};
+\node[decision]  (dec1)  at (0,-6.8)  {finish\_reason\\= tool\_calls?};
+\node[process]   (stream)at (0,-9.0)  {Stream tokens về client (SSE)};
+\node[process]   (save)  at (0,-10.6) {Lưu session vào disk};
+\node[startstop] (end)   at (0,-12.2) {Kết thúc};
+% Nhánh có tool call (phải)
+\node[rproc]     (exec)  at (6.2,-6.8) {Thực thi từng tool call};
+\node[rproc]     (app)   at (6.2,-9.0) {Append tool\_result vào history};
+% Mũi tên
 \draw[arr] (start) -- (input);
 \draw[arr] (input) -- (sp);
 \draw[arr] (sp)    -- (llm1);
 \draw[arr] (llm1)  -- (dec1);
-\draw[arr] (dec1)  -- node[above, font=\scriptsize]{Có} (exec);
+\draw[arr] (dec1.east) -- node[lbl,above]{Có} (exec.west);
 \draw[arr] (exec)  -- (app);
-\draw[arr] (app)   -- ++(0,0) -- ++(0,1.8) -- ++(-5,0) -- (llm1);
-\draw[arr] (dec1)  -- node[right, font=\scriptsize]{Không} (stream);
+\draw[arr] (app.east) -- ++(1.0,0) |- node[lbl,above,pos=0.25]{lặp} (llm1.east);
+\draw[arr] (dec1.south) -- node[lbl,right]{Không} (stream.north);
 \draw[arr] (stream)-- (save);
 \draw[arr] (save)  -- (end);
 \end{tikzpicture}
@@ -2034,120 +2015,13 @@ Hình~\ref{fig:agent-loop} mô tả chi tiết vòng lặp tool-calling của ag
 \label{fig:agent-loop}
 \end{figure}
 
-\subsection{Hỗ trợ ảnh (Vision) cho phân tích CBC}
-
-Khi bác sĩ upload ảnh phiếu xét nghiệm, nội dung được chuyển thành multipart content:
-
-\begin{verbatim}
-def _build_user_content(message, image_base64, image_mime):
-    # Khong co anh -> tra ve text thuan (string)
-    if not image_base64:
-        return message
-
-    # Co anh -> tra ve list theo chuan OpenAI multimodal:
-    return [
-        # Phan 1: text huong dan LLM phai lam gi voi anh
-        {
-            "type": "text",
-            "text": message or "Day la ket qua xet nghiem CBC."
-        },
-
-        # Phan 2: anh dang base64 data URL
-        # (LLM Qwen3-VL doc anh va trich xuat gia tri)
-        {
-            "type": "image_url",
-            "image_url": {
-                # Format: data:<mime>;base64,<encoded_image>
-                "url": f"data:{image_mime};base64,{image_base64}"
-            }
-        },
-    ]
-\end{verbatim}
-\textit{Đoạn mã: Xây dựng multipart content hỗ trợ vision.}
+\textbf{Hỗ trợ ảnh (Vision) cho phân tích CBC.} Khi bác sĩ upload ảnh phiếu xét nghiệm, hàm \texttt{\_build\_user\_content} chuyển nội dung thành multipart content. Nếu không có ảnh, hàm trả về chuỗi text thuần như thông thường. Nếu có ảnh, hàm dựng một danh sách theo chuẩn multimodal gồm hai phần: một phần \texttt{text} hướng dẫn LLM xử lý ảnh, và một phần \texttt{image\_url} chứa ảnh mã hóa dưới dạng data URL base64 (\texttt{data:<mime>;base64,<\dots>}) để mô hình vision đọc và trích xuất giá trị.
 
 LLM đọc ảnh, trích xuất chỉ số CBC (PLT, WBC, HCT, HGB, AST, ALT), rồi tự động gọi \texttt{fhir\_create\_cbc} để lưu FHIR và phân tích.
 
 \section{Cài đặt module sàng lọc SXHD}
 
-\subsection{Phân tích CBC (dengue\_cbc\_predict)}
-
-\begin{verbatim}
-# === Tieu cau (Platelets) - K/microL ===
-# Tieu cau giam la dau hieu chinh cua SXHD pha nguy hiem
-if plt < 20:    cbc_score += 1; warning_score += 1  # Cuc nang
-elif plt < 50:  cbc_score += 1; warning_score += 1  # Nang
-elif plt < 100: cbc_score += 1                       # Giam (chuan QD 2760)
-
-# === Bach cau (WBC) - K/microL ===
-# Leukopenia (bach cau giam) la tieu chi can lam sang SXHD
-if wbc < 4.0: cbc_score += 1
-
-# === Hematocrit (HCT) - % ===
-# Tang HCT > 20% so voi baseline => co dac mau (canh bao nang)
-hct_change = (hct - baseline) / baseline * 100
-if hct_change >= 20:   cbc_score += 1; warning_score += 2
-elif hct_change >= 10: cbc_score += 1; warning_score += 1
-
-# === Tong hop muc do nguy co ===
-# severe_flag: co dau hieu nang lam sang truoc do (vd soc, xuat huyet)
-if severe_flag or warning_score >= 2:
-    likelihood = "very_likely"   # Nguy co rat cao -> nhap vien gap
-elif cbc_score >= 2:
-    likelihood = "likely"        # Nguy co cao -> theo doi sat
-elif cbc_score >= 1:
-    likelihood = "possible"      # Co dau hieu -> xet nghiem them
-else:
-    likelihood = "unlikely"      # Khong co dau hieu
-\end{verbatim}
-\textit{Đoạn mã: Logic đánh giá mức độ nguy cơ từ CBC.}
-
-\subsection{Luồng phân tích CBC từ ảnh (Flow E --- Bác sĩ)}
-
-Hình~\ref{fig:seq-flow-e} mô tả luồng bác sĩ upload ảnh phiếu xét nghiệm CBC. Đây là luồng \textbf{dành riêng cho bác sĩ}: \texttt{dengue\_cbc\_predict} không có trong toolset bệnh nhân và nút upload ảnh bị ẩn trong giao diện bệnh nhân (\texttt{role=patient}).
-
-\begin{figure}[H]
-\centering
-\begin{tikzpicture}[
-  box/.style={rectangle, draw=orange!70, fill=orange!8, rounded corners=2pt,
-              minimum width=2.0cm, minimum height=0.55cm, font=\scriptsize, text centered},
-  msg/.style={-{Stealth[scale=0.8]}, thin},
-  ret/.style={-{Stealth[scale=0.8]}, thin, dashed, gray},
-  note/.style={font=\scriptsize, above}
-]
-\node[box] (bs)   at (0,    0) {Bác sĩ};
-\node[box] (fe)   at (2.8,  0) {Frontend};
-\node[box] (api)  at (5.6,  0) {FastAPI};
-\node[box] (ag)   at (8.4,  0) {Agent};
-\node[box] (llm)  at (11.2, 0) {LLM};
-\node[box] (fhir) at (14.0, 0) {Aidbox FHIR};
-
-\foreach \x in {0,2.8,5.6,8.4,11.2,14.0} {
-  \draw[dashed, gray!60] (\x,-0.35) -- (\x,-13.0);
-}
-
-\draw[msg] (0,-1.0)    -- node[note]{upload ảnh CBC + ``Phân tích giúp tôi''} (2.8,-1.0);
-\draw[msg] (2.8,-1.6)  -- node[note]{POST /chat/stream (role=doctor\_cbc, image\_b64)} (5.6,-1.6);
-\draw[msg] (5.6,-2.2)  -- node[note]{chat\_stream(role, image)} (8.4,-2.2);
-\draw[msg] (8.4,-2.8)  -- node[note]{messages + tools + image (vision content)} (11.2,-2.8);
-\draw[ret] (11.2,-3.4) -- node[note]{tool\_call: fhir\_search\_patient \{name: ...\}} (8.4,-3.4);
-\draw[msg] (8.4,-4.0)  -- node[note]{GET /fhir/Patient?name=...} (14.0,-4.0);
-\draw[ret] (14.0,-4.6) -- node[note]{\{patient\_id: P001, name: ...\}} (8.4,-4.6);
-\draw[msg] (8.4,-5.2)  -- node[note]{tool\_result $\to$ LLM context} (11.2,-5.2);
-\draw[ret] (11.2,-5.8) -- node[note]{tool\_call: fhir\_create\_cbc \{PLT=48, WBC=2.8, HCT=48\}} (8.4,-5.8);
-\draw[msg] (8.4,-6.4)  -- node[note]{POST /fhir/Observation (mã LOINC)} (14.0,-6.4);
-\draw[ret] (14.0,-7.0) -- node[note]{\{observation\_id: OBS-0123\}} (8.4,-7.0);
-\draw[msg] (8.4,-7.6)  -- node[note]{tool\_result $\to$ LLM context} (11.2,-7.6);
-\draw[ret] (11.2,-8.2) -- node[note]{tool\_call: dengue\_cbc\_predict \{PLT, WBC, HCT\}} (8.4,-8.2);
-\node[draw=gray!30, fill=gray!8, rounded corners=1pt, font=\tiny] at (9.8,-8.8) {tính điểm CBC (local)};
-\draw[msg] (8.4,-9.4)  -- node[note]{tool\_result: \{likelihood: ``likely'', reason: PLT$<$50\}} (11.2,-9.4);
-\draw[ret] (11.2,-10.0)-- node[note]{stream tokens (phân tích kết quả)} (8.4,-10.0);
-\draw[ret] (8.4,-10.6) -- node[note]{SSE events} (5.6,-10.6);
-\draw[ret] (5.6,-11.2) -- node[note]{SSE events} (2.8,-11.2);
-\draw[ret] (2.8,-11.8) -- node[note]{hiển thị CBC + đánh giá nguy cơ SXHD} (0,-11.8);
-\end{tikzpicture}
-\caption{Sơ đồ tuần tự Flow E --- Bác sĩ phân tích CBC từ ảnh upload (Doctor Only)}
-\label{fig:seq-flow-e}
-\end{figure}
+\textbf{Phân tích CBC (\texttt{dengue\_cbc\_predict}).} Logic đánh giá nguy cơ tính song song hai điểm: \texttt{cbc\_score} (số tiêu chí cận lâm sàng bất thường) và \texttt{warning\_score} (mức độ dấu hiệu cảnh báo nặng). Tiểu cầu giảm --- dấu hiệu chính của SXHD pha nguy hiểm --- được chấm theo ba ngưỡng (\texttt{<100}, \texttt{<50}, \texttt{<20}) theo chuẩn QĐ 2760, càng thấp càng tăng cả hai điểm. Bạch cầu giảm (\texttt{<4{,}0}) làm tăng \texttt{cbc\_score}. Hematocrit được so với baseline: nếu tăng từ 10\% trở lên (cảnh báo cô đặc máu) thì tăng điểm tương ứng, mức tăng $\geq 20\%$ cộng nặng nhất vào \texttt{warning\_score}. Cuối cùng, mức độ nguy cơ được tổng hợp: \texttt{very\_likely} (nhập viện gấp) khi có dấu hiệu nặng lâm sàng trước đó hoặc \texttt{warning\_score} $\geq 2$; \texttt{likely} khi \texttt{cbc\_score} $\geq 2$; \texttt{possible} khi \texttt{cbc\_score} $\geq 1$; ngược lại là \texttt{unlikely}.
 
 \section{Cài đặt module tra cứu số liệu dịch bệnh}
 
@@ -2155,12 +2029,7 @@ Module được cài đặt trong subpackage \texttt{tools/outbreak/} gồm 4 fi
 
 \subsection{Bóc tách dữ liệu bằng regex hai tầng}
 
-\textbf{Tầng 1 --- nhận diện liên kết bản tin} trong trang HTML bất kỳ (trang tìm kiếm hoặc trang danh mục). Biểu thức \texttt{(\textbackslash d\{1,2\})(\textbackslash d\{4\})} tách phần ``\{tuần\}\{năm\}'' dính liền: nhờ neo 4 chữ số ở năm, tuần một chữ số (vd \texttt{tuan-52026} = tuần 5/2026) vẫn tách đúng mà không nhầm với tuần hai chữ số.
-
-\begin{verbatim}
-_LINK_RE = re.compile(
-    r'href="([^"]*tinh-den-tuan-(\d{1,2})(\d{4})-[^"]*\.html)"')
-\end{verbatim}
+\textbf{Tầng 1 --- nhận diện liên kết bản tin} trong trang HTML bất kỳ (trang tìm kiếm hoặc trang danh mục). Biểu thức \texttt{(\textbackslash d\{1,2\})(\textbackslash d\{4\})} tách phần ``\{tuần\}\{năm\}'' dính liền: nhờ neo 4 chữ số ở năm, tuần một chữ số (vd \texttt{tuan-52026} = tuần 5/2026) vẫn tách đúng mà không nhầm với tuần hai chữ số. Cụ thể, biểu thức \texttt{\_LINK\_RE} bắt thuộc tính \texttt{href} của các liên kết chứa mẫu \texttt{tinh-den-tuan-} rồi tách riêng nhóm tuần (1--2 chữ số) và nhóm năm (4 chữ số) ngay từ URL bản tin.
 
 \textbf{Tầng 2 --- trích số liệu} từ nội dung bài (sau khi loại bỏ thẻ HTML, chuẩn hóa khoảng trắng) bằng 5 mẫu cố định ở Bảng~\ref{tab:outbreak-regex}.
 
@@ -2171,9 +2040,13 @@ _LINK_RE = re.compile(
 \textbf{Trường} & \textbf{Mẫu nhận dạng (rút gọn)} \\
 \hline
 Tuần / năm   & \texttt{tính đến tuần (N)/(YYYY)} \\
+\hline
 Số ca tuần   & \texttt{ghi nhận (số) trường hợp mắc bệnh sốt xuất huyết} \\
+\hline
 Lũy kế       & \texttt{Tổng số ca ... tích lũy ... là (số) ca} \\
+\hline
 Xu hướng     & \texttt{sốt xuất huyết (giảm|tăng|ổn định) (số)\%} \\
+\hline
 Ngày cập nhật & \texttt{Cập nhật: HH:MM - DD/MM/YYYY} \\
 \hline
 \end{tabular}
@@ -2183,30 +2056,11 @@ Ngày cập nhật & \texttt{Cập nhật: HH:MM - DD/MM/YYYY} \\
 
 Số liệu kiểu Việt Nam được chuẩn hóa khi parse: dấu ``.'' là phân cách hàng nghìn (\texttt{18.136} $\to$ 18136), dấu ``,'' là thập phân (\texttt{5,9\%} $\to$ 5.9).
 
-\subsection{Tra cứu động và xử lý nhiễu tìm kiếm}
-
-Để tra một tuần bất kỳ, module gửi truy vấn tới ô tìm kiếm HCDC với từ khóa ``tuan N''. Do tìm kiếm trả kết quả \textit{mờ} (vd ``tuan 5'' lẫn cả tuần 50, 51, 52), bước lọc \textbf{bắt buộc khớp chính xác} cặp (tuần, năm) bóc từ URL --- kết quả nhiễu bị loại bỏ:
-
-\begin{verbatim}
-def search_bulletin_url(week, year):
-    resp = httpx.get(SEARCH_URL, params={"keyword": f"tuan {week}"}, ...)
-    # _extract_bulletins -> {(year, week): url}; chi lay dung (year, week)
-    return _extract_bulletins(resp.text).get((year, week))
-\end{verbatim}
+\textbf{Tra cứu động và xử lý nhiễu tìm kiếm.} Để tra một tuần bất kỳ, module gửi truy vấn tới ô tìm kiếm HCDC với từ khóa ``tuan N''. Do tìm kiếm trả kết quả \textit{mờ} (vd ``tuan 5'' lẫn cả tuần 50, 51, 52), bước lọc \textbf{bắt buộc khớp chính xác} cặp (tuần, năm) bóc từ URL --- kết quả nhiễu bị loại bỏ. Hàm \texttt{search\_bulletin\_url} gửi truy vấn tìm kiếm với từ khóa ``tuan N'', bóc toàn bộ liên kết trả về thành dictionary ánh xạ cặp \texttt{(năm, tuần)} sang URL, rồi chỉ lấy đúng URL ứng với cặp \texttt{(year, week)} cần tra.
 
 Tuần mới nhất được lấy từ trang danh mục (chọn cặp (năm, tuần) lớn nhất); các tuần lịch sử lấy qua tìm kiếm. Cả hai dùng chung hàm \texttt{\_extract\_bulletins}.
 
-\subsection{Cache lịch sử và so sánh tuần-trên-tuần}
-
-Mỗi tuần tra được lưu vào bảng \texttt{outbreak\_history} (SQLite, khóa chính \texttt{disease+year+week}, \texttt{INSERT OR REPLACE}). Phép so sánh với tuần liền trước dùng truy vấn SQL lấy tuần gần nhất nhỏ hơn, kết hợp kiểm tra đúng liền kề ($\text{week}-1$), rồi tính chênh lệch bằng Python:
-
-\begin{verbatim}
-prev = get_previous(disease, year, week)   # ORDER BY year,week DESC LIMIT 1
-if prev and prev.week == week - 1:
-    delta = cur_cases - prev_cases          # vd 409 - 397 = 12
-    pct   = round(delta / prev_cases * 100, 1)
-    wow_text = f"tang {delta} ca (+{pct}%) so voi tuan {prev.week}"
-\end{verbatim}
+\textbf{Cache lịch sử và so sánh tuần-trên-tuần.} Mỗi tuần tra được lưu vào bảng \texttt{outbreak\_history} (SQLite, khóa chính \texttt{disease+year+week}, \texttt{INSERT OR REPLACE}). Phép so sánh với tuần liền trước dùng truy vấn SQL lấy tuần gần nhất nhỏ hơn, kết hợp kiểm tra đúng liền kề ($\text{week}-1$), rồi tính chênh lệch bằng Python. Hàm \texttt{get\_previous} lấy bản ghi tuần gần nhất nhỏ hơn (\texttt{ORDER BY year, week DESC LIMIT 1}); nếu đúng là tuần liền kề ($\text{week}-1$), hệ thống tính chênh lệch số ca tuyệt đối và phần trăm, rồi ghép thành chuỗi mô tả \texttt{wow\_text} (ví dụ ``tăng 12 ca (+3{,}0\%) so với tuần trước'').
 
 Chuỗi \texttt{wow\_text} hoàn chỉnh được đưa thẳng vào kết quả tool; LLM chỉ render lại, bảo đảm con số không bị mô hình tính sai.
 
@@ -2214,17 +2068,7 @@ Chuỗi \texttt{wow\_text} hoàn chỉnh được đưa thẳng vào kết quả
 
 Module được cài đặt trong subpackage \texttt{tools/knowledge/} và được \textbf{nạp động} nhờ quy ước đặt tên: hàm nạp công cụ của Agent quét thêm mẫu \texttt{*\_info.py}, nên chỉ cần thêm file mới mà không sửa lõi. Công cụ được cấp cho cả vai trò bệnh nhân và bác sĩ. Toàn bộ truy hồi dùng \texttt{httpx} sẵn có, không phát sinh thư viện phụ thuộc mới.
 
-\subsection{Truy hồi từ NCBI bằng tìm kiếm từ khóa}
-
-Module gọi NCBI E-utilities qua hai cơ sở dữ liệu: \texttt{db=books} (StatPearls --- chuyên luận thuốc) và \texttt{db=pubmed} (bằng chứng nghiên cứu). Vì tìm kiếm là \textit{lexical} (khớp từ ngữ, không hiểu nghĩa), truy vấn được mở rộng bằng bảng từ đồng nghĩa và bổ sung từ khóa theo khía cạnh hỏi (liều, tác dụng phụ, tương tác):
-
-\begin{verbatim}
-_SYNONYMS = {"paracetamol": "acetaminophen", "lasix": "furosemide", ...}
-syn  = _SYNONYMS.get(drug.lower())
-base = f"({drug} OR {syn})" if syn else drug
-term = f"{base} AND adverse effects"        # vd khia canh "tac dung phu"
-ids  = esearch(db="pubmed", term=term, retmax=3, sort="relevance")
-\end{verbatim}
+\textbf{Truy hồi từ NCBI bằng tìm kiếm từ khóa.} Module gọi NCBI E-utilities qua hai cơ sở dữ liệu: \texttt{db=books} (StatPearls --- chuyên luận thuốc) và \texttt{db=pubmed} (bằng chứng nghiên cứu). Vì tìm kiếm là \textit{lexical} (khớp từ ngữ, không hiểu nghĩa), truy vấn được mở rộng bằng bảng từ đồng nghĩa và bổ sung từ khóa theo khía cạnh hỏi (liều, tác dụng phụ, tương tác). Một dictionary \texttt{\_SYNONYMS} ánh xạ tên thông dụng sang tên chuẩn (vd \texttt{paracetamol} $\to$ \texttt{acetaminophen}); nếu tra được từ đồng nghĩa, truy vấn được mở rộng thành \texttt{(tên OR đồng\_nghĩa)}, rồi nối thêm cụm từ khóa theo khía cạnh hỏi (vd \texttt{AND adverse effects} cho ``tác dụng phụ'') trước khi gọi \texttt{esearch} lấy các ID liên quan nhất.
 
 Khóa API NCBI (\texttt{NCBI\_API\_KEY}) được nạp tùy chọn từ biến môi trường, nâng giới hạn gọi từ 3 lên 10 request/giây --- cần thiết vì mỗi lần tra thực hiện nhiều lời gọi liên tiếp.
 
@@ -2239,7 +2083,9 @@ Phiên bản đầu gộp toàn bộ abstract thành một khối ngữ cảnh d
 \textbf{Câu trả lời (trích)} & \textbf{Trước} & \textbf{Sau} \\
 \hline
 ``siêu nhiễm \textit{Ps. aeruginosa}/enterococci'' & [2] (sai) & \textbf{[3] (đúng)} \\
+\hline
 ``viêm nội nhãn (endophthalmitis)'' & --- & [2] (đúng) \\
+\hline
 ``chi tiết liều xem StatPearls'' & --- & [1] (đúng) \\
 \hline
 \end{tabular}
@@ -2247,55 +2093,19 @@ Phiên bản đầu gộp toàn bộ abstract thành một khối ngữ cảnh d
 \label{tab:cite-fix}
 \end{table}
 
-Cách khắc phục: lấy abstract \textbf{theo từng bài} rồi \textbf{gắn nhãn} \texttt{[n]} (khớp số thứ tự nguồn) vào đầu mỗi đoạn bằng chứng. LLM được hướng dẫn dùng đúng nhãn này, không đánh số lại:
-
-\begin{verbatim}
-for pid in pmids:
-    n += 1
-    sources.append({"n": n, "title": title, "url": pubmed_url(pid)})
-    abstract = efetch(db="pubmed", id=pid, rettype="abstract")  # tung bai
-    evidence.append(f"[{n}] " + abstract)   # gan nhan -> trich dan khong lech
-\end{verbatim}
+Cách khắc phục: lấy abstract \textbf{theo từng bài} rồi \textbf{gắn nhãn} \texttt{[n]} (khớp số thứ tự nguồn) vào đầu mỗi đoạn bằng chứng. LLM được hướng dẫn dùng đúng nhãn này, không đánh số lại. Với mỗi PMID, hệ thống tăng số thứ tự nguồn \texttt{n}, thêm bản ghi nguồn (số thứ tự, tiêu đề, URL PubMed) vào danh sách \texttt{sources}, lấy abstract \textit{theo từng bài} qua \texttt{efetch}, rồi gắn tiền tố nhãn \texttt{[n]} vào đầu mỗi đoạn bằng chứng --- nhờ vậy mỗi đoạn được neo cứng vào đúng nguồn của nó.
 
 Kết hợp với ràng buộc grounding trong system prompt (chỉ nêu thông tin có trong bằng chứng, không tự ghi liều), module trả lời trung thực: khi abstract không nêu liều, câu trả lời chủ động chỉ tới chuyên luận StatPearls thay vì bịa con số.
 
-\subsection{Hiển thị thẻ nguồn và chip trích dẫn}
+\textbf{Hiển thị thẻ nguồn và chip trích dẫn.} Khi một công cụ trả về trường \texttt{sources}, lớp Agent phát một sự kiện SSE \texttt{sources} để giao diện dựng \textbf{thẻ nguồn} (kèm liên kết) --- cơ chế dùng chung cho mọi công cụ có dẫn nguồn. Sau khi parse kết quả công cụ, nếu có trường \texttt{sources}, Agent đẩy ngay một sự kiện SSE loại \texttt{sources} mang danh sách nguồn ra client.
 
-Khi một công cụ trả về trường \texttt{sources}, lớp Agent phát một sự kiện SSE \texttt{sources} để giao diện dựng \textbf{thẻ nguồn} (kèm liên kết) --- cơ chế dùng chung cho mọi công cụ có dẫn nguồn:
-
-\begin{verbatim}
-result = json.loads(result_str)
-if result.get("sources"):
-    yield sse({"type": "sources", "items": result["sources"]})
-\end{verbatim}
-
-Giao diện lưu danh sách nguồn, dựng hàng thẻ phía trên câu trả lời, và thay mỗi số \texttt{[n]} trong văn bản bằng một chip bấm được trỏ tới đúng nguồn:
-
-\begin{verbatim}
-html = html.replace(/\[(\d+)\]/g, (_m, n) => {
-  const s = sources[parseInt(n) - 1];
-  return `<a class="cite-chip" href="${s.url}" target="_blank">${n}</a>`;
-});
-\end{verbatim}
+Giao diện lưu danh sách nguồn, dựng hàng thẻ phía trên câu trả lời, và thay mỗi số \texttt{[n]} trong văn bản bằng một chip bấm được trỏ tới đúng nguồn: phía frontend dùng một biểu thức chính quy quét mọi chuỗi dạng \texttt{[n]}, tra phần tử thứ \texttt{n} trong mảng nguồn, rồi thay bằng một thẻ \texttt{<a>} (lớp \texttt{cite-chip}) liên kết tới URL của nguồn đó.
 
 Kết quả là giao diện trả lời có thẻ nguồn và chip trích dẫn bấm được, tương tự các trợ lý y khoa thương mại, nhưng mọi phát biểu đều truy ngược được về tài liệu gốc.
 
-\section{Cài đặt module Sinh hiệu, Dị ứng và Đơn thuốc}
+\section{Cài đặt module Dị ứng và Đơn thuốc}
 
-Giai đoạn 2 mở rộng hệ thống với 3 module lâm sàng cốt lõi mới và refactor workflow ``kết thúc khám'', tổng cộng \textbf{10 file Python mới} (~1500 dòng code) và \textbf{6 endpoint REST mới}.
-
-\subsection{Cài đặt module Sinh hiệu (\texttt{fhir\_create\_vitals})}
-
-Tool nhận đầu vào là dict các chỉ số sinh hiệu (huyết áp, mạch, nhiệt độ, SpO2, ...) và thực hiện 4 bước:
-
-\begin{enumerate}
-  \item \textbf{Phân tích cảnh báo}: gọi 5 hàm \texttt{\_interp\_temp}, \texttt{\_interp\_hr}, \texttt{\_interp\_rr}, \texttt{\_interp\_spo2}, \texttt{\_interp\_bp} để xác định interpretation code (N/H/HH/L/LL) và message tiếng Việt cho mỗi chỉ số.
-  \item \textbf{Build FHIR Observation panel}: tạo resource với \texttt{category = vital-signs}, code LOINC \texttt{85353-1}, mỗi chỉ số là 1 \texttt{component[]} có \texttt{code} (LOINC), \texttt{valueQuantity} (UCUM unit), \texttt{interpretation} (HL7 code), và \texttt{referenceRange.text} (cite nguồn).
-  \item \textbf{POST lên Aidbox} qua \texttt{fhir\_post}.
-  \item \textbf{Trả về kết quả} gồm \texttt{vitals\_saved} (dict tóm tắt), \texttt{alerts[]} (list cảnh báo theo severity ``warning''/``critical''), và \texttt{summary} text.
-\end{enumerate}
-
-Riêng huyết áp được xử lý đặc biệt: hàm \texttt{\_interp\_bp} nhận cả tâm thu và tâm trương, phân độ riêng từng giá trị, sau đó lấy mức nặng hơn để xác định alert chung (theo nguyên tắc của BYT 3192). VD sys=145, dia=80 $\to$ ``THA độ 1 (145/80 mmHg)'' do tâm thu đạt mức THA độ 1.
+Giai đoạn 2 mở rộng hệ thống với các module lâm sàng cốt lõi mới --- kiểm tra dị ứng thuốc và kê đơn --- cùng với refactor workflow ``kết thúc khám''.
 
 \subsection{Cài đặt module Allergy Check 4 lớp (\texttt{fhir\_check\_drug\_allergy})}
 
@@ -2306,30 +2116,7 @@ Tool nhận \texttt{patient\_id} và \texttt{drug\_id} (hoặc \texttt{drug\_nam
   \item \texttt{suggested\_alternatives[]}: list tối đa 5 thuốc thay thế cùng \texttt{category} nhưng khác \texttt{drug\_class}.
 \end{itemize}
 
-Thuật toán duyệt từng dị ứng đang hoạt động của bệnh nhân và kiểm tra tuần tự bốn lớp theo mức rủi ro giảm dần (trùng tên $\to$ cùng nhóm dược lý $\to$ phản ứng chéo $\to$ an toàn), sau đó lấy mức cảnh báo nặng nhất. Nguyên tắc thiết kế là \textit{ưu tiên an toàn cho bệnh nhân hơn là bỏ sót cảnh báo}:
-
-\begin{verbatim}
-allergies = fhir_get_allergies(patient_id, active_only=True)
-checks = []
-
-for a in allergies:
-    if a.category != "medication":      # chi xet di ung thuoc
-        continue
-    # Lop 1 -- Trung ten truc tiep -> critical
-    if substance.lower() == drug.name.lower():
-        checks.append(critical("direct_match", substance)); continue
-    # Lop 2 & 3 -- Anh xa nhom duoc ly, kiem tra phan ung cheo
-    for ac in match_allergy_classes(substance):
-        rule = check_cross_reactivity(ac, drug.drug_class)
-        if rule:            # cung nhom -> critical; cheo -> warning
-            checks.append(rule)
-
-# Lop 4 -- Tong hop verdict: lay muc nang nhat
-if   any(c.severity == "critical" for c in checks): verdict = "block"
-elif any(c.severity == "warning"  for c in checks): verdict = "warn"
-else:                                               verdict = "clear"
-\end{verbatim}
-\textit{Đoạn mã: Pseudocode kiểm tra dị ứng 4 lớp (rút gọn).}
+Thuật toán duyệt từng dị ứng đang hoạt động (chỉ xét dị ứng thuốc) của bệnh nhân và kiểm tra tuần tự bốn lớp theo mức rủi ro giảm dần. \textbf{Lớp 1} so khớp trực tiếp tên thuốc kê với chất gây dị ứng --- nếu trùng tên thì cảnh báo \textit{critical} (chặn) ngay. Nếu không trùng tên, \textbf{lớp 2 và 3} ánh xạ chất gây dị ứng sang nhóm dược lý rồi tra bảng phản ứng chéo: cùng một nhóm dược lý là \textit{critical}, còn phản ứng chéo giữa hai nhóm khác nhau là \textit{warning}. Cuối cùng, \textbf{lớp 4} tổng hợp kết luận bằng cách lấy mức cảnh báo nặng nhất trong tất cả phát hiện --- có bất kỳ \textit{critical} thì kết luận ``block'', có \textit{warning} thì ``warn'', còn lại là ``clear''. Nguyên tắc thiết kế xuyên suốt là \textit{ưu tiên an toàn cho bệnh nhân hơn là bỏ sót cảnh báo}.
 
 Hàm \texttt{match\_allergy\_classes} tra cứu dictionary \texttt{ALLERGY\_ALIASES} để map free text (vd ``Bactrim'', ``Augmentin'', ``Sulfa'') về \texttt{drug\_class} chuẩn. Hàm \texttt{check\_cross\_reactivity} tra cứu dictionary \texttt{CROSS\_REACTIVITY} chứa 7 cặp đã cite nguồn (bảng~\ref{tab:cross-reactivity}). Quy tắc same-class được tự sinh trong code (không hard-code vì có 50+ class).
 
@@ -2367,40 +2154,11 @@ Tool nhận \texttt{patient\_id}, \texttt{practitioner\_id}, \texttt{diagnosis},
 
 \section{Cài đặt API với FastAPI}
 
-\subsection{Endpoint chat streaming}
-
-Endpoint dùng mẫu \textit{producer--consumer} qua hàng đợi (\texttt{asyncio.Queue}) để chạy agent đồng bộ bên trong server bất đồng bộ mà không chặn event loop:
-
-\begin{verbatim}
-@router.post("/chat/stream")
-async def chat_stream_endpoint(body: ChatRequest):
-    session_id = _resolve_session(body)
-    history = list(_load_session(session_id))
-    loop = asyncio.get_event_loop()
-    queue = asyncio.Queue()
-
-    def producer():            # chay agent (sync) trong thread rieng
-        for chunk in chat_stream(body.message, history, ...):
-            loop.call_soon_threadsafe(queue.put_nowait, chunk)
-        loop.call_soon_threadsafe(queue.put_nowait, None)   # sentinel
-
-    async def generate():      # consumer: yield chunk ra client
-        ThreadPoolExecutor(1).submit(producer)
-        while (item := await queue.get()) is not None:
-            yield item
-        _save_session(session_id, history)
-
-    return StreamingResponse(generate(), media_type="text/event-stream")
-\end{verbatim}
-\textit{Đoạn mã: Triển khai SSE streaming endpoint (rút gọn).}
+Endpoint chat streaming dùng mẫu \textit{producer--consumer} qua hàng đợi (\texttt{asyncio.Queue}) để chạy agent đồng bộ bên trong server bất đồng bộ mà không chặn event loop. Một hàm \textit{producer} chạy agent (vốn đồng bộ) trong thread riêng qua \texttt{ThreadPoolExecutor}, đẩy từng chunk vào hàng đợi một cách thread-safe và kết thúc bằng một giá trị \textit{sentinel}. Hàm \textit{consumer} bất đồng bộ lần lượt lấy chunk từ hàng đợi yield ra client cho tới khi gặp sentinel, sau đó lưu lại lịch sử phiên. Toàn bộ được bọc trong \texttt{StreamingResponse} với media type \texttt{text/event-stream} để phát SSE.
 
 \section{Giao diện người dùng}
 
-Hệ thống cung cấp hai giao diện web tách biệt, xây dựng bằng React + TypeScript (Vite) với SSE streaming để hiển thị phản hồi token-by-token.
-
-\subsection{Giao diện tổng quan}
-
-Hệ thống có hai giao diện tách biệt theo vai trò: giao diện bệnh nhân (Hình~\ref{fig:ui-patient}) tập trung vào hội thoại đơn giản, còn giao diện bác sĩ (Hình~\ref{fig:ui-doctor}) bổ sung các công cụ lâm sàng và nút upload ảnh xét nghiệm.
+Hệ thống cung cấp hai giao diện web tách biệt theo vai trò, xây dựng bằng React + TypeScript (Vite) với SSE streaming để hiển thị phản hồi token-by-token: giao diện bệnh nhân (Hình~\ref{fig:ui-patient}) tập trung vào hội thoại đơn giản, còn giao diện bác sĩ (Hình~\ref{fig:ui-doctor}) bổ sung các công cụ lâm sàng và nút upload ảnh xét nghiệm.
 
 \begin{figure}[htbp]
 \centering
@@ -2416,9 +2174,7 @@ Hệ thống có hai giao diện tách biệt theo vai trò: giao diện bệnh 
 \label{fig:ui-doctor}
 \end{figure}
 
-\subsection{Kết quả các chức năng phía bệnh nhân}
-
-Các Hình~\ref{fig:feat-triage}--\ref{fig:feat-email} minh hoạ những chức năng tự phục vụ của bệnh nhân: từ phân loại triệu chứng, đặt lịch, sàng lọc dịch bệnh, tới tra cứu tri thức có dẫn nguồn.
+Về phía bệnh nhân, các Hình~\ref{fig:feat-triage}--\ref{fig:feat-email} minh hoạ những chức năng tự phục vụ: từ phân loại triệu chứng, đặt lịch, sàng lọc dịch bệnh, tới tra cứu tri thức có dẫn nguồn.
 
 \begin{figure}[htbp]
 \centering
@@ -2462,9 +2218,7 @@ Các Hình~\ref{fig:feat-triage}--\ref{fig:feat-email} minh hoạ những chức
 \label{fig:feat-email}
 \end{figure}
 
-\subsection{Kết quả các chức năng hỗ trợ quyết định lâm sàng (bác sĩ)}
-
-Các Hình~\ref{fig:feat-cbc}--\ref{fig:feat-allergy-alert} minh hoạ ba chức năng Clinical Decision Support nổi bật phía bác sĩ.
+Về phía bác sĩ, các Hình~\ref{fig:feat-cbc}--\ref{fig:feat-allergy-alert} minh hoạ các chức năng Clinical Decision Support nổi bật.
 
 \begin{figure}[htbp]
 \centering
@@ -2475,24 +2229,17 @@ Các Hình~\ref{fig:feat-cbc}--\ref{fig:feat-allergy-alert} minh hoạ ba chức
 
 \begin{figure}[htbp]
 \centering
-\safeimg{feat-vitals-cds.png}{0.8\linewidth}
-\caption{Ghi nhận sinh hiệu với cảnh báo bất thường tự động theo NEWS2 và QĐ 3192 (F-D07)}
-\label{fig:feat-vitals-cds}
-\end{figure}
-
-\begin{figure}[htbp]
-\centering
 \safeimg{feat-allergy-alert.png}{0.8\linewidth}
 \caption{Cảnh báo dị ứng khi kê đơn --- phản ứng chéo Penicillin--Cephalosporin (F-D09)}
 \label{fig:feat-allergy-alert}
 \end{figure}
 
 % =====================================================================
-%  CHƯƠNG 4 — KIỂM THỬ, ĐÁNH GIÁ VÀ TRIỂN KHAI
+%  CHƯƠNG 4 — KIỂM THỬ VÀ ĐÁNH GIÁ
 % =====================================================================
-\chapter{Kiểm thử, đánh giá và triển khai}
+\chapter{Kiểm thử và đánh giá}
 
-Chương này trình bày quá trình kiểm thử các module chức năng, đánh giá độ chính xác và hiệu năng của hệ thống, cùng phương án triển khai thực tế.
+Chương này trình bày quá trình kiểm thử các module chức năng, đánh giá độ chính xác và hiệu năng của hệ thống.
 
 \section{Kiểm thử hệ thống}
 
@@ -2502,51 +2249,11 @@ Module \texttt{dengue\_symptom\_assessment} được đánh giá theo hai tầng
 
 \subsubsection{Tầng 1 — Kiểm thử đơn vị (Unit Test)}
 
-20 ca kiểm thử được xây dựng dựa trên tiêu chí phân độ SXHD của QĐ~2760/QĐ-BYT~2023, bao phủ đủ 4 mức độ và các trường hợp biên (sốt đúng 7 ngày, đúng 2 triệu chứng, dấu hiệu cảnh báo bypass cổng dịch tễ). Đầu vào là các tham số có cấu trúc truyền thẳng vào hàm \texttt{run()}, không qua LLM.
-
-\begin{table}[H]
-\centering
-\small
-\begin{tabular}{|l|c|c|c|c|}
-\hline
-\textbf{Mức độ} & \textbf{Số ca} & \textbf{Đúng} & \textbf{Sai} & \textbf{Accuracy} \\
-\hline
-severe  & 4 & 4 & 0 & 100\% \\
-warning & 5 & 5 & 0 & 100\% \\
-mild    & 5 & 5 & 0 & 100\% \\
-none    & 6 & 6 & 0 & 100\% \\
-\hline
-\textbf{Tổng} & \textbf{20} & \textbf{20} & \textbf{0} & \textbf{100\%} \\
-\hline
-\end{tabular}
-\caption{Kết quả kiểm thử đơn vị module sàng lọc SXHD (20 ca)}
-\label{tab:dengue-unit}
-\end{table}
-
-Kết quả 100\% xác nhận rằng cây quyết định phân loại được cài đặt đúng theo QĐ 2760/QĐ-BYT 2023.
+Logic phân loại được kiểm thử trực tiếp bằng cách truyền tham số có cấu trúc vào hàm \texttt{run()} (không qua LLM), trên các kịch bản chuẩn theo tiêu chí phân độ của QĐ~2760/QĐ-BYT~2023 --- bao phủ đủ bốn mức độ và các trường hợp biên (sốt đúng 7 ngày, đúng 2 triệu chứng, dấu hiệu cảnh báo bypass cổng dịch tễ). Kết quả phân loại khớp hoàn toàn với phác đồ, xác nhận cây quyết định được cài đặt đúng.
 
 \subsubsection{Tầng 2 — Kiểm thử end-to-end qua LLM}
 
-15 ca kiểm thử sử dụng mô tả triệu chứng bằng tiếng Việt tự nhiên (như bệnh nhân thực tế nhập vào chatbot). LLM phân tích ngữ nghĩa, trích xuất tham số và gọi tool \texttt{dengue\_symptom\_assessment}. Đây là tầng đánh giá khả năng hiểu ngôn ngữ tự nhiên của hệ thống agent.
-
-\begin{table}[H]
-\centering
-\small
-\begin{tabular}{|l|c|c|c|c|c|}
-\hline
-\textbf{Mức độ} & \textbf{Số ca} & \textbf{Đúng} & \textbf{Precision} & \textbf{Recall} & \textbf{F1} \\
-\hline
-severe  & 3 & 3 & 100\% & 100\% & 1.00 \\
-warning & 4 & 4 & 100\% & 100\% & 1.00 \\
-mild    & 4 & 4 &  80\% & 100\% & 0.89 \\
-none    & 4 & 3 & 100\% &  75\% & 0.86 \\
-\hline
-\textbf{Tổng} & \textbf{15} & \textbf{14} & \multicolumn{2}{c|}{} & \textbf{Accuracy 93.3\%} \\
-\hline
-\end{tabular}
-\caption{Kết quả kiểm thử end-to-end sàng lọc SXHD qua LLM (15 ca)}
-\label{tab:dengue-e2e}
-\end{table}
+Ở tầng này, hệ thống nhận mô tả triệu chứng bằng tiếng Việt tự nhiên (như bệnh nhân thực tế nhập vào chatbot); LLM phân tích ngữ nghĩa, trích xuất tham số rồi gọi tool \texttt{dengue\_symptom\_assessment}. Đây là tầng đánh giá khả năng hiểu ngôn ngữ tự nhiên của agent. Hệ thống phân loại đúng phần lớn các ca, đặc biệt chính xác ở hai mức quan trọng nhất về lâm sàng là severe và warning.
 
 \textbf{Phân tích ca sai (E-N01):} Bệnh nhân mô tả \textit{``đang ở Hà Nội quận Ba Đình, không có ai xung quanh bị sốt xuất huyết''} — LLM suy luận \texttt{in\_epidemic\_area=True} do Hà Nội là thành phố có nguy cơ dịch tễ cao, trong khi đáp án chuẩn là \texttt{False} (không có ổ dịch cục bộ). Đây là \textbf{false positive an toàn} về mặt lâm sàng — hệ thống cảnh báo thừa nhưng không bỏ sót ca bệnh. Ngưỡng xác nhận dịch tễ có thể được tinh chỉnh bằng cách bổ sung danh sách vùng dịch cụ thể vào knowledge base.
 
@@ -2563,34 +2270,25 @@ Bảng~\ref{tab:cbc-test} trình bày kết quả kiểm thử module \texttt{de
 \textbf{Đầu vào (PLT / WBC / HCT)} & \textbf{Kết quả} & \textbf{Giải thích} \\
 \hline
 PLT=85, WBC=3.2, ngày sốt 4 & \texttt{likely} & PLT$<$100 + WBC$<$4, ngày nguy hiểm \\
+\hline
 PLT=45, WBC=2.8, HCT tăng 37\%, AST=520 & \texttt{very\_likely} & PLT$<$50 + warning score cao \\
+\hline
 PLT=240, WBC=6.5, ngày sốt 2 & \texttt{unlikely} & CBC bình thường, không có tiêu chí \\
+\hline
 PLT=30, WBC=2.0, AST=1200 & \texttt{very\_likely} & Suy gan nặng, PLT$<$50 \\
+\hline
 PLT=72, WBC=6.8 & \texttt{possible} & Chỉ 1 tiêu chí (PLT$<$100) \\
+\hline
 PLT=18, WBC=1.5, HCT tăng 25\% & \texttt{very\_likely} & PLT$<$20 + HCT tăng mạnh \\
+\hline
 PLT=150, WBC=3.8 & \texttt{possible} & Chỉ WBC giảm nhẹ \\
+\hline
 PLT=95, WBC=4.2, HCT tăng 22\% & \texttt{likely} & PLT$<$100 + HCT tăng $\geq$20\% \\
 \hline
 \end{tabular}
 \caption{Kết quả kiểm thử module đánh giá nguy cơ SXHD từ CBC}
 \label{tab:cbc-test}
 \end{table}
-
-\subsection{Kiểm thử module Sinh hiệu và cảnh báo CDS}
-
-Module sinh hiệu được kiểm thử ở 2 tầng:
-
-\textbf{Tầng 1 --- Kiểm thử ngưỡng cảnh báo (unit test).} 28 test case được viết để verify 5 hàm interpretation (\texttt{\_interp\_temp}, \texttt{\_interp\_hr}, \texttt{\_interp\_rr}, \texttt{\_interp\_spo2}, \texttt{\_interp\_bp}), phủ đủ 5 mức N/H/HH/L/LL. Kết quả: \textbf{28/28 case pass}, các edge case như HA 145/80 (THA độ 1 do isolated systolic) và HA 130/105 (THA độ 2 do isolated diastolic) đều được phân loại đúng theo nguyên tắc ``lấy mức nặng hơn'' của BYT 3192.
-
-\textbf{Tầng 2 --- Kiểm thử end-to-end trên Aidbox.} 4 case thực tế được POST lên Aidbox, sau đó GET lại để verify roundtrip:
-\begin{itemize}
-  \item Case bình thường: HA 120/80, mạch 72, nhiệt độ 36.8°C, SpO2 98\% $\to$ alerts rỗng.
-  \item Case warning: HA 170/102, mạch 105, nhiệt độ 38.9°C $\to$ 3 alerts severity ``warning''.
-  \item Case critical: HA 80/50, mạch 135, nhiệt độ 39.6°C, SpO2 88\% $\to$ 4 alerts severity ``critical''.
-  \item Case API endpoint qua \texttt{POST /api/vitals}: HA 145/95, mạch 88, nhiệt độ 37.2°C $\to$ saved + 1 warning.
-\end{itemize}
-
-Tất cả 4 record được lưu thành công vào Aidbox với observation\_id và đọc lại được qua \texttt{fhir\_get\_observations(category=``vital-signs'')}, xác nhận tính toàn vẹn của module.
 
 \subsection{Kiểm thử module Drug Allergy Check 4 lớp}
 
@@ -2603,9 +2301,13 @@ Module được kiểm thử với BN Nguyễn Văn A (đã ghi nhận dị ứn
 \textbf{Thuốc test} & \textbf{Verdict} & \textbf{Cảnh báo} \\
 \hline
 amoxicillin-500 & block & BN dị ứng nhóm penicillin --- thuốc kê CÙNG nhóm dược lý, KHÔNG được kê \\
+\hline
 cefuroxime-500 & warn & BN dị ứng Penicillin --- Cephalosporin có nguy cơ phản ứng chéo 2--4.8\% \\
+\hline
 azithromycin-500 & clear & Không liên quan (Macrolide) \\
+\hline
 paracetamol-500 & clear & Không liên quan \\
+\hline
 ibuprofen-400 & clear & NSAID --- BN không có dị ứng NSAID \\
 \hline
 \end{tabular}
@@ -2645,15 +2347,25 @@ Bảng~\ref{tab:role-test} kiểm tra tính đúng đắn của phân quyền:
 \textbf{Thao tác} & \textbf{Role} & \textbf{Kết quả} & \textbf{Ghi chú} \\
 \hline
 Phân tích CBC & patient & Bị chặn & Tool không có trong bộ \\
+\hline
 Phân tích CBC & doctor\_cbc & Thành công & Có trong toolset \\
+\hline
 Duyệt lịch hẹn & patient & Bị chặn & Tool không tồn tại \\
+\hline
 Duyệt lịch hẹn & doctor\_appointments & Thành công & Có trong toolset \\
+\hline
 Xem hồ sơ BN & patient & Bị chặn & Không có quyền \\
+\hline
 Xem hồ sơ BN & doctor\_records & Thành công & Có trong toolset \\
+\hline
 Đặt lịch & patient & Thành công & Có trong toolset bệnh nhân \\
+\hline
 Upload ảnh CBC & patient & Không có nút & UI ẩn nút upload \\
+\hline
 Xem hồ sơ của mình & patient (đã đăng nhập) & Thành công & Token xác thực đúng patient\_id \\
+\hline
 Xem hồ sơ người khác & patient (đã đăng nhập) & Bị chặn & Agent từ chối theo system prompt \\
+\hline
 Giả mạo patient\_id & patient (gửi thẳng API) & Bị chặn & Backend bỏ qua, dùng token \\
 \hline
 \end{tabular}
@@ -2667,18 +2379,26 @@ Các luồng chính được kiểm thử end-to-end qua giao diện web:
 
 \begin{table}[H]
 \centering
-\begin{tabular}{|l|p{4cm}|p{2.5cm}|p{4cm}|}
+\begin{tabular}{|l|p{4cm}|p{1.6cm}|>{\raggedright\arraybackslash\renewcommand{\_}{\textunderscore\penalty0}}p{4.8cm}|}
 \hline
 \textbf{Flow} & \textbf{Mô tả} & \textbf{Kết quả} & \textbf{Tool được gọi} \\
 \hline
 A & Đặt lịch trực tiếp với khoa và ngày cụ thể & PASS & fhir\_create\_appointment \\
+\hline
 B & Triage từ triệu chứng, phân mức ưu tiên & PASS & fhir\_triage\_assessment \\
+\hline
 C & Gợi ý khoa từ mô tả triệu chứng & PASS & fhir\_suggest\_department (RAG) \\
+\hline
 D & Sàng lọc SXHD --- bệnh nhân, 2 lượt & PASS & dengue\_symptom\_assessment \\
+\hline
 E & Phân tích CBC từ ảnh --- bác sĩ & PASS & fhir\_create\_cbc + dengue\_cbc\_predict \\
+\hline
 F & Duyệt/từ chối lịch hẹn & PASS & fhir\_confirm/reject\_appointment \\
+\hline
 G & Hủy lịch hẹn bằng tên bệnh nhân & PASS & fhir\_cancel\_appointment \\
+\hline
 H & Xem lịch sử xét nghiệm & PASS & fhir\_get\_observations \\
+\hline
 I & Bệnh nhân đăng nhập xem hồ sơ của mình & PASS & fhir\_get\_patient\_history (token auth) \\
 \hline
 \end{tabular}
@@ -2697,10 +2417,15 @@ Module được kiểm thử với các tuần cách xa nhau để xác nhận t
 \textbf{Truy vấn} & \textbf{Kết quả mong đợi} & \textbf{Thực tế} \\
 \hline
 Tuần mới nhất (qua category) & Lấy tuần 23, tự lấy tuần 22 để so sánh & PASS --- 409 ca, +12 so tuần 22 \\
+\hline
 \texttt{week=22} (tra động qua search) & 397 ca, so với tuần 21 & PASS --- +25 ca (+6,7\%) \\
+\hline
 \texttt{week=5} (tuần một chữ số) & Parse đúng tuần 5/2026 & PASS --- 1170 ca \\
+\hline
 \texttt{week=99} (không tồn tại) & Từ chối, liệt kê tuần có sẵn & PASS --- không bịa số \\
+\hline
 Hỏi lại tuần đã tra & Đọc cache, không gọi mạng & PASS --- $\approx 2$~ms \\
+\hline
 ``so với tuần trước'' & So sánh tính bằng code & PASS --- khớp số học \\
 \hline
 \end{tabular}
@@ -2723,9 +2448,13 @@ Khác với các module có đáp án số học rõ ràng, chất lượng củ
 \textbf{Tiêu chí kiểm thử} & \textbf{Kết quả} \\
 \hline
 Nội dung phát biểu có trong nguồn trích dẫn & PASS --- đối chiếu khớp abstract \\
+\hline
 Khi nguồn không nêu liều, không tự bịa số mg & PASS --- chỉ tới chuyên luận StatPearls \\
+\hline
 Số trích dẫn \texttt{[n]} trỏ đúng tài liệu & PASS (sau khi gắn nhãn nguồn) \\
+\hline
 Không gán nhãn nguồn quốc tế là ``Việt Nam'' & PASS \\
+\hline
 Mở rộng từ đồng nghĩa (\textit{paracetamol}/\textit{acetaminophen}) & PASS --- có kết quả cho cả hai \\
 \hline
 \end{tabular}
@@ -2735,9 +2464,11 @@ Mở rộng từ đồng nghĩa (\textit{paracetamol}/\textit{acetaminophen}) & 
 
 Kết quả cho thấy ràng buộc grounding kết hợp gắn nhãn nguồn giúp module \textbf{trung thực và kiểm chứng được}: thông tin có trong nguồn được dẫn đúng, thông tin không có (như liều cụ thể trong abstract) được chủ động chỉ tới chuyên luận thay vì bịa. Hạn chế còn lại là nguồn tiếng Anh quốc tế, chưa theo chuẩn kê đơn Việt Nam.
 
+\section{Đánh giá hiệu năng hệ thống}
+
 \subsection{Đo hiệu năng thời gian phản hồi}
 
-Bảng~\ref{tab:perf} đo thời gian phản hồi trung bình (trên 5 lần chạy) trong môi trường localhost: Intel Core i5, RAM 8~GB, Aidbox Docker cục bộ, Qwen3-VL-Plus qua Alibaba DashScope (RTT $\approx 150$~ms). Thời gian được tính từ lúc gửi request đến khi nhận token phản hồi cuối cùng qua SSE.
+Bảng~\ref{tab:perf} đo thời gian phản hồi trung bình (trên 5 lần chạy) trong môi trường localhost: MacBook Pro chip Apple M1 Pro (8 nhân CPU), RAM 16~GB, Aidbox Docker cục bộ, Qwen3-VL-Plus qua Alibaba DashScope (RTT $\approx 150$~ms). Thời gian được tính từ lúc gửi request đến khi nhận token phản hồi cuối cùng qua SSE.
 
 \begin{table}[H]
 \centering
@@ -2747,13 +2478,21 @@ Bảng~\ref{tab:perf} đo thời gian phản hồi trung bình (trên 5 lần ch
 \textbf{Flow} & \textbf{Mô tả} & \textbf{Số tool call} & \textbf{Thời gian TB (s)} & \textbf{Ghi chú} \\
 \hline
 A & Đặt lịch khám & 3 & 4.8 & suggest\_dept + get\_slot + create\_appt \\
+\hline
 B & Triage thông minh & 2 & 2.5 & triage\_assessment + suggest\_dept \\
+\hline
 C & Gợi ý khoa (RAG) & 1 & 1.5 & Chỉ suggest\_dept (cosine similarity) \\
+\hline
 D (lượt 1) & Sàng lọc SXHD --- hỏi bổ sung & 0 & 0.8 & Không gọi tool, chỉ text generation \\
+\hline
 D (lượt 2) & Sàng lọc SXHD --- trả kết quả & 1 & 2.1 & dengue\_symptom\_ assessment \\
+\hline
 E & Phân tích CBC từ ảnh & 3 & 4.5 & Vision + search\_patient \newline + create\_cbc + cbc\_predict \\
+\hline
 F & Duyệt/từ chối lịch hẹn & 2 & 2.3 & get\_pending + confirm/reject \\
+\hline
 G & Hủy lịch hẹn & 2 & 2.6 & search\_patient \newline + cancel\_appointment \\
+\hline
 H & Xem kết quả xét nghiệm & 2 & 1.9 & search\_patient + get\_observations \\
 \hline
 \end{tabular}
@@ -2769,77 +2508,6 @@ Một số nhận xét từ kết quả đo:
   \item Các flow chỉ có 1--2 tool calls đạt thời gian phản hồi dưới 2.6~s, phù hợp với yêu cầu phi chức năng đề ra.
 \end{itemize}
 
-\section{Triển khai hệ thống}
-
-\begin{verbatim}
-# Chay Aidbox FHIR
-docker run --name aidbox -e AIDBOX_CLIENT_ID=root -e AIDBOX_CLIENT_SECRET=secret -p 8888:8888 healthsamurai/aidboxone:latest
-
-# Cau hinh bien moi truong
-export AIDBOX_URL=http://localhost:8888
-export ANTHROPIC_API_KEY=<key>
-
-# Khoi dong HIS Agent
-python main.py  # Chay tai http://localhost:8000
-\end{verbatim}
-\textit{Đoạn mã: Khởi động hệ thống.}
-
-\begin{figure}[H]
-\centering
-\begin{tikzpicture}[
-  host/.style={rectangle, draw=gray!70, rounded corners=6pt,
-               fill=gray!8, minimum width=4.2cm, font=\small\bfseries, text centered},
-  comp/.style={rectangle, draw=blue!50, fill=blue!7, rounded corners=3pt,
-               minimum width=3.6cm, minimum height=0.65cm, font=\scriptsize, text centered},
-  ext/.style={rectangle, draw=purple!50, fill=purple!7, rounded corners=3pt,
-              minimum width=3.6cm, minimum height=0.65cm, font=\scriptsize, text centered},
-  arr/.style={-{Stealth}, thick, gray!60}
-]
-% Host boxes
-\node[host, minimum height=4.2cm] (server) at (0,0) {};
-\node[above] at (0,1.9) {Máy chủ cục bộ / VM};
-
-\node[host, minimum height=4.2cm] (docker) at (5.5,0) {};
-\node[above] at (5.5,1.9) {Docker Host};
-
-\node[host, minimum height=2.0cm] (client1) at (-5.5,1.2) {};
-\node[above] at (-5.5,2.0) {Trình duyệt BN};
-
-\node[host, minimum height=2.0cm] (client2) at (-5.5,-1.2) {};
-\node[above] at (-5.5,-0.4) {Trình duyệt BS};
-
-% Server components
-\node[comp] (uvicorn)  at (0, 0.9) {Uvicorn (ASGI)};
-\node[comp] (fastapi)  at (0, 0.1) {FastAPI App};
-\node[comp] (agent)    at (0,-0.7) {Agent Loop};
-\node[comp] (sqlite)   at (0,-1.5) {SQLite DB};
-
-% Docker components
-\node[comp] (aidbox)   at (5.5, 0.5) {Aidbox FHIR R5};
-\node[comp] (postgres) at (5.5,-0.5) {PostgreSQL};
-
-% External
-\node[ext] (anthropic) at (0,-4.0) {DashScope API (Qwen3-VL-Plus)};
-\node[ext] (gmail)     at (5.5,-4.0) {Gmail SMTP};
-
-% Clients
-\node[comp] (bn) at (-5.5, 1.2) {React + SSE};
-\node[comp] (bs) at (-5.5,-1.2) {React + SSE};
-
-% Arrows
-\draw[arr] (-5.5,1.2)  -- node[above,font=\scriptsize]{HTTP/SSE} (uvicorn);
-\draw[arr] (-5.5,-1.2) -- (uvicorn);
-\draw[arr] (uvicorn) -- (fastapi);
-\draw[arr] (fastapi) -- (agent);
-\draw[arr] (agent)   -- (sqlite);
-\draw[arr] (agent)   -- node[above,font=\scriptsize]{REST} (aidbox);
-\draw[arr] (aidbox)  -- (postgres);
-\draw[arr] (agent)   -- node[left,font=\scriptsize]{API call} (anthropic);
-\draw[arr] (fastapi) -- node[above,font=\scriptsize]{SMTP} (gmail);
-\end{tikzpicture}
-\caption{Sơ đồ triển khai hệ thống HIS Agent}
-\label{fig:deployment}
-\end{figure}
 
 % =====================================================================
 %  KẾT LUẬN
@@ -2849,33 +2517,15 @@ python main.py  # Chay tai http://localhost:8000
 
 \section*{Kết quả của đồ án}
 
-\begin{enumerate}
-  \item Trình bày và hệ thống hóa các kiến thức nền tảng về kiến trúc agent, chuẩn HL7 FHIR R5, kỹ thuật RAG, và ứng dụng LLM trong lĩnh vực y tế số.
-  \item Thiết kế và triển khai pipeline agent với 26 công cụ FHIR và 2 công cụ sàng lọc SXHD, bao phủ luồng khám lâm sàng hoàn chỉnh: đặt lịch, triage, đo sinh hiệu với cảnh báo CDS, ghi nhận dị ứng, kê đơn thuốc với kiểm tra dị ứng 3 lớp, và hoàn tất khám với email tóm tắt tự động.
-  \item Xây dựng module sàng lọc sốt xuất huyết Dengue theo QĐ 2760/QĐ-BYT 2023 và WHO 2009, với trích dẫn nguồn minh bạch và disclaimer phù hợp.
-  \item Triển khai đầy đủ hệ thống hoàn chỉnh: FastAPI SSE streaming, xác thực người dùng, phân quyền nghiêm ngặt, và giao diện web thời gian thực.
-\end{enumerate}
+Đồ án đã hoàn thành các mục tiêu đề ra. Về mặt lý thuyết, đồ án trình bày và hệ thống hóa các kiến thức nền tảng về kiến trúc agent, chuẩn HL7 FHIR R5, kỹ thuật RAG và ứng dụng LLM trong lĩnh vực y tế số. Về mặt triển khai, đồ án thiết kế và xây dựng một pipeline agent với 29 công cụ FHIR cùng 2 công cụ sàng lọc SXHD, bao phủ trọn luồng khám lâm sàng: đặt lịch, triage, ghi nhận dị ứng, kê đơn thuốc với kiểm tra dị ứng nhiều lớp, và hoàn tất khám kèm email tóm tắt tự động. Module sàng lọc sốt xuất huyết Dengue được xây dựng bám sát QĐ 2760/QĐ-BYT 2023 và WHO 2009, với trích dẫn nguồn minh bạch và disclaimer phù hợp. Toàn bộ hệ thống được hoàn thiện với FastAPI SSE streaming, xác thực người dùng, phân quyền nghiêm ngặt và giao diện web thời gian thực.
 
 \section*{Kỹ năng đạt được}
 
-\begin{enumerate}
-  \item Hiểu và vận dụng được kiến trúc agent (tool-calling loop) trong thực tế.
-  \item Làm việc với chuẩn HL7 FHIR R5 và triển khai FHIR server.
-  \item Tích hợp LLM với vision API để xử lý ảnh y tế.
-  \item Xây dựng hệ thống streaming SSE với FastAPI và asyncio.
-  \item Chế bản đồ án bằng \LaTeX.
-\end{enumerate}
+Quá trình thực hiện đồ án giúp tác giả hiểu và vận dụng được kiến trúc agent (tool-calling loop) trong thực tế, làm việc với chuẩn HL7 FHIR R5 và triển khai FHIR server, tích hợp LLM với vision API để xử lý ảnh y tế, xây dựng hệ thống streaming SSE với FastAPI và asyncio, cũng như chế bản một tài liệu khoa học hoàn chỉnh bằng \LaTeX.
 
 \section*{Hướng phát triển trong tương lai}
 
-\begin{enumerate}
-  \item \textbf{LLM tiếng Việt on-premise}: Tích hợp mô hình LLM chạy cục bộ để bảo mật dữ liệu y tế.
-  \item \textbf{Mở rộng sàng lọc}: Bổ sung các bệnh lý khác (COVID-19, sốt rét, viêm phổi).
-  \item \textbf{Multi-agent}: Triển khai nhiều agent chuyên biệt (triage, scheduling, clinical support).
-  \item \textbf{Fine-tuning}: Nghiên cứu fine-tuning LLM trên dữ liệu lâm sàng tiếng Việt.
-  \item \textbf{Ứng dụng di động}: Phát triển app React Native/Flutter với giao diện thân thiện hơn.
-  \item \textbf{Kiểm định lâm sàng}: Tích hợp với HIS thực tế và đánh giá trong môi trường bệnh viện.
-\end{enumerate}
+Hệ thống còn nhiều hướng phát triển. Trước hết, hướng quan trọng nhất về bảo mật là tích hợp \textbf{LLM tiếng Việt chạy on-premise} để dữ liệu y tế không phải gửi ra dịch vụ bên thứ ba. Tiếp đó, có thể \textbf{mở rộng phạm vi sàng lọc} sang các bệnh lý khác (COVID-19, sốt rét, viêm phổi); triển khai kiến trúc \textbf{multi-agent} với nhiều agent chuyên biệt (triage, đặt lịch, hỗ trợ lâm sàng); và \textbf{fine-tuning} mô hình trên dữ liệu lâm sàng tiếng Việt để tăng độ chính xác. Về phía người dùng, đồ án có thể được mở rộng thành \textbf{ứng dụng di động} (React Native/Flutter). Cuối cùng và quan trọng nhất, hệ thống cần được \textbf{kiểm định lâm sàng} --- tích hợp với HIS thực tế và đánh giá có giám sát trong môi trường bệnh viện trước khi đưa vào sử dụng.
 
 % =====================================================================
 %  TÀI LIỆU THAM KHẢO
@@ -2885,57 +2535,50 @@ python main.py  # Chay tai http://localhost:8000
 \begin{thebibliography}{99}
 \phantomsection\addcontentsline{toc}{chapter}{\bfseries TÀI LIỆU THAM KHẢO}
 
-\subsection*{Tiếng Việt}
-
 \bibitem{qd2760} Bộ Y tế Việt Nam (2023), \textit{Quyết định 2760/QĐ-BYT ngày 04/7/2023 về việc ban hành hướng dẫn chẩn đoán, điều trị sốt xuất huyết Dengue}. Hà Nội: Bộ Y tế.
 
-\bibitem{his-vn} Nguyễn Đình Hòa (2020), \textit{Thực trạng và giải pháp ứng dụng Hệ thống thông tin bệnh viện tại Việt Nam}. Tạp chí Y học Việt Nam, 490(1), 45--52.
+\bibitem{harrison} Loscalzo, J., et al. (eds.) (2022), \textit{Harrison's Principles of Internal Medicine}, 21st ed. New York: McGraw-Hill.
 
 \bibitem{his-bachmai} Bệnh viện Bạch Mai (2022), \textit{Hệ thống Thông tin Bệnh viện HIS-EMR -- Giới thiệu và triển khai tại Bệnh viện Bạch Mai}. \url{https://bachmai.gov.vn}
 
-\bibitem{ehospital} VietSoftware International (2023), \textit{eHospital -- Giải pháp Quản lý Bệnh viện Toàn diện}. \url{https://vietsoftware.com/ehospital}
-
 \bibitem{medisoft} Công ty Cổ phần Giải pháp Y tế Việt Nam -- VMED (2023), \textit{Medisoft HIS -- Phần mềm Quản lý Bệnh viện}. \url{https://vmed.vn}
 
-\subsection*{Tiếng Anh}
+\bibitem{ehospital} VietSoftware International (2023), \textit{eHospital -- Giải pháp Quản lý Bệnh viện Toàn diện}. \url{https://vietsoftware.com/ehospital}
 
-\bibitem{who2009} World Health Organization (2009), \textit{Dengue: Guidelines for Diagnosis, Treatment, Prevention and Control}. Geneva: WHO Press. ISBN 978-92-4-154787-1.
-
-\bibitem{fhir-r5} HL7 International (2023), \textit{HL7 FHIR Release 5}. \url{https://hl7.org/fhir/R5/}
-
-\bibitem{openai-fc} OpenAI (2023), \textit{Function Calling and other API Updates}. \url{https://openai.com/blog/function-calling-and-other-api-updates}
-
-\bibitem{anthropic} Anthropic (2024), \textit{Claude Haiku 4.5 Technical Report}. \url{https://www.anthropic.com/claude}
-
-\bibitem{aidbox} Health Samurai / Medplum (2024), \textit{Aidbox: FHIR-native Healthcare Platform}. \url{https://www.health-samurai.io/aidbox}
-
-\bibitem{sbert} Reimers, N., \& Gurevych, I. (2019), \textit{Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks}. Proceedings of EMNLP 2019.
-
-\bibitem{rag} Lewis, P., et al. (2020), \textit{Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks}. NeurIPS 2020.
-
-\bibitem{fastapi} Ramírez, S. (2019), \textit{FastAPI}. \url{https://fastapi.tiangolo.com}
+\bibitem{his-vn} Nguyễn Đình Hòa (2020), \textit{Thực trạng và giải pháp ứng dụng Hệ thống thông tin bệnh viện tại Việt Nam}. Tạp chí Y học Việt Nam, 490(1), 45--52.
 
 \bibitem{medpalm} Singhal, K., et al. (2023), \textit{Towards Expert-Level Medical Question Answering with Large Language Models}. arXiv:2305.09617.
 
-\bibitem{sse} W3C (2021), \textit{Server-Sent Events -- W3C Recommendation}. \url{https://www.w3.org/TR/eventsource/}
+\bibitem{fhir-r5} HL7 International (2023), \textit{HL7 FHIR Release 5}. \url{https://hl7.org/fhir/R5/}
+
+\bibitem{aidbox} Health Samurai (2024), \textit{Aidbox: FHIR-native Healthcare Platform}. \url{https://www.health-samurai.io/aidbox}
+
+\bibitem{who2009} World Health Organization (2009), \textit{Dengue: Guidelines for Diagnosis, Treatment, Prevention and Control}. Geneva: WHO Press. ISBN 978-92-4-154787-1.
+
+\bibitem{dengue_stats} Cục Y tế Dự phòng --- Bộ Y tế Việt Nam \& Tổng cục Thống kê (GSO), \textit{Số liệu giám sát số ca mắc và tử vong do sốt xuất huyết Dengue toàn quốc, giai đoạn 2019--2023}. \url{https://www.gso.gov.vn}; WHO Vietnam, \textit{Dengue}. \url{https://www.who.int/vietnam/health-topics/dengue}.
+
+\bibitem{esi} Gilboy, N., Tanabe, P., Travers, D., \& Rosenau, A.~M. (2020), \textit{Emergency Severity Index (ESI): A Triage Tool for Emergency Department Care, Version 4}. Rockville, MD: Agency for Healthcare Research and Quality (AHRQ).
+
+\bibitem{mts} Mackway-Jones, K., Marsden, J., \& Windle, J. (eds.) (2014), \textit{Emergency Triage: Manchester Triage Group}, 3rd ed. Oxford: Wiley-Blackwell / BMJ Books.
+
+\bibitem{rag} Lewis, P., et al. (2020), \textit{Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks}. NeurIPS 2020.
+
+\bibitem{sbert} Reimers, N., \& Gurevych, I. (2019), \textit{Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks}. Proceedings of EMNLP 2019.
+
+\bibitem{quychebv} Bộ Y tế Việt Nam (1997), \textit{Quyết định 1895/1997/QĐ-BYT ngày 19/9/1997 về việc ban hành Quy chế bệnh viện}. Hà Nội: Bộ Y tế.
+
+
+\bibitem{qd1165} Bộ Y tế Việt Nam (2022), \textit{Quyết định 1165/QĐ-BYT về Danh mục thuốc thiết yếu}. Hà Nội: Bộ Y tế.
+
+\bibitem{qd1088} Bộ Y tế Việt Nam (2013), \textit{Quyết định 1088/QĐ-BYT về Hướng dẫn theo dõi phản ứng có hại của thuốc}. Hà Nội: Bộ Y tế.
 
 \bibitem{hsieh2004} Hsieh, T.~C., et al. (2004), \textit{Characteristics and consequences of drug allergy alert overrides in a computerized physician order entry system}. American Journal of Health-System Pharmacy (AJHP), 61(8).
 
 \bibitem{bates2001} Bates, D.~W., et al. (2001), \textit{Reducing the frequency of errors in medicine using information technology}. Journal of the American Medical Informatics Association (JAMIA), 8(4), 299--308.
 
-\bibitem{stockley} Preston, C.~L. (ed.) (2022), \textit{Stockley's Drug Interactions}, 13th ed. London: Pharmaceutical Press.
-
 \bibitem{statpearls} StatPearls (NCBI Bookshelf), \textit{Cephalosporins (NBK459320)} và các chuyên luận thuốc liên quan. \url{https://www.ncbi.nlm.nih.gov/books/NBK459320/}
 
-\bibitem{qd3192} Bộ Y tế Việt Nam (2010), \textit{Quyết định 3192/QĐ-BYT về Hướng dẫn chẩn đoán và điều trị tăng huyết áp}. Hà Nội: Bộ Y tế.
-
-\bibitem{news2} Royal College of Physicians (2017), \textit{National Early Warning Score (NEWS) 2: Standardising the assessment of acute-illness severity in the NHS}. London: RCP.
-
-\bibitem{harrison} Loscalzo, J., et al. (eds.) (2022), \textit{Harrison's Principles of Internal Medicine}, 21st ed. New York: McGraw-Hill.
-
-\bibitem{qd1165} Bộ Y tế Việt Nam (2022), \textit{Quyết định 1165/QĐ-BYT về Danh mục thuốc thiết yếu}. Hà Nội: Bộ Y tế.
-
-\bibitem{qd1088} Bộ Y tế Việt Nam (2013), \textit{Quyết định 1088/QĐ-BYT về Hướng dẫn theo dõi phản ứng có hại của thuốc}. Hà Nội: Bộ Y tế.
+\bibitem{stockley} Preston, C.~L. (ed.) (2022), \textit{Stockley's Drug Interactions}, 13th ed. London: Pharmaceutical Press.
 
 \end{thebibliography}
 

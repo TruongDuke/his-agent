@@ -1,0 +1,21 @@
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {1.1}{\ignorespaces So sánh các hệ thống HIS tiêu biểu với HIS Agent}}{3}{table.caption.8}%
+\contentsline {table}{\numberline {1.2}{\ignorespaces So sánh các mô hình LLM theo tiêu chí ứng dụng y tế}}{4}{table.caption.9}%
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {2.1}{\ignorespaces Bảng tóm tắt format input/output của 9 tool chính}}{15}{table.caption.17}%
+\contentsline {table}{\numberline {2.2}{\ignorespaces Danh sách 32 công cụ của HIS Agent và phân quyền theo vai trò}}{19}{table.2.2}%
+\contentsline {table}{\numberline {2.3}{\ignorespaces So sánh hai biến thể RAG trong HIS Agent}}{28}{table.caption.25}%
+\contentsline {table}{\numberline {2.4}{\ignorespaces Bảng 7 cặp cross-reactivity với nguồn open-access đã verify}}{31}{table.caption.26}%
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {3.1}{\ignorespaces Các FHIR resource sử dụng trong hệ thống}}{39}{table.caption.30}%
+\contentsline {table}{\numberline {3.2}{\ignorespaces Năm mẫu regex trích số liệu từ nội dung bản tin HCDC}}{42}{table.caption.33}%
+\contentsline {table}{\numberline {3.3}{\ignorespaces Sửa lỗi lệch số trích dẫn nhờ gắn nhãn nguồn cho bằng chứng}}{44}{table.caption.34}%
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {4.1}{\ignorespaces Kết quả kiểm thử module đánh giá nguy cơ SXHD từ CBC}}{55}{table.caption.45}%
+\contentsline {table}{\numberline {4.2}{\ignorespaces 5 test case allergy check với BN có dị ứng Penicillin severe}}{55}{table.caption.46}%
+\contentsline {table}{\numberline {4.3}{\ignorespaces Kiểm thử phân quyền theo vai trò}}{57}{table.caption.47}%
+\contentsline {table}{\numberline {4.4}{\ignorespaces Kết quả kiểm thử các luồng chức năng chính}}{58}{table.caption.48}%
+\contentsline {table}{\numberline {4.5}{\ignorespaces Kết quả kiểm thử module tra cứu số liệu dịch bệnh}}{59}{table.caption.49}%
+\contentsline {table}{\numberline {4.6}{\ignorespaces Kết quả kiểm chứng grounding và độ chính xác trích dẫn của drug\_info}}{60}{table.caption.50}%
+\contentsline {table}{\numberline {4.7}{\ignorespaces Thời gian phản hồi trung bình theo luồng (đo trên môi trường localhost)}}{61}{table.caption.51}%
+\contentsfinish 
