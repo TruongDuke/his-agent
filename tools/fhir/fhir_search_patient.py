@@ -39,14 +39,14 @@ def run(args: dict) -> dict:
         bundle = fhir_get("Patient", {"_content": query})
     else:
         # Search by name — try family name, then given name
-        tokens = query.split()
-        if len(tokens) == 1:
-            bundle = fhir_get("Patient", {"family": tokens[0]})
-            if not extract_entries(bundle):
-                bundle = fhir_get("Patient", {"given": tokens[0]})
+        tokens = query.split() #"Phan Hùng" → ["Phan", "Hùng"]
+        if len(tokens) == 1: # nếu user chỉ nhập 1 từ, thử tìm family hoặc given
+            bundle = fhir_get("Patient", {"family": tokens[0]}) 
+            if not extract_entries(bundle): #nếu ko thấy
+                bundle = fhir_get("Patient", {"given": tokens[0]}) #
         else:
             # "Nguyễn Văn A" → family=Nguyễn, given=Văn A
-            family = tokens[0]
+            family = tokens[0] #nếu nhập đầy đủ họ tên, family=token đầu, given=token còn lại
             given = " ".join(tokens[1:])
             bundle = fhir_get("Patient", {"family": family, "given": given})
             if not extract_entries(bundle):

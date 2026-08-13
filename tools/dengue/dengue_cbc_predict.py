@@ -112,6 +112,59 @@ def _safe_float(val, default=None):
 
 
 # ─────────────────────── MAIN ───────────────────────
+#
+# TỔNG HỢP LOGIC CHẤM ĐIỂM (diễn giải các if/else bên dưới thành lời)
+# ---------------------------------------------------------------------------
+# Có 3 biến trạng thái:
+#   cbc_score     — "CÓ GIỐNG SXHD không?" (nhận diện cận lâm sàng)
+#   warning_score — "CÓ NGUY HIỂM không?"  (dấu hiệu pha nguy hiểm, có quyền phủ quyết)
+#   severe_flag   — cờ nặng (suy gan / nghi xuất huyết nội) → đẩy thẳng lên mức nặng nhất
+#
+# 1) PLT (tiểu cầu, bắt buộc):
+#      < 20  → +cbc +warning, red flag "cực thấp"       (ngưỡng thực hành)
+#      < 50  → +cbc +warning, red flag "giảm nặng"      (PLT<100 theo QĐ 2760; <50 thực hành)
+#      < 100 → +cbc            "giảm, hợp tiêu chí SXHD" (QĐ 2760 tr.5 II.2.2)
+#      < 150 → chỉ ghi nhận (thấp-bình thường)
+#      còn lại → bình thường
+#
+# 2) WBC (bạch cầu, tùy chọn):
+#      < 4.0 → +cbc "bạch cầu giảm (leukopenia)"        (QĐ 2760 tr.5 II.1.2; ngưỡng thực hành)
+#      < 5.0 → ghi nhận thấp-bình thường; còn lại bình thường
+#
+# 3) HCT (so với baseline; baseline = của BN nếu có, không thì TB theo giới nam43/nữ38 QĐ 2760 tr.28):
+#      Có baseline thực:
+#        tăng ≥20% → +cbc +2warning, red flag "cô đặc máu" (QĐ 2760 tr.5 II.2.2)
+#        tăng ≥10% → +cbc +warning "cần theo dõi sát"
+#        Hct < 30  → +warning, red flag "nghi xuất huyết"
+#      Baseline ước tính (theo giới):
+#        tăng ≥20% → +cbc +warning (nhẹ hơn vì baseline không thực)
+#        Hct ≥ 50  → +cbc +warning (cao tuyệt đối, cần baseline thực để xác nhận)
+#        Hct < 30  → ghi nhận nghi thiếu máu
+#
+# 4) AST/ALT (men gan, tùy chọn) — chỉ nạp warning, KHÔNG nạp cbc:
+#      ≥ 1000 → severe_flag (suy gan, SXHD nặng)          (QĐ 2760 tr.23 / C.1.5)
+#      ≥ 400  → +2warning "dấu hiệu cảnh báo"
+#      ≥ 120  → ghi nhận tổn thương gan nhẹ
+#
+# 5) COMBO hiệp đồng: PLT giảm nhanh (≥30% so plt_previous) VÀ Hct đang tăng
+#      → +2warning, red flag "combo Hct↑ + PLT↓" (thoát huyết tương = pha nguy hiểm, QĐ 2760 tr.23)
+#
+# 6) HGB < 10 kèm (warning_score≥2 hoặc đã có red flag):
+#      → severe_flag +2warning "nghi xuất huyết nội"
+#
+# 7) Ngày sốt: 3–7 = giai đoạn nguy hiểm; <3 = sớm (CBC chưa điển hình); >7 = hồi phục.
+#
+# KẾT LUẬN (xét theo thứ tự, dừng ở điều kiện đầu tiên đúng):
+#      severe_flag                       → very_likely  (NẶNG)        → cấp cứu ngay
+#      warning_score ≥ 2                 → very_likely  (cảnh báo)    → nhập viện vài giờ
+#      cbc_score ≥ 2 và (pha nguy hiểm   → likely                     → khám trong ngày + NS1
+#                        hoặc chưa rõ ngày sốt)
+#      cbc_score ≥ 1                     → possible                   → làm NS1 test nhanh
+#      còn lại                           → unlikely                   → theo dõi tại nhà
+#
+# → warning_score có quyền PHỦ QUYẾT: dù cbc_score thấp, nguy hiểm vẫn đẩy lên nhập viện.
+#   Mỗi lần cộng điểm đều kèm findings[] (mô tả) + citations[] (nguồn) để truy vết.
+# ---------------------------------------------------------------------------
 
 def run(args: dict) -> dict:
     plt          = _safe_float(args.get("plt"))
@@ -153,8 +206,12 @@ def run(args: dict) -> dict:
     citations: dict[str, str] = {}
     red_flags: list[str] = []
 
-    cbc_score = 0      # 0-3: số tiêu chí CBC bất thường (theo QĐ 2760 trang 23)
-    warning_score = 0  # cờ "dấu hiệu cảnh báo"
+    # THIẾT KẾ: tách 2 điểm vì SXHD diễn biến theo pha, cần trả lời 2 câu hỏi khác nhau:
+    #   cbc_score     = "CÓ GIỐNG SXHD không?" (nhận diện cận lâm sàng)      -> quyết mức "likely/possible"
+    #   warning_score = "CÓ NGUY HIỂM không?"  (dấu hiệu pha nguy hiểm)      -> có quyền phủ quyết, đẩy lên "very_likely" (nhập viện)
+    # Một tiêu chí nạp vào điểm nào chính là tri thức lâm sàng được mã hoá (vd men gan cao chỉ +warning, không +cbc).
+    cbc_score = 0      # 0-3: số tiêu chí CBC bất thường (theo QĐ 2760 trang 23) (có giống SXHD ko)
+    warning_score = 0  # cờ "dấu hiệu cảnh báo" Có NGUY HIỂM không
     severe_flag = False
 
     # ── 1. PLT — Tiểu cầu ──
@@ -325,6 +382,9 @@ def run(args: dict) -> dict:
         hct_relative_change is not None
         and hct_relative_change >= _HCT_EARLY_RELATIVE_INCREASE
     )
+    # COMBO hiệp đồng: mỗi dấu hiệu riêng lẻ MƠ HỒ (HCT tăng có thể do mất nước; PLT giảm gặp ở
+    # nhiều nhiễm trùng), nhưng CÙNG LÚC = thoát huyết tương = pha nguy hiểm SXHD -> cộng điểm nặng.
+    # Cần plt_previous (xu hướng), không chỉ giá trị 1 lần -> fhir_create_cbc tự truy CBC cũ cấp vào.
     if plt_rapid_drop and hct_is_rising:
         warning_score += 2
         msg = (

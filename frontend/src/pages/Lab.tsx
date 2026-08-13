@@ -41,7 +41,6 @@ export default function Lab() {
             style={{ width: 170 }}
             options={[
               { value: 'all', label: 'Tất cả loại' },
-              { value: 'vital-signs', label: 'Sinh hiệu' },
               { value: 'laboratory', label: 'Xét nghiệm' },
             ]}
           />

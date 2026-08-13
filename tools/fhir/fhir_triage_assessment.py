@@ -86,8 +86,8 @@ def run(args: dict) -> dict:
     all_conditions: list[str] = []
 
     # Từ user khai
-    if known_cond_raw:
-        all_conditions.append(known_cond_raw)
+    if known_cond_raw: 
+        all_conditions.append(known_cond_raw) 
 
     # Từ Aidbox nếu có patient_id
     if patient_id:
@@ -124,8 +124,8 @@ def run(args: dict) -> dict:
 
     for rfc in kb["red_flag_combos"]:
         # Check required symptoms
-        required = rfc.get("symptoms_required", [])
-        any_symptoms = rfc.get("symptoms_any", [])
+        required = rfc.get("symptoms_required", []) # các triệu chứng bắt buộc phải có
+        any_symptoms = rfc.get("symptoms_any", []) # các triệu chứng có thể có, cần ít nhất min_additional trong số này
         min_add = rfc.get("min_additional", 1)
 
         req_matched = all(
@@ -207,8 +207,8 @@ def run(args: dict) -> dict:
     current_level = (best_map["level"] if best_map else "SEMI_URGENT")
 
     for rb in kb["risk_boosters"]:
-        cond_matched = _keywords_match(conditions_text, rb["condition_keywords"])
-        sym_matched  = _keywords_match(symptoms_text, rb["symptom_triggers"])
+        cond_matched = _keywords_match(conditions_text, rb["condition_keywords"]) # có bệnh nền nào match với rule này không
+        sym_matched  = _keywords_match(symptoms_text, rb["symptom_triggers"]) # có triệu chứng nào match với trigger này không
         if cond_matched and sym_matched:
             new_level = _upgrade(current_level, rb["upgrade"])
             if new_level != current_level:

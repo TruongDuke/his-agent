@@ -8,7 +8,7 @@ Có, dự án chạy bằng **Docker Compose**.
 | Thư mục | `/data/ai/code/ai/his-agent` |
 | Compose project | `his-agent` (chốt bằng `name:` trong `docker-compose.yml`) |
 | Container | `his-agent` |
-| URL | http://103.253.20.203:8102 |
+| Truy cập | `127.0.0.1:8102` trên server — từ ngoài phải qua nginx (đang chờ DevOps dựng domain) |
 | Dữ liệu bền | `./data/` và `./his_users.db` (bind mount) |
 
 ## Deploy
@@ -20,6 +20,18 @@ Có, dự án chạy bằng **Docker Compose**.
 Chỉ một lệnh, cho mọi loại thay đổi. Script rsync working tree lên server → build image → restart → chờ `/health` trả `ok`.
 
 Sửa `.py` hay sửa `.tsx` đều dùng lệnh này. Server không cài node — frontend được build trong Docker (stage `node:20-slim`), **không cần `npm run build` ở máy local**.
+
+## 0. Cấm bind `0.0.0.0` — quy ước bắt buộc của DevOps
+
+Container phải publish `127.0.0.1:8102:8000`, **không được** `8102:8000`. Docker publish `0.0.0.0` chèn iptables đi vòng qua firewall của host nên port lộ thẳng ra internet; server này chạy production nhiều team và bị scan port liên tục.
+
+Muốn cho người ngoài vào thì xin DevOps dựng nginx reverse proxy + domain, không tự mở port.
+
+Kiểm tra:
+
+```bash
+docker port his-agent          # phải ra 8000/tcp -> 127.0.0.1:8102
+```
 
 ## 1. Không bao giờ rsync đè `data/` và `his_users.db`
 

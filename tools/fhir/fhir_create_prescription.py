@@ -117,7 +117,7 @@ def _build_medication_request(
     if mr["reason"] is None:
         del mr["reason"]
 
-    if override_reason:
+    if override_reason: # ghi vào reason voà note của MedicationRequest để bác sĩ biết lý do override cảnh báo dị ứng
         mr["note"] = [{
             "text": f"⚠ Override cảnh báo dị ứng — lý do: {override_reason}"
         }]
@@ -164,7 +164,7 @@ def run(args: dict) -> dict:
             return {"error": f"Thuốc '{drug_id}' không có trong catalog"}
 
         # Check dị ứng
-        chk = check_allergy({"patient_id": pid, "drug_id": drug_id})
+        chk = check_allergy({"patient_id": pid, "drug_id": drug_id}) #gọi lại check allergy
         if "error" in chk:
             return {"error": f"Allergy check lỗi cho {drug_id}: {chk['error']}"}
 

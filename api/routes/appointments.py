@@ -12,7 +12,7 @@ router = APIRouter()
 
 
 @router.get("/api/pending-appointments")
-async def api_pending_appointments(date_from: str = "", date_to: str = ""):
+async def api_pending_appointments(date_from: str = "", date_to: str = "", doctor_id: str = ""):
     url, auth = _aidbox()
     if not url:
         raise HTTPException(503, "AIDBOX_URL not configured")
@@ -56,6 +56,19 @@ async def api_pending_appointments(date_from: str = "", date_to: str = ""):
             for p in _entries(r3.json(), "Practitioner"):
                 pr_names[p["id"]] = _pract_name(p)
 
+        # Lọc theo khoa của bác sĩ đang đăng nhập (nếu truyền doctor_id):
+        # lấy mã khoa từ các Schedule của bác sĩ đó, chỉ giữ lịch cùng khoa.
+        doctor_depts = None
+        if doctor_id:
+            rs = await client.get(f"{url}/fhir/Schedule",
+                                  params={"actor": f"Practitioner/{doctor_id}", "_count": "50"})
+            doctor_depts = set()
+            for s in _entries(rs.json(), "Schedule"):
+                for st in (s.get("serviceType") or []):
+                    c = (((st.get("concept") or {}).get("coding")) or [{}])[0].get("code")
+                    if c:
+                        doctor_depts.add(c)
+
     rows = []
     for e in entries:
         appt = e.get("resource", {})
@@ -76,8 +89,12 @@ async def api_pending_appointments(date_from: str = "", date_to: str = ""):
             elif ref.startswith("Practitioner/"):
                 pract_name = pr_names.get(ref.split("/")[1], "")
 
-        coding = (((appt.get("serviceType") or [{}])[0]).get("concept") or {}).get("coding") or [{}]
-        dept   = coding[0].get("display", "")
+        coding    = (((appt.get("serviceType") or [{}])[0]).get("concept") or {}).get("coding") or [{}]
+        dept_code = coding[0].get("code", "")
+        dept      = coding[0].get("display", "")
+        # Chỉ lọc khi xác định được khoa của bác sĩ; không có schedule → hiện tất (fallback an toàn).
+        if doctor_depts and dept_code not in doctor_depts:
+            continue
 
         clinical_note = ""
         patient_email = ""
@@ -163,11 +180,14 @@ async def api_complete_appointment(appointment_id: str, body: CompleteRequest):
             raise HTTPException(404, f"Không tìm thấy lịch hẹn {appointment_id}")
         appt = r.json()
         appt["status"] = "fulfilled"
-        r2 = await client.put(f"{url}/fhir/Appointment/{appointment_id}", json=appt)
+        r2 = await client.put(f"{url}/fhir/Appointment/{appointment_id}", json=appt) # đóng lịch(fullfiled)
         if r2.status_code >= 400:
             raise HTTPException(r2.status_code, "Không cập nhật được lịch hẹn")
 
         # 2. Tạo ClinicalImpression
+        # FHIR ClinicalImpression không có field "plan" riêng -> lưu kế hoạch trong note[] với tiền tố
+        # "__plan__:" để nhận diện lại. Lần khám sau, agent (chat.py, khối __init__) tách kế hoạch này ra
+        # và CHỦ ĐỘNG nhắc BN/BS -> vòng khép kín "khám xong ghi kế hoạch -> lần sau tự nhắc".
         note_entries = []
         if body.notes:
             note_entries.append({"text": body.notes})
@@ -482,7 +502,10 @@ async def api_suggest_completion(body: SuggestRequest):
         "- plan: 1-2 câu, kế hoạch theo dõi / tái khám"
     )
 
-    # ── Gọi LLM ──
+    # ── Gọi LLM: ONE-SHOT, KHÔNG dùng agent loop ──
+    # Tác vụ bounded (điền sẵn 3 ô: diagnosis/notes/plan) -> gọi 1 lần, ép đầu ra JSON, temperature thấp
+    # (0.3) cho ỔN ĐỊNH & ít bịa. Gợi ý grounded trên dữ liệu thật (CBC + dengue + lý do khám + lần trước).
+    # Đây chỉ là BẢN NHÁP -> bác sĩ duyệt/sửa rồi mới lưu (human-in-the-loop), AI không tự ghi hồ sơ.
     from agent import _CLIENT, _MODEL  # type: ignore
     import json as _json
 

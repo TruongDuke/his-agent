@@ -17,14 +17,6 @@ ARGS_SCHEMA = {
 }
 
 
-def _aidbox():
-    url  = os.getenv("AIDBOX_URL", "").rstrip("/")
-    cid  = os.getenv("AIDBOX_CLIENT_ID", "")
-    sec  = os.getenv("AIDBOX_CLIENT_SECRET", "")
-    auth = (cid, sec) if cid and sec else None
-    return url, auth
-
-
 def _patient_name(p: dict) -> str:
     nm = (p.get("name") or [{}])[0]
     return f"{nm.get('family', '')} {' '.join(nm.get('given') or [])}".strip()
@@ -46,15 +38,19 @@ def run(args: dict) -> dict:
     d_from = args.get("date_from") or str(today)
     d_to   = args.get("date_to")   or str(today + timedelta(days=7))
 
-    url, auth = _aidbox()
+    import sys
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "shared"))
+    from _aidbox_client import _config
+    url, cid, sec = _config()
+    auth = (cid, sec) if cid and sec else None
     if not url:
         return {"error": "AIDBOX_URL chưa được cấu hình"}
 
     # Dùng list of tuples để truyền 2 tham số date (duplicate key)
     params = [
-        ("actor",  f"Practitioner/{prac_id}"),
-        ("date",   f"ge{d_from}T00:00:00"),
-        ("date",   f"le{d_to}T23:59:59"),
+        ("actor",  f"Practitioner/{prac_id}"),  #lich hẹn của bác sĩ này
+        ("date",   f"ge{d_from}T00:00:00"),  # ngày bắt đầu
+        ("date",   f"le{d_to}T23:59:59"),  # ngày kết thúc  ge/le (greater/less-equal
         ("_sort",  "date"),
         ("_count", "100"),
     ]
@@ -85,19 +81,19 @@ def run(args: dict) -> dict:
                 patient_ids.add(ref.split("/")[1])
 
     p_names = {}  # type: dict
-    if patient_ids:
+    if patient_ids:  #gom tất cả ID bệnh nhân trong danh sách lịch hẹn, fetch 1 lần để giảm số request
         try:
             with httpx.Client(timeout=15, auth=auth) as client:
                 r2 = client.get(
                     f"{url}/fhir/Patient",
-                    params={"_id": ",".join(patient_ids), "_count": "100"},
+                    params={"_id": ",".join(patient_ids), "_count": "100"}, # fetch tất cả bệnh nhân trong 1 request
                 )
             for p in _entries(r2.json(), "Patient"):
                 p_names[p["id"]] = _patient_name(p)
         except Exception:
             pass
 
-    rows = []
+    rows = [] #tra về danh sách lịch hẹn với thông tin bệnh nhân, phòng ban, thời gian, trạng thái với dữ liệu dễ trình baỳ
     for appt in appointments:
         patient_name = ""
         for part in appt.get("participant") or []:

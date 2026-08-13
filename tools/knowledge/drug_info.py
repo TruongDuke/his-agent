@@ -55,7 +55,7 @@ _SYNONYMS: dict[str, str] = {
     "ventolin": "salbutamol albuterol",
     "nexium": "esomeprazole",
     "motilium": "domperidone",
-}
+} #Tên VN ≠ tên PubMed
 
 
 def _api_key_param() -> dict:
@@ -63,7 +63,7 @@ def _api_key_param() -> dict:
     return {"api_key": k} if k else {}
 
 
-def _match_catalog(drug_name: str) -> tuple[str, str | None]:
+def _match_catalog(drug_name: str) -> tuple[str, str | None]: # khớp với catalog 52 thuốc
     """Khớp tên thuốc với catalog 52 thuốc.
 
     Trả về (canonical_name, drug_class). Nếu không khớp → (drug_name, None).
@@ -98,18 +98,21 @@ def run(args: dict) -> dict:
 
     sources: list[dict] = []
     evidence: list[str] = []
-    n = 0
+    n = 0 # bộ đếm số nguồn 
 
     try:
         with httpx.Client(timeout=_TIMEOUT) as client:
-            # ── 1) StatPearls (NCBI Bookshelf) — chuyên luận thuốc ──
+            # ── 1) StatPearls (NCBI Bookshelf) — chuyên luận thuốc ── chỉ lấy link, không trích nội dung
+#             StatPearls là gì?
+# Bộ chuyên luận y khoa (peer-reviewed) trên NCBI Bookshelf — kiểu "từ điển thuốc/bệnh" chuẩn quốc tế, mở miễn phí. Mỗi thuốc có 1 chương (liều, tác dụng phụ, chống chỉ định...). Đây là nguồn tổng quát, đáng tin cho thông tin thuốc.
+
             try:
                 r = client.get(f"{_EUTILS}/esearch.fcgi", params={
-                    "db": "books", "term": f"{canonical} statpearls",
+                    "db": "books", "term": f"{canonical} statpearls", # tìm sách/chương có tên thuốc + "statpearls"
                     "retmax": "1", "retmode": "json", **_api_key_param(),
                 })
-                ids = r.json().get("esearchresult", {}).get("idlist", [])
-                if ids:
+                ids = r.json().get("esearchresult", {}).get("idlist", []) # lấy ID sách/chương
+                if ids: # nếu thấy nguồn
                     # Tiêu đề chương con của StatPearls hay gây nhầm → hiển thị tên
                     # chuẩn của thuốc; link tới trang tra cứu Bookshelf (luôn hợp lệ).
                     n += 1
@@ -129,7 +132,7 @@ def run(args: dict) -> dict:
 
             # ── 2) PubMed — bằng chứng (abstract) ──
             try:
-                aspect_terms = {
+                aspect_terms = { # dựng query
                     "lieu": "dosage administration",
                     "tac_dung_phu": "adverse effects",
                     "tuong_tac": "drug interactions",
@@ -139,7 +142,7 @@ def run(args: dict) -> dict:
                 term = base
                 if aspect in aspect_terms:
                     term = f"{base} AND {aspect_terms[aspect]}"
-                r = client.get(f"{_EUTILS}/esearch.fcgi", params={
+                r = client.get(f"{_EUTILS}/esearch.fcgi", params={ # esearch -> tìm bài viết PubMed
                     "db": "pubmed", "term": term, "retmax": "3",
                     "sort": "relevance", "retmode": "json", **_api_key_param(),
                 })

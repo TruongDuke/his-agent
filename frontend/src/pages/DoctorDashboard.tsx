@@ -22,7 +22,7 @@ export default function DoctorDashboard({ session, onLogout }: { session: Sessio
 
   async function loadPending() {
     try {
-      const d = await fetch('/api/pending-appointments').then((r) => r.json())
+      const d = await fetch('/api/pending-appointments' + (session.id ? `?doctor_id=${session.id}` : '')).then((r) => r.json())
       setPending((d.pending || []).length)
     } catch {}
   }
@@ -68,7 +68,7 @@ export default function DoctorDashboard({ session, onLogout }: { session: Sessio
           )}
           {tab === 'today' && <TodaySchedule session={session} />}
           {tab === 'lab' && <Lab />}
-          {tab === 'appointments' && <Appointments onChange={loadPending} />}
+          {tab === 'appointments' && <Appointments onChange={loadPending} doctorId={session.id} />}
         </Content>
       </Layout>
     </Layout>

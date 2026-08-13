@@ -15,14 +15,14 @@ interface Row {
   symptoms: string
 }
 
-export default function Appointments({ onChange }: { onChange?: () => void }) {
+export default function Appointments({ onChange, doctorId }: { onChange?: () => void; doctorId?: string }) {
   const [rows, setRows] = useState<Row[]>([])
   const [loading, setLoading] = useState(false)
 
   async function load() {
     setLoading(true)
     try {
-      const r = await fetch('/api/pending-appointments')
+      const r = await fetch('/api/pending-appointments' + (doctorId ? `?doctor_id=${doctorId}` : ''))
       const d = await r.json()
       setRows((d.pending || []).map((x: any, i: number) => ({ ...x, key: x.appointment_id || String(i) })))
     } catch {
@@ -34,7 +34,7 @@ export default function Appointments({ onChange }: { onChange?: () => void }) {
 
   useEffect(() => {
     load()
-  }, [])
+  }, [doctorId])
 
   async function act(id: string, kind: 'confirm' | 'reject') {
     try {

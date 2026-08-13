@@ -14,7 +14,10 @@ services:
     environment:
       TZ: Asia/Ho_Chi_Minh
     ports:
-      - "8102:8000"
+      # BẮT BUỘC bind 127.0.0.1 — quy ước của DevOps trên server này, không được để 0.0.0.0.
+      # Docker publish 0.0.0.0 đi vòng qua firewall của host nên port sẽ lộ ra internet.
+      # Truy cập từ ngoài phải đi qua nginx reverse proxy.
+      - "127.0.0.1:8102:8000"
     volumes:
       # Dữ liệu chạy thực tế — giữ lại giữa các lần rebuild
       - ./data:/app/data

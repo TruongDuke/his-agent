@@ -64,12 +64,12 @@ def run(args: dict) -> dict:
                 actor = p.get("actor") or {}
                 ref = actor.get("reference", "")
                 display = actor.get("display", "")
-                if ref.startswith("Patient/"):
+                if ref.startswith("Patient/"):  # FHIR FHIR cho phép reference kèm sẵn một field display = tên người, lưu ngay tại đó 
                     patient_id = ref.split("/")[-1]
                     if display:
                         patient_name = display
-                    else:
-                        pr = client.get(f"{url}/fhir/{ref}")
+                    else:  # display không có, phải fetch resource Patient để lấy tên
+                        pr = client.get(f"{url}/fhir/{ref}") 
                         if pr.status_code == 200:
                             nm = (pr.json().get("name") or [{}])[0]
                             patient_name = f"{nm.get('family','')} {' '.join(nm.get('given',[]))}".strip()

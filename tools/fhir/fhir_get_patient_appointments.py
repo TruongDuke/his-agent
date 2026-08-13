@@ -20,14 +20,6 @@ ARGS_SCHEMA = {
 }
 
 
-def _aidbox():
-    url  = os.getenv("AIDBOX_URL", "").rstrip("/")
-    cid  = os.getenv("AIDBOX_CLIENT_ID", "")
-    sec  = os.getenv("AIDBOX_CLIENT_SECRET", "")
-    auth = (cid, sec) if cid and sec else None
-    return url, auth
-
-
 def _entries(bundle: dict, rtype: str):
     return [
         e["resource"] for e in (bundle.get("entry") or [])
@@ -46,7 +38,11 @@ def run(args: dict) -> dict:
     if not patient_id:
         return {"error": "Thiếu patient_id"}
 
-    url, auth = _aidbox()
+    import sys
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "shared"))
+    from _aidbox_client import _config
+    url, cid, sec = _config()
+    auth = (cid, sec) if cid and sec else None
     if not url:
         return {"error": "AIDBOX_URL chưa được cấu hình"}
 

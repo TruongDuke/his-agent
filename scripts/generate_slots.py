@@ -20,9 +20,19 @@ try:
 except ImportError:
     sys.exit("Missing httpx. Run: pip install httpx")
 
+# Đọc .env ở gốc dự án để khỏi phải export tay 3 biến AIDBOX_*
+try:
+    from pathlib import Path
+    from dotenv import load_dotenv
+    load_dotenv(Path(__file__).resolve().parent.parent / ".env")
+except ImportError:
+    pass
+
 random.seed(42)
 
 DAYS_AHEAD = 30
+START_DAY = 1      # ngày bắt đầu tạo slot, tính từ hôm nay (dùng --start để tạo bù khoảng còn thiếu)
+CHUNK = 2000       # số entry mỗi transaction — Aidbox edge nghẹn nếu đẩy một cục hàng chục nghìn
 BUSY_RATIO = 0.3
 MORNING_TIMES   = ["08:00", "08:30", "09:00", "09:30", "10:00", "10:30"]
 AFTERNOON_TIMES = ["13:30", "14:00", "14:30", "15:00"]
@@ -170,7 +180,7 @@ def build_bundle() -> tuple[dict, int, int, int]:
         schedule_count += 1
 
         # Slots for each working day
-        for day_offset in range(1, DAYS_AHEAD + 1):
+        for day_offset in range(START_DAY, DAYS_AHEAD + 1):
             d = date.today() + timedelta(days=day_offset)
             if d.weekday() == 6:  # skip Sunday
                 continue
@@ -189,12 +199,16 @@ def build_bundle() -> tuple[dict, int, int, int]:
 
 
 def main():
-    global DAYS_AHEAD
+    global DAYS_AHEAD, START_DAY, CHUNK
     parser = argparse.ArgumentParser()
     parser.add_argument("--dry-run", action="store_true")
-    parser.add_argument("--days", type=int, default=DAYS_AHEAD, help="Số ngày tạo slot (mặc định 30)")
+    parser.add_argument("--days", type=int, default=DAYS_AHEAD, help="Tạo slot đến ngày thứ N kể từ hôm nay (mặc định 30)")
+    parser.add_argument("--start", type=int, default=START_DAY, help="Bắt đầu từ ngày thứ N kể từ hôm nay (mặc định 1). Slot tạo bằng POST nên KHÔNG idempotent — dùng --start để tránh tạo trùng lên khoảng đã có.")
+    parser.add_argument("--chunk", type=int, default=CHUNK, help=f"Số entry mỗi transaction (mặc định {CHUNK})")
     args = parser.parse_args()
     DAYS_AHEAD = args.days
+    START_DAY = args.start
+    CHUNK = args.chunk
 
     bundle, n_pract, n_sched, n_slot = build_bundle()
     total = len(bundle["entry"])
@@ -212,17 +226,25 @@ def main():
     if not url or not cid or not sec:
         sys.exit("Missing AIDBOX_URL / AIDBOX_CLIENT_ID / AIDBOX_CLIENT_SECRET env")
 
-    print(f"Pushing {total} entries to Aidbox...")
-    r = httpx.post(f"{url}/fhir", json=bundle, auth=(cid, sec), timeout=180)
-    if 200 <= r.status_code < 300:
-        print(f"  [OK] HTTP {r.status_code}")
-        resp = r.json()
-        # Count outcomes
-        ok = sum(1 for e in resp.get("entry", []) if e.get("response", {}).get("status", "").startswith(("200", "201")))
-        print(f"  Accepted entries: {ok}/{total}")
-    else:
-        print(f"  [FAIL] HTTP {r.status_code}: {r.text[:500]}")
-        sys.exit(1)
+    # Đẩy theo lô. Thứ tự entry được giữ nguyên (Practitioner → Schedule → Slot của nó)
+    # nên lô sau tham chiếu Schedule đã tạo ở lô trước vẫn hợp lệ.
+    entries = bundle["entry"]
+    accepted = 0
+    n_chunks = (total + CHUNK - 1) // CHUNK
+    print(f"Pushing {total} entries to Aidbox in {n_chunks} chunk(s) of {CHUNK}...")
+
+    for i in range(0, total, CHUNK):
+        part = entries[i:i + CHUNK]
+        sub = {"resourceType": "Bundle", "type": "transaction", "entry": part}
+        r = httpx.post(f"{url}/fhir", json=sub, auth=(cid, sec), timeout=300)
+        if not (200 <= r.status_code < 300):
+            print(f"  [FAIL] chunk {i // CHUNK + 1}/{n_chunks} — HTTP {r.status_code}: {r.text[:300]}")
+            sys.exit(1)
+        ok = sum(1 for e in r.json().get("entry", []) if e.get("response", {}).get("status", "").startswith(("200", "201")))
+        accepted += ok
+        print(f"  chunk {i // CHUNK + 1}/{n_chunks}: {ok}/{len(part)} ok")
+
+    print(f"  [OK] Accepted entries: {accepted}/{total}")
 
 
 if __name__ == "__main__":

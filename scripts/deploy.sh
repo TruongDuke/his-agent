@@ -13,7 +13,7 @@ SERVER="dev@103.253.20.203"
 PORT=227
 REMOTE="/data/ai/code/ai/his-agent"
 PROJECT="his-agent"          # phải khớp `name:` trong docker-compose.yml
-URL="http://103.253.20.203:8102"
+URL="https://his.svisor.vn"
 LOCAL="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 # Cho phép thay cách gọi ssh (vd: SSH_CMD="sshpass -p '...' ssh -p 227")

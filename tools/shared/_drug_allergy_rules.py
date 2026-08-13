@@ -196,7 +196,7 @@ def match_allergy_classes(allergy_text: str) -> list[str]:
     if norm in ALLERGY_ALIASES:
         return ALLERGY_ALIASES[norm]
     # Substring match (vd: "dị ứng penicillin")
-    matched: list[str] = []
+    matched: list[str] = [] 
     for alias, classes in ALLERGY_ALIASES.items():
         if alias in norm:
             for c in classes:

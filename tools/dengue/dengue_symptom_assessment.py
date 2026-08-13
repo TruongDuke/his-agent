@@ -59,7 +59,7 @@ def _load_protocol() -> dict:
         return json.load(f)
 
 
-def _to_set(val):
+def _to_set(val): # chuyển đổi giá trị đầu vào thành tập hợp
     if not val:
         return set()
     if isinstance(val, list):

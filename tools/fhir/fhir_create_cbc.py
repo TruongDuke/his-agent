@@ -68,7 +68,7 @@ def run(args: dict) -> dict:
 
     # ── Thu thập các giá trị được cung cấp ──
     values = {}
-    for field in _FIELDS:
+    for field in _FIELDS: # gom các chỉ số được cung cấp vào dict values
         v = _safe_float(args.get(field))
         if v is not None:
             values[field] = v
@@ -114,6 +114,29 @@ def run(args: dict) -> dict:
         "component":         components,
     }
 
+    #{
+# "resourceType": "Observation",
+# "status": "final",
+# "category": [
+#   {"coding": [{"system": "http://terminology.hl7.org/CodeSystem/observation-category", "code": "laboratory"}]}
+# ],
+# "code": {
+#   "coding": [{"system": "http://loinc.org", "code": "58410-2", "display": "CBC panel"}]
+# },
+# "subject": {"reference": "Patient/c0f6d7cf-bd7b-47c8-8373-b59a233435f9"},
+# "effectiveDateTime": "2026-07-06T10:00:00+07:00",
+# "component": [
+#   {
+#     "code": {"coding": [{"system": "http://loinc.org", "code": "777-3", "display": "Platelets"}]},
+#     "valueQuantity": {"value": 133, "unit": "10*3/uL", "system": "http://unitsofmeasure.org", "code": "10*3/uL"}
+#   },
+#   {
+#     "code": {"coding": [{"system": "http://loinc.org", "code": "6690-2", "display": "WBC"}]},
+#     "valueQuantity": {"value": 3.8, "unit": "10*3/uL", "system": "http://unitsofmeasure.org", "code": "10*3/uL"}
+#   }
+# ]
+
+
     # ── POST lên Aidbox ──
     result = fhir_post("Observation", observation)
     if "error" in result:
@@ -147,7 +170,7 @@ def run(args: dict) -> dict:
             # Không biết fever_day → an toàn lấy 7 ngày gần nhất
             episode_start = today - timedelta(days=7)
 
-        prev_bundle = fhir_get("Observation", {
+        prev_bundle = fhir_get("Observation", { #+params = search -> bundle
             "subject":  f"Patient/{pid}",
             "code":     "http://loinc.org|58410-2",
             "_sort":    "-date",
@@ -156,7 +179,7 @@ def run(args: dict) -> dict:
         prev_obs_list = [
             e.get("resource", {})
             for e in (prev_bundle.get("entry") or [])
-            if e.get("resource", {}).get("id") != obs_id
+            if e.get("resource", {}).get("id") != obs_id # kèm điều kiện bỏ chỉnh bản vừa ghi tránh lấy nhầm previous là file vừa tạo
         ]
         for prev_obs in prev_obs_list:
             prev_date_str = (prev_obs.get("effectiveDateTime") or "")[:10]

@@ -52,6 +52,36 @@ def _find_drug(drug_id: str | None, drug_name: str | None) -> dict | None:
     return None
 
 
+# TỔNG HỢP LOGIC KIỂM TRA (diễn giải các if/else bên dưới thành lời)
+# ---------------------------------------------------------------------------
+# Trả về 1 trong 3 verdict: "block" (cấm kê) / "warn" (cảnh báo) / "clear" (an toàn).
+#
+# BƯỚC CHUẨN BỊ:
+#   - Tìm thuốc trong catalog theo drug_id, không có thì thử drug_name.
+#       không tìm ra thuốc  → verdict "warn" (unknown_drug, yêu cầu verify tay), dừng.
+#   - Lấy danh sách dị ứng ĐANG hoạt động của BN (fhir_get_allergies).
+#       BN không có dị ứng nào → verdict "clear", dừng.
+#
+# XÉT TỪNG DỊ ỨNG (chỉ dị ứng category == "medication"; food/environment bỏ qua):
+#   Lớp 1 — TRÙNG TÊN trực tiếp (substance == tên thuốc, hoặc tên thuốc nằm trong substance):
+#            → check "critical" / type=direct_match   (VD dị ứng Amoxicillin + kê Amoxicillin)
+#   Lớp 2+3 — quy substance về NHÓM DƯỢC LÝ qua match_allergy_classes():
+#            không ra nhóm nào → check "warning" / type=unmatched_allergy (verify tay)
+#            với mỗi nhóm dị ứng ac, đối chiếu check_cross_reactivity(ac, drug_class):
+#              ac == drug_class  → type=same_class      (cùng nhóm → thường "critical")
+#              ac != drug_class  → type=cross_reactivity (phản ứng chéo → thường "warning")
+#              severity + alternatives lấy TỪ rule trong _drug_allergy_rules (không hard-code ở đây)
+#
+# LỚP 4 — TỔNG HỢP VERDICT (ưu tiên an toàn: lấy mức nặng nhất trong mọi check):
+#            có ≥1 "critical" → block
+#            có ≥1 "warning"  → warn
+#            còn lại          → clear
+#          "Thà cảnh báo thừa hơn bỏ sót."
+#
+# GỢI Ý THAY THẾ: gom các nhóm alternatives từ rule, chọn thuốc cùng category, tối đa 5.
+# Nguồn luật: Stockley's Drug Interactions 13th ed (2022); BNF 86; WHO Pharmacovigilance.
+# ---------------------------------------------------------------------------
+
 def run(args: dict) -> dict:
     import sys, os
     sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "shared"))
@@ -131,7 +161,7 @@ def run(args: dict) -> dict:
             continue
 
         # ── Layer 2 + 3: Match qua alias → class → cross-reactivity ──
-        allergy_classes = match_allergy_classes(substance)
+        allergy_classes = match_allergy_classes(substance) # trả về danh sách nhóm dược lý tương ứng với dị ứng đã ghi nhận
         if not allergy_classes:
             # Không match được class nào → cảnh báo nhẹ cho bác sĩ verify
             checks.append({
@@ -143,8 +173,8 @@ def run(args: dict) -> dict:
             })
             continue
 
-        for ac in allergy_classes:
-            rule = check_cross_reactivity(ac, drug_class)
+        for ac in allergy_classes:  #cùng nhóm dược lý
+            rule = check_cross_reactivity(ac, drug_class) #ac = một nhóm mà BN dị ứng; drug_class = nhóm của thuốc định kê
             if rule:
                 checks.append({
                     "severity":       rule["severity"],
@@ -159,7 +189,8 @@ def run(args: dict) -> dict:
                 for alt in rule.get("alternatives", []):
                     suggested_classes.add(alt)
 
-    # ── Tổng hợp verdict ──
+    # ── Lớp 4: Tổng hợp verdict — ƯU TIÊN AN TOÀN: lấy mức NẶNG NHẤT trong mọi phát hiện ──
+    # (bất kỳ critical -> block; có warning -> warn; còn lại -> clear). "Thà cảnh báo thừa hơn bỏ sót."
     if any(c["severity"] == "critical" for c in checks):
         verdict = "block"
     elif any(c["severity"] == "warning" for c in checks):

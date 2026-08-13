@@ -115,7 +115,7 @@ def run(args: dict) -> dict:
         suggestions.append({
             "code": dept["code"],
             "name": dept["name"],
-            "score": round(dept["score"] + (0.5 if boosted else 0), 2),
+            "score": round(dept["score"] + (0.5 if boosted else 0), 2), # cộng 0.5 nếu có lịch sử khám khoa này
             "history_boost": boosted,
             "reason": ". ".join(reason_parts),
             "common_conditions_info": (

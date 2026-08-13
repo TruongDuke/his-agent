@@ -8,7 +8,7 @@ import os
 import httpx
 
 
-def _config() -> tuple[str, str, str]:
+def _config() -> tuple[str, str, str]:  #lấy thông tin cấu hình từ biến môi trường
     url = os.environ.get("AIDBOX_URL", "").rstrip("/")
     cid = os.environ.get("AIDBOX_CLIENT_ID", "")
     sec = os.environ.get("AIDBOX_CLIENT_SECRET", "")
@@ -16,14 +16,14 @@ def _config() -> tuple[str, str, str]:
 
 
 def fhir_get(path: str, params: dict | None = None, timeout: float = 15.0) -> dict:
-    url, cid, sec = _config()
+    url, cid, sec = _config()  
     if not url:
         return {"error": "AIDBOX_URL not configured"}
 
-    full = f"{url}/fhir/{path.lstrip('/')}"
+    full = f"{url}/fhir/{path.lstrip('/')}" # path="Patient/123" → http://...:8888/fhir/Patient/123
     auth = (cid, sec) if cid and sec else None
     try:
-        with httpx.Client(timeout=timeout, auth=auth) as client:
+        with httpx.Client(timeout=timeout, auth=auth) as client: #mở kết nối
             resp = client.get(full, params=params or {}) # ← GỬI yêu cầu qua mạng tới bệnh viện
         if resp.status_code >= 400:
             return {"error": f"FHIR {resp.status_code}: {resp.text[:300]}"}
@@ -53,7 +53,7 @@ def fhir_post(path: str, body: dict, timeout: float = 15.0) -> dict:
         return {"error": f"Request failed: {e}"}
 
 
-def extract_entries(bundle: dict) -> list[dict]:
+def extract_entries(bundle: dict) -> list[dict]: # get list of resources from a FHIR Bundle
     """Extract resource list from a FHIR Bundle."""
     if not isinstance(bundle, dict):
         return []
