@@ -49,10 +49,18 @@ def _load_tool_modules() -> dict[str, Any]:
 
 
 def _infer_param_schema(desc: str) -> dict:
-    """Suy ra JSON Schema từ prefix của description."""
+    """Suy ra JSON Schema từ prefix của description.
+
+    Nhận cả "list[...]" chứ không riêng "array": ARGS_SCHEMA của các tool viết theo lối
+    Python (list[dict]), mà trước đây chỉ khớp "array" nên tham số danh sách bị khai
+    thành string. Hậu quả thật: LLM gửi medications dạng chuỗi, fhir_create_prescription
+    đòi list rồi từ chối — kê đơn qua khung chat không bao giờ thành công.
+    """
     low = desc.lower().lstrip()
-    if low.startswith("array"):
-        return {"type": "array", "items": {"type": "string"}, "description": desc}
+    if low.startswith(("array", "list")):
+        # list[dict] → mảng object; list/array trơn → mảng chuỗi
+        item = {"type": "object"} if ("[dict" in low or "[object" in low) else {"type": "string"}
+        return {"type": "array", "items": item, "description": desc}
     if low.startswith("boolean"):
         return {"type": "boolean", "description": desc}
     if low.startswith("number") or low.startswith("integer"):

@@ -8,6 +8,7 @@ Nếu có verdict='block' mà không có override_reason → tool sẽ từ ch�
 """
 from __future__ import annotations
 from datetime import datetime, timezone, timedelta
+import json
 import uuid
 
 TOOL_NAME = "fhir_create_prescription"
@@ -151,6 +152,15 @@ def run(args: dict) -> dict:
         return {"error": "diagnosis là bắt buộc"}
 
     medications = args.get("medications") or []
+    # LLM thỉnh thoảng gửi cả danh sách dưới dạng chuỗi JSON thay vì mảng thật. Nhận
+    # luôn cho chắc, thay vì bắt nó đoán lại định dạng qua mấy lượt thử-sai.
+    if isinstance(medications, str):
+        try:
+            medications = json.loads(medications)
+        except (json.JSONDecodeError, TypeError):
+            return {"error": "medications không đọc được — cần mảng thuốc, mỗi thuốc là một object"}
+    if isinstance(medications, dict):  # gửi 1 thuốc trần thay vì mảng 1 phần tử
+        medications = [medications]
     if not isinstance(medications, list) or not medications:
         return {"error": "medications phải là list ≥1 thuốc"}
 
