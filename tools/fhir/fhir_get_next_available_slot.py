@@ -11,10 +11,33 @@ DESCRIPTION = (
 ARGS_SCHEMA = {
     "department":      "string — mã khoa (PEDIAT/CARDIO/ENDO/ENT/NEURO/GASTRO/RHEUMA/DERMA/OBGYN/OPHTHAL/UROLOGY/GENERAL/SURGERY/DENTAL/PULMO/ORTHO)",
     "date_from":       "string (tùy chọn) — YYYY-MM-DD. Mặc định hôm nay",
+    "time_from":       (
+        "string (tùy chọn) — HH:MM. Giờ user MUỐN khám. PHẢI truyền khi user nói giờ "
+        "(VD '15h chiều mai' → date_from=ngày mai, time_from='15:00'; 'buổi chiều' → '13:00'; "
+        "'buổi sáng' → '08:00'). Không truyền thì tool trả slot sớm nhất bất kể giờ."
+    ),
     "practitioner_id": "string (tùy chọn) — UUID bác sĩ. Nếu truyền, chỉ lấy slot của bác sĩ này.",
 }
 
 _WEEKDAY_VI = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ nhật"]
+
+
+def _norm_time(raw: str) -> str:
+    """'15h', '15', '15:00', '15h30' → 'HH:MM'. Trả rỗng nếu không hiểu."""
+    t = str(raw or "").strip().lower().replace("giờ", "h")
+    if not t:
+        return ""
+    t = t.replace("h", ":") if "h" in t else t
+    t = t.rstrip(":") if t.endswith(":") else t
+    parts = t.split(":")
+    try:
+        hh = int(parts[0])
+        mm = int(parts[1]) if len(parts) > 1 and parts[1] else 0
+    except (ValueError, IndexError):
+        return ""
+    if not (0 <= hh < 24 and 0 <= mm < 60):
+        return ""
+    return f"{hh:02d}:{mm:02d}"
 
 
 def run(args: dict) -> dict:
@@ -45,7 +68,18 @@ def run(args: dict) -> dict:
     if not schedules:
         return {"error": f"Không tìm thấy lịch khám cho khoa '{dept}'"}
 
-    earliest = None
+    time_from = _norm_time(args.get("time_from"))
+
+    # Ba mức ưu tiên, xét theo đúng thứ tự user quan tâm:
+    #   1. đúng ngày user xin, từ giờ user xin trở đi
+    #   2. ngày khác trong tuần, nhưng vẫn đúng khung giờ đó
+    #   3. sớm nhất bất kể giờ — chỉ dùng khi hai mức trên không có
+    exact = None       # (1)
+    same_time = None   # (2)
+    earliest = None    # (3)
+
+    def _better(cur, cand):
+        return cur is None or cand["start_iso"] < cur["start_iso"]
 
     for sched in schedules:
         sched_id = sched.get("id", "")
@@ -84,19 +118,24 @@ def run(args: dict) -> dict:
             start_iso = s.get("start", "")
             if start_iso[:10] > d_to:
                 continue
-            if earliest is None or start_iso < earliest["start_iso"]:
-                d = date.fromisoformat(start_iso[:10])
-                weekday = _WEEKDAY_VI[d.weekday()]
-                earliest = {
-                    "slot_id":     s.get("id"),
-                    "date":        start_iso[:10],
-                    "date_vi":     f"{weekday} ({d.strftime('%d/%m/%Y')})",
-                    "time":        start_iso[11:16],
-                    "end_time":    (s.get("end") or "")[11:16],
-                    "department":  dept_name or dept,
-                    "practitioner": pract_name,
-                    "start_iso":   start_iso,
-                }
+            d = date.fromisoformat(start_iso[:10])
+            cand = {
+                "slot_id":     s.get("id"),
+                "date":        start_iso[:10],
+                "date_vi":     f"{_WEEKDAY_VI[d.weekday()]} ({d.strftime('%d/%m/%Y')})",
+                "time":        start_iso[11:16],
+                "end_time":    (s.get("end") or "")[11:16],
+                "department":  dept_name or dept,
+                "practitioner": pract_name,
+                "start_iso":   start_iso,
+            }
+            if _better(earliest, cand):
+                earliest = cand
+            if time_from and cand["time"] >= time_from:
+                if cand["date"] == d_from and _better(exact, cand):
+                    exact = cand
+                elif _better(same_time, cand):
+                    same_time = cand
 
     if not earliest:
         return {
@@ -105,7 +144,31 @@ def run(args: dict) -> dict:
             "message": f"Không còn slot trống trong 7 ngày tới cho khoa {dept}.",
         }
 
-    slot = earliest
+    # Chọn slot + dựng câu xác nhận. Khi không đáp ứng đúng giờ user xin thì PHẢI nói ra,
+    # không được lẳng lặng đưa slot khác như thể đó là thứ user yêu cầu — bệnh nhân sẽ
+    # bấm đồng ý rồi hôm sau đến sai giờ.
+    slot = exact or same_time or earliest
+    matched = "exact" if exact else ("same_time" if same_time else "fallback")
+
+    if not time_from:
+        confirm = (f"Slot sớm nhất: {slot['department']}, {slot['date_vi']} lúc {slot['time']}, "
+                   f"{slot['practitioner']}. Xác nhận đặt lịch này không?")
+        note = ""
+    elif matched == "exact":
+        confirm = (f"Có slot đúng yêu cầu: {slot['department']}, {slot['date_vi']} lúc "
+                   f"{slot['time']}, {slot['practitioner']}. Xác nhận đặt lịch này không?")
+        note = ""
+    elif matched == "same_time":
+        confirm = (f"Ngày bạn chọn không còn slot từ {time_from} trở đi. "
+                   f"Gần nhất cùng khung giờ là {slot['date_vi']} lúc {slot['time']}, "
+                   f"{slot['practitioner']}. Bạn đặt lịch này nhé?")
+        note = f"Không có slot {time_from} ngày {d_from}."
+    else:
+        confirm = (f"Rất tiếc, khoa {slot['department']} không còn slot nào từ {time_from} "
+                   f"trở đi trong tuần tới. Slot trống sớm nhất là {slot['date_vi']} lúc "
+                   f"{slot['time']}, {slot['practitioner']}. Bạn có muốn đặt giờ này không?")
+        note = f"KHÔNG có slot nào từ {time_from} trở đi — đây là slot sớm nhất, KHÁC giờ user xin."
+
     return {
         "found": True,
         "slot_id":      slot["slot_id"],
@@ -114,15 +177,17 @@ def run(args: dict) -> dict:
         "date_vi":      slot["date_vi"],
         "time":         slot["time"],
         "practitioner": slot["practitioner"],
-        "confirm_message": (
-            f"Slot sớm nhất: {slot['department']}, "
-            f"{slot['date_vi']} lúc {slot['time']}, "
-            f"{slot['practitioner']}. "
-            "Xác nhận đặt lịch này không?"
-        ),
+        "requested_time":   time_from or None,
+        "matched_request":  matched == "exact" if time_from else None,
+        "mismatch_note":    note or None,
+        "confirm_message":  confirm,
         "instruction_for_llm": (
-            f"SLOT SỚM NHẤT: department='{dept}', date='{slot['date']}', time='{slot['time']}'. "
-            "Hiển thị confirm_message cho user và hỏi xác nhận. "
+            f"SLOT ĐỀ XUẤT: department='{dept}', date='{slot['date']}', time='{slot['time']}'. "
+            + (f"⚠ USER XIN {time_from} NHƯNG SLOT NÀY LÀ {slot['time']}. "
+               "BẮT BUỘC nói rõ là không có giờ user xin TRƯỚC khi mời đặt giờ khác. "
+               "TUYỆT ĐỐI KHÔNG trình bày slot này như thể đúng giờ user yêu cầu. "
+               if time_from and matched != "exact" else "")
+            + "Hiển thị confirm_message cho user và hỏi xác nhận. "
             "Khi user xác nhận: hỏi email rồi gọi NGAY fhir_create_appointment("
             f"department='{dept}', date='{slot['date']}', time='{slot['time']}', patient_email=...). "
             "TUYỆT ĐỐI KHÔNG gọi lại fhir_get_available_slots hay fhir_get_next_available_slot. "
