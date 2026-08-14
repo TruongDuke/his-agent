@@ -1,12 +1,16 @@
 """Đầu chờ tích hợp HIS — cổng để HIS của bệnh viện đẩy dữ liệu VÀO hệ thống này.
 
-TRẠNG THÁI: STUB — cố ý.
-Các endpoint dưới đây đã chốt xong phần hợp đồng: schema từng loại bản tin, cách xác
-thực, mã lỗi, cơ chế chống gửi trùng. Bản tin gửi lên được kiểm tra và lưu lại đầy đủ,
-nhưng CHƯA ánh xạ sang FHIR/Aidbox — biên nhận luôn trả persisted_to_fhir=false.
+TRẠNG THÁI: một phần đã vào bệnh án, phần còn lại mới nhận và lưu.
+Hợp đồng đã chốt cho cả 5 loại bản tin: schema, xác thực, mã lỗi, chống gửi trùng.
+Nhưng mới 2 loại được ánh xạ sang FHIR/Aidbox để agent đọc được:
 
-Làm vậy để đội HIS tích hợp và test được ngay từ bây giờ; phần ánh xạ sang FHIR bổ sung
-sau mà không phải đổi hợp đồng, bên HIS không phải sửa lại code.
+  - patients     → Patient          (đã ánh xạ, xem api/his_mapping.py)
+  - lab-results  → Observation CBC  (đã ánh xạ)
+  - encounters / prescriptions / appointments → mới lưu kho tạm
+
+Biên nhận nói rõ từng bản tin nằm ở đâu qua cờ persisted_to_fhir, thay vì để bên gửi
+tự đoán. Ánh xạ hỏng cũng không làm hỏng việc tiếp nhận: bản tin vẫn nằm kho tạm và
+biên nhận kèm fhir_error, xử lý lại sau được.
 
 Xác thực: header X-HIS-API-Key, đối chiếu với biến môi trường HIS_API_KEY.
 Chưa đặt HIS_API_KEY thì toàn bộ cổng đóng (503) — không mở trần cho ai gọi cũng được.
@@ -19,6 +23,7 @@ from fastapi import APIRouter, Depends, Header, HTTPException
 from pydantic import BaseModel, Field
 
 from api import his_inbound as store
+from api.his_mapping import create_lab_observation, upsert_patient
 
 router = APIRouter(prefix="/api/his", tags=["HIS integration"])
 
@@ -109,15 +114,36 @@ class HisAppointment(HisMessage):
 
 # ─────────────────────── XỬ LÝ CHUNG ───────────────────────
 
-def _accept(kind: str, body: HisMessage) -> dict:
+async def _accept(kind: str, body: HisMessage, mapper=None) -> dict:
     """Nhận bản tin: trùng thì trả lại đúng biên nhận cũ, chưa có thì ghi mới.
 
     Gửi trùng KHÔNG bị coi là lỗi — vẫn trả 202 nhưng status="duplicate", để bên HIS
-    biết bản tin đã vào rồi, thay vì tưởng thất bại rồi retry vô hạn."""
+    biết bản tin đã vào rồi, thay vì tưởng thất bại rồi retry vô hạn.
+
+    Loại bản tin nào đã có `mapper` thì ghi tiếp vào FHIR/Aidbox để agent đọc được;
+    ánh xạ lỗi KHÔNG làm hỏng việc tiếp nhận — bản tin vẫn nằm kho tạm, biên nhận báo
+    rõ persisted_to_fhir=false kèm lý do, xử lý lại sau được.
+    """
     old = store.find_receipt(kind, body.message_id)
     if old:
         return {"status": "duplicate", "receipt": old}
-    return {"status": "accepted", "receipt": store.record(kind, body.message_id, body.model_dump())}
+
+    payload = body.model_dump()
+    receipt = store.record(kind, body.message_id, payload)
+
+    if mapper is not None:
+        try:
+            res = await mapper(payload)
+        except Exception as e:  # noqa: BLE001 — lỗi ánh xạ không được làm hỏng tiếp nhận
+            res = {"error": str(e)}
+        if res.get("error"):
+            receipt["fhir_error"] = res["error"]
+        else:
+            receipt["persisted_to_fhir"] = True
+            receipt["fhir_ref"] = res.get("reference")
+        store.update_receipt(kind, body.message_id, receipt)
+
+    return {"status": "accepted", "receipt": receipt}
 
 
 # ─────────────────────── ĐẦU CHỜ ───────────────────────
@@ -129,15 +155,17 @@ async def capabilities():
     return {
         "service": "HIS Agent — cổng tiếp nhận dữ liệu từ HIS",
         "contract_version": "1.0",
-        "status": "stub",
-        "note": ("Đã chốt schema và xác thực. Bản tin được kiểm tra và lưu lại, "
-                 "nhưng chưa ánh xạ sang FHIR/Aidbox (persisted_to_fhir=false)."),
+        "status": "partial",
+        "note": ("Hợp đồng đã chốt cho cả 5 loại bản tin. Hiện 'patients' và 'lab-results' "
+                 "được ghi thẳng vào bệnh án FHIR (agent đọc được); 3 loại còn lại mới lưu "
+                 "kho tạm. Xem cờ persisted_to_fhir trong biên nhận của từng bản tin."),
+        "mapped_to_fhir": ["patients", "lab-results"],
         "auth": {"type": "api_key", "header": "X-HIS-API-Key",
                  "configured": bool(os.getenv("HIS_API_KEY", "").strip())},
         "endpoints": [
-            {"method": "POST", "path": "/api/his/patients",      "mô tả": "Đồng bộ hồ sơ bệnh nhân"},
+            {"method": "POST", "path": "/api/his/patients",      "mô tả": "Đồng bộ hồ sơ bệnh nhân → FHIR Patient"},
             {"method": "POST", "path": "/api/his/encounters",    "mô tả": "Lượt khám / nhập viện"},
-            {"method": "POST", "path": "/api/his/lab-results",   "mô tả": "Kết quả xét nghiệm"},
+            {"method": "POST", "path": "/api/his/lab-results",   "mô tả": "Kết quả xét nghiệm → FHIR Observation"},
             {"method": "POST", "path": "/api/his/prescriptions", "mô tả": "Đơn thuốc"},
             {"method": "POST", "path": "/api/his/appointments",  "mô tả": "Lịch hẹn"},
             {"method": "GET",  "path": "/api/his/messages/{kind}", "mô tả": "Xem lại bản tin đã gửi"},
@@ -149,27 +177,27 @@ async def capabilities():
 
 @router.post("/patients", status_code=202, dependencies=[Depends(require_api_key)])
 async def receive_patient(body: HisPatient):
-    return _accept("patients", body)
+    return await _accept("patients", body, mapper=upsert_patient)
 
 
 @router.post("/encounters", status_code=202, dependencies=[Depends(require_api_key)])
 async def receive_encounter(body: HisEncounter):
-    return _accept("encounters", body)
+    return await _accept("encounters", body)
 
 
 @router.post("/lab-results", status_code=202, dependencies=[Depends(require_api_key)])
 async def receive_lab_result(body: HisLabResult):
-    return _accept("lab-results", body)
+    return await _accept("lab-results", body, mapper=create_lab_observation)
 
 
 @router.post("/prescriptions", status_code=202, dependencies=[Depends(require_api_key)])
 async def receive_prescription(body: HisPrescription):
-    return _accept("prescriptions", body)
+    return await _accept("prescriptions", body)
 
 
 @router.post("/appointments", status_code=202, dependencies=[Depends(require_api_key)])
 async def receive_appointment(body: HisAppointment):
-    return _accept("appointments", body)
+    return await _accept("appointments", body)
 
 
 @router.get("/messages/{kind}", dependencies=[Depends(require_api_key)])

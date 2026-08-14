@@ -159,8 +159,28 @@ python scripts/demo_his_push.py --url https://his.svisor.vn --key <HIS_API_KEY>
     → duplicate — nhận lại đúng biên nhận cũ, không tạo bản ghi thứ hai
 ```
 
-Rồi mở `/api/his/messages/lab-results` chiếu dữ liệu đã nhận — có tiểu cầu **98** và bạch cầu **3.2**
-(đều thấp), tức là **nối thẳng được sang phần sàng lọc sốt xuất huyết ở Demo 2/6**.
+Script tự chiếu luôn bảng CBC đã nhận — tiểu cầu **98**, bạch cầu **3.2**, đều thấp.
+
+### Phần ăn điểm nhất — agent đọc được dữ liệu bệnh viện B
+
+Đừng dừng ở màn hình terminal. Chuyển sang UI, **đăng nhập vai bác sĩ**, rồi gõ vào khung chat:
+
+```
+tra cứu bệnh nhân Trần Thị Hoa
+```
+→ agent tìm ra hồ sơ, dù bệnh nhân này **chưa từng khám ở bệnh viện mình** — vừa được BV B đẩy sang
+mấy giây trước.
+
+```
+xem kết quả xét nghiệm máu của bệnh nhân này
+```
+→ agent đọc CBC và **tự chạy sàng lọc sốt xuất huyết**, kết luận *"Khả năng cao là Sốt Xuất Huyết
+Dengue"* vì tiểu cầu 98 < 100.
+
+**Nói:**
+> "Dữ liệu bệnh viện B đẩy sang không nằm im một chỗ — nó vào thẳng bệnh án FHIR, nên **agent dùng
+> đúng những công cụ có sẵn** để tra cứu và suy luận trên đó, không cần viết thêm dòng nào cho riêng
+> bệnh viện B. Đây là ý nghĩa thật của tích hợp: dữ liệu chảy vào là năng lực AI áp dụng được ngay."
 
 **Nói:**
 > "Đây là HIS của một bệnh viện khác đẩy dữ liệu sang hệ thống em: tiếp nhận bệnh nhân → mở lượt khám
@@ -176,9 +196,16 @@ Rồi mở `/api/his/messages/lab-results` chiếu dữ liệu đã nhận — c
 ⚠️ **Phải đặt `HIS_API_KEY` trên server trước**, không thì script dừng ngay ở bước đầu với thông báo
 "cổng đang ĐÓNG". Script tự kiểm tra và báo rõ, không để bạn ngơ ngác giữa lúc demo.
 
-⚠️ `persisted_to_fhir: false` trong biên nhận là **cố ý, không phải làm dở**. Nếu bị hỏi:
-> "Bản tin đã nhận và lưu, nhưng chưa ghi vào bệnh án chính thức trên FHIR. Em để cờ này để bên gửi
-> biết chính xác dữ liệu đang ở đâu — nhận rồi không có nghĩa là đã vào hồ sơ."
+⚠️ **Phải trả lời trung thực nếu bị hỏi "tích hợp xong chưa"**: mới **2 trong 5** loại bản tin được
+ghi vào bệnh án FHIR (hồ sơ bệnh nhân và kết quả xét nghiệm — đúng hai loại vừa demo). Ba loại còn
+lại (lượt khám, đơn thuốc, lịch hẹn) mới nhận và lưu kho tạm, biên nhận ghi rõ `persisted_to_fhir:
+false`. Nói thẳng:
+> "Em ưu tiên làm trọn hai luồng có giá trị lâm sàng ngay để chứng minh cơ chế chạy được đầu-cuối.
+> Ba luồng còn lại đã chốt hợp đồng và nhận được bản tin, chỉ chưa ánh xạ — và em để cờ báo rõ thay
+> vì giấu."
+
+Nói vống lên là tích hợp xong hết thì bị hỏi tiếp một câu là gãy. Nói đúng phạm vi lại thành điểm
+cộng về tính kỹ lưỡng.
 
 ---
 

@@ -71,6 +71,25 @@ def record(kind: str, message_id: str, payload: dict) -> dict:
     return receipt
 
 
+def update_receipt(kind: str, message_id: str, receipt: dict) -> None:
+    """Ghi đè biên nhận của một bản tin (dùng sau khi ánh xạ sang FHIR xong).
+
+    JSONL không sửa tại chỗ được nên đọc hết rồi ghi lại cả file. Chấp nhận được ở
+    quy mô này; đổi sang DB thì thay mỗi hàm này.
+    """
+    records = list(_iter_records(kind))
+    changed = False
+    for rec in records:
+        if rec.get("message_id") == message_id:
+            rec["receipt"] = receipt
+            changed = True
+    if not changed:
+        return
+    with _path(kind).open("w", encoding="utf-8") as f:
+        for rec in records:
+            f.write(json.dumps(rec, ensure_ascii=False) + "\n")
+
+
 def recent(kind: str, limit: int = 20) -> list[dict]:
     """N bản tin gần nhất — để đội HIS tự đối chiếu cái mình vừa gửi."""
     return list(_iter_records(kind))[-limit:][::-1]
