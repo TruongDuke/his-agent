@@ -73,9 +73,15 @@ async def upsert_patient(payload: dict) -> dict:
     if payload.get("email"):
         telecom.append({"system": "email", "value": payload["email"]})
 
+    identifiers = [{"system": HIS_IDENTIFIER_SYSTEM, "value": his_id}]
+    # Số thẻ BHYT bên HIS gửi sang phải vào đúng hệ định danh mà cả hệ thống đang dùng,
+    # không thì bác sĩ tra bằng số thẻ sẽ không ra bệnh nhân này.
+    if payload.get("insurance_no"):
+        identifiers.append({"system": "urn:vn:bhyt", "value": str(payload["insurance_no"]).strip()})
+
     resource: dict = {
         "resourceType": "Patient",
-        "identifier": [{"system": HIS_IDENTIFIER_SYSTEM, "value": his_id}],
+        "identifier": identifiers,
         "name": [{"use": "official", "family": family, "given": given}],
     }
     if payload.get("gender") in ("male", "female", "other", "unknown"):

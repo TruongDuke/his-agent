@@ -22,8 +22,16 @@ def run(args: dict) -> dict:
     if not query:
         return {"error": "query is required"}
 
-    # Heuristic: digits-only → BHYT or CCCD; else → name
-    if query.isdigit() or (len(query) >= 10 and query.replace(" ", "").isdigit()):
+    # Heuristic: chuỗi liền không dấu cách MÀ có chứa chữ số → mã định danh (BHYT/CCCD);
+    # còn lại → tên người.
+    #
+    # Trước đây điều kiện là isdigit() nên đòi toàn chữ số, khiến tra BHYT KHÔNG BAO GIỜ
+    # chạy: số thẻ BHYT Việt Nam luôn mở đầu bằng 2 chữ cái mã đối tượng (HS học sinh,
+    # DN doanh nghiệp, HT hưu trí...). CCCD 12 số thuần thì lọt, nên lỗi bị che.
+    # Tên người không chứa chữ số, nên "có chữ số và liền một mạch" vẫn tách được an toàn.
+    compact = query.replace(" ", "")
+    if compact.isalnum() and any(c.isdigit() for c in compact) and len(compact) >= 6:
+        query = compact  # BHYT/CCCD hay bị gõ cách quãng theo nhóm số
         # Try as identifier (BHYT first, then CCCD)
         for system in ["urn:vn:bhyt", "urn:vn:cccd"]:
             bundle = fhir_get("Patient", {"identifier": f"{system}|{query}"})
