@@ -139,8 +139,14 @@ gọn**, tắt **trích dẫn**, bật **thang điểm** → lưu → phân tíc
 Không có UI, và lúc bảo vệ cũng **không có HIS bệnh viện thật** nào để bấm. Nên dùng script giả lập
 đóng vai bên gửi — chạy đúng một ca bệnh từ đầu tới cuối.
 
+Gõ trước khi vào phòng (lấy key từ dòng `HIS_API_KEY` trong file `.env`):
 ```bash
-python scripts/demo_his_push.py --url https://his.svisor.vn --key <HIS_API_KEY>
+export HIS_API_KEY=$(grep '^HIS_API_KEY=' .env | cut -d= -f2)
+```
+
+Lúc demo chỉ còn một dòng ngắn:
+```bash
+python3 scripts/demo_his_push.py --url https://his.svisor.vn --fresh
 ```
 
 **Kết quả (chiếu thẳng terminal, chậm 0.8s/bước cho hội đồng kịp đọc):**
@@ -193,8 +199,10 @@ Dengue"* vì tiểu cầu 98 < 100.
 > thành hai hồ sơ. Nên em định danh theo message_id: gửi lại bao nhiêu lần cũng **trả về đúng biên
 > nhận cũ**, không đẻ thêm bản ghi."
 
-⚠️ **Phải đặt `HIS_API_KEY` trên server trước**, không thì script dừng ngay ở bước đầu với thông báo
-"cổng đang ĐÓNG". Script tự kiểm tra và báo rõ, không để bạn ngơ ngác giữa lúc demo.
+⚠️ `HIS_API_KEY` đã nằm trong `.env` ở máy, và `scripts/deploy.sh` rsync `.env` lên server nên key
+sống qua mọi lần deploy. **Đừng đặt key thẳng trên server** — lần deploy sau là bay, vì bản local
+ghi đè lên. Script tự kiểm tra cổng mở chưa và báo rõ trước khi gửi, không để bạn ngơ ngác giữa
+lúc demo.
 
 ⚠️ **Phải trả lời trung thực nếu bị hỏi "tích hợp xong chưa"**: mới **2 trong 5** loại bản tin được
 ghi vào bệnh án FHIR (hồ sơ bệnh nhân và kết quả xét nghiệm — đúng hai loại vừa demo). Ba loại còn
