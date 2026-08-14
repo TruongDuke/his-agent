@@ -29,6 +29,10 @@ ARGS_SCHEMA = {
         "BẮT BUỘC ≥1 thuốc."
     ),
     "notes":          "string — Ghi chú chung cho đơn thuốc. Tùy chọn.",
+    "remind":         (
+        "boolean (tùy chọn, mặc định true) — bật nhắc giờ uống thuốc qua email cho "
+        "bệnh nhân. Chỉ đặt false khi bác sĩ nói rõ là không cần nhắc."
+    ),
 }
 
 
@@ -229,6 +233,12 @@ def run(args: dict) -> dict:
             "instruction": _format_dosage_text(med, drug),
             "override":    bool(override_reason),
             "override_reason": override_reason,
+            # Giữ lại liều/tần suất thô để dựng lịch nhắc bên dưới — chuỗi instruction
+            # đã format cho người đọc, không parse ngược ra số được.
+            "_freq":       _safe_int(med.get("frequency_per_day"), 1),
+            "_dose":       med.get("dose_per_intake") or 1,
+            "_duration":   _safe_int(med.get("duration_days"), 0),
+            "_instr":      med.get("instructions") or "",
         })
 
     if errors and not created:
@@ -237,6 +247,48 @@ def run(args: dict) -> dict:
     # ── Patient summary ──
     patient = fhir_get(f"Patient/{pid}")
     p_summary = patient_summary(patient) if "error" not in patient else {}
+
+    # ── Lịch nhắc uống thuốc ──
+    # Kê đơn qua form UI thì frontend gọi /api/med-reminders/.../from-prescription, còn
+    # kê qua agent thì trước đây không ai gọi — cùng một việc mà bệnh nhân lúc được nhắc
+    # lúc không, và không ai biết. Dựng luôn ở đây cho hai đường hành xử giống nhau.
+    remind = args.get("remind")
+    remind = True if remind is None else bool(remind)
+    reminder_info = None
+    if remind and created:
+        email = next((t.get("value") for t in (patient.get("telecom") or [])
+                      if t.get("system") == "email"), "")
+        if not email:
+            reminder_info = {"enabled": False,
+                             "reason": "Bệnh nhân chưa có email nên không bật nhắc uống thuốc được."}
+        else:
+            try:
+                import sys as _sys, os as _os
+                _root = _os.path.join(_os.path.dirname(__file__), "..", "..")
+                if _root not in _sys.path:
+                    _sys.path.insert(0, _root)
+                from api.reminder_service import merge_from_prescription
+
+                doc = merge_from_prescription(
+                    pid,
+                    [{"drug_name": c["drug_name"], "dose_per_intake": c["_dose"],
+                      "frequency_per_day": c["_freq"], "duration_days": c["_duration"],
+                      "instructions": c["_instr"]} for c in created],
+                    email=email, patient_name=p_summary.get("name", ""),
+                )
+                reminder_info = {"enabled": True, "email": email, "added": doc.get("added", 0)}
+            except Exception as e:  # noqa: BLE001 — nhắc thuốc hỏng KHÔNG được làm hỏng đơn đã kê
+                reminder_info = {"enabled": False, "reason": f"Lỗi tạo lịch nhắc: {e}"}
+
+    for c in created:  # bỏ field nội bộ trước khi trả cho LLM
+        for k in ("_freq", "_dose", "_duration", "_instr"):
+            c.pop(k, None)
+
+    summary = f"Đã kê {len(created)} thuốc cho chẩn đoán '{diagnosis}'."
+    if reminder_info and reminder_info.get("enabled"):
+        summary += f" Đã bật nhắc giờ uống thuốc qua email tới {reminder_info['email']}."
+    elif reminder_info and reminder_info.get("reason"):
+        summary += f" {reminder_info['reason']}"
 
     return {
         "saved":             True,
@@ -249,5 +301,6 @@ def run(args: dict) -> dict:
         "medications":       created,
         "warnings":          warnings,
         "errors":            errors or None,
-        "summary":           f"Đã kê {len(created)} thuốc cho chẩn đoán '{diagnosis}'.",
+        "med_reminders":     reminder_info,
+        "summary":           summary,
     }
