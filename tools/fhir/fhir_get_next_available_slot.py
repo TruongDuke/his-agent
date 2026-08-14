@@ -10,11 +10,14 @@ DESCRIPTION = (
 )
 ARGS_SCHEMA = {
     "department":      "string — mã khoa (PEDIAT/CARDIO/ENDO/ENT/NEURO/GASTRO/RHEUMA/DERMA/OBGYN/OPHTHAL/UROLOGY/GENERAL/SURGERY/DENTAL/PULMO/ORTHO)",
-    "date_from":       "string (tùy chọn) — YYYY-MM-DD. Mặc định hôm nay",
+    "date_from":       (
+        "string (tùy chọn) — ngày user muốn khám. CHÉP NGUYÊN CỤM USER NÓI, đừng tự quy "
+        "ra ngày: 'thứ hai tuần sau', 'chiều mai', 'ngày kia', '20/08'. Tool tự quy đổi. "
+        "Bỏ trống nếu user không nói ngày."
+    ),
     "time_from":       (
-        "string (tùy chọn) — HH:MM. Giờ user MUỐN khám. PHẢI truyền khi user nói giờ "
-        "(VD '15h chiều mai' → date_from=ngày mai, time_from='15:00'; 'buổi chiều' → '13:00'; "
-        "'buổi sáng' → '08:00'). Không truyền thì tool trả slot sớm nhất bất kể giờ."
+        "string (tùy chọn) — giờ user muốn khám. CHÉP NGUYÊN CỤM USER NÓI: '10h sáng', "
+        "'3h chiều', '15h30', 'buổi chiều'. Tool tự quy đổi. Bỏ trống nếu user không nói giờ."
     ),
     "practitioner_id": "string (tùy chọn) — UUID bác sĩ. Nếu truyền, chỉ lấy slot của bác sĩ này.",
 }
@@ -22,22 +25,23 @@ ARGS_SCHEMA = {
 _WEEKDAY_VI = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ nhật"]
 
 
-def _norm_time(raw: str) -> str:
-    """'15h', '15', '15:00', '15h30' → 'HH:MM'. Trả rỗng nếu không hiểu."""
-    t = str(raw or "").strip().lower().replace("giờ", "h")
-    if not t:
-        return ""
-    t = t.replace("h", ":") if "h" in t else t
-    t = t.rstrip(":") if t.endswith(":") else t
-    parts = t.split(":")
-    try:
-        hh = int(parts[0])
-        mm = int(parts[1]) if len(parts) > 1 and parts[1] else 0
-    except (ValueError, IndexError):
-        return ""
-    if not (0 <= hh < 24 and 0 <= mm < 60):
-        return ""
-    return f"{hh:02d}:{mm:02d}"
+def _resolve(raw_date: str, raw_time: str) -> tuple[str, str, bool]:
+    """Quy đổi cụm ngày/giờ tiếng Việt sang ISO bằng code (xem _vi_dates).
+
+    LLM tự cộng trừ ngày tháng thì hay lệch — "thứ hai tuần sau" từng ra Thứ 3 mà vẫn
+    báo đúng yêu cầu. Nên nhận nguyên cụm user nói rồi quy đổi ở đây.
+    Trả (date_iso, time_hhmm, hiểu_được_ngày). Rỗng nghĩa là user không nêu.
+    """
+    import sys, os
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "shared"))
+    from _vi_dates import resolve_date, resolve_time
+
+    raw_date = str(raw_date or "").strip()
+    d = resolve_date(raw_date) if raw_date else None
+    # Giờ có thể nằm trong chính cụm ngày ("chiều mai", "thứ 2 lúc 10h sáng")
+    t = resolve_time(raw_time) or (resolve_time(raw_date) if raw_date else None)
+    understood = bool(d) or not raw_date
+    return (d.isoformat() if d else ""), (t or ""), understood
 
 
 def run(args: dict) -> dict:
@@ -52,7 +56,14 @@ def run(args: dict) -> dict:
     filter_pract_id = str(args.get("practitioner_id") or "").strip()
 
     today = date.today()
-    d_from = str(args.get("date_from") or "").strip() or today.isoformat()
+    d_iso, t_iso, understood = _resolve(args.get("date_from"), args.get("time_from"))
+    if not understood:
+        return {
+            "error": "unclear_date",
+            "message": (f"Không hiểu ngày '{args.get('date_from')}'. Hỏi lại user muốn khám "
+                        "ngày nào (VD 'thứ hai tuần sau', 'ngày mai', '20/08') — KHÔNG tự đoán."),
+        }
+    d_from = d_iso or today.isoformat()
 
     # Search up to 7 days ahead to find first available slot
     d_to = (date.fromisoformat(d_from) + timedelta(days=7)).isoformat()
@@ -68,7 +79,7 @@ def run(args: dict) -> dict:
     if not schedules:
         return {"error": f"Không tìm thấy lịch khám cho khoa '{dept}'"}
 
-    time_from = _norm_time(args.get("time_from"))
+    time_from = t_iso
 
     # Ba mức ưu tiên, xét theo đúng thứ tự user quan tâm:
     #   1. đúng ngày user xin, từ giờ user xin trở đi

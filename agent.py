@@ -52,39 +52,27 @@ _WEEKDAY_VI = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7",
 
 
 def _date_context() -> str:
-    """Bảng quy chiếu ngày sẵn, để LLM tra chứ không phải tự tính.
+    """Ngày giờ hiện tại + luật: KHÔNG tự quy đổi ngày, chép nguyên lời user cho tool.
 
-    Trước đây chỉ đưa "Hôm nay: Friday, 14/08/2026" rồi để LLM tự suy. Nó tính sai:
-    bệnh nhân xin "thứ Hai tuần sau" (17/08) thì agent đặt vào 18/08 — Thứ 3 — mà vẫn
-    báo là đúng yêu cầu. Cộng trừ ngày tháng là thứ LLM hay sai, nên liệt kê sẵn.
+    Từng để LLM tự tính: bệnh nhân xin "thứ Hai tuần sau" (17/08) thì agent đặt vào
+    18/08 — Thứ 3 — mà vẫn báo đúng yêu cầu. Đã chuyển việc quy đổi về code
+    (tools/shared/_vi_dates.py), nên ở đây chỉ cần cấm LLM tự tính.
     """
-    from datetime import date, timedelta
     now = datetime.now()
     today = now.date()
-
-    lines = [
-        "\n\n=== THỜI GIAN HIỆN TẠI ===",
-        f"Hôm nay: {_WEEKDAY_VI[today.weekday()]}, {today.strftime('%d/%m/%Y')} "
-        f"— Giờ: {now.strftime('%H:%M')}.",
-        "",
-        "BẢNG QUY CHIẾU NGÀY — TRA BẢNG NÀY, TUYỆT ĐỐI KHÔNG TỰ CỘNG TRỪ NGÀY THÁNG:",
-        f"  hôm nay      = {today.isoformat()} ({_WEEKDAY_VI[today.weekday()]})",
-    ]
-    for offset, label in ((1, "ngày mai"), (2, "ngày kia")):
-        d = today + timedelta(days=offset)
-        lines.append(f"  {label:12s} = {d.isoformat()} ({_WEEKDAY_VI[d.weekday()]})")
-
-    # "Thứ X tuần sau" = thứ X của tuần kế tiếp, tính từ thứ 2 tuần sau.
-    next_monday = today + timedelta(days=7 - today.weekday())
-    for i in range(7):
-        d = next_monday + timedelta(days=i)
-        lines.append(f"  {_WEEKDAY_VI[i]} tuần sau = {d.isoformat()}")
-
-    lines.append("")
-    lines.append("Khi user nói ngày kiểu 'thứ hai tuần sau', 'chiều mai' → lấy đúng ngày ở bảng "
-                 "trên rồi truyền vào tool. Nếu ngày không có trong bảng thì HỎI LẠI user, "
-                 "không đoán.")
-    return "\n".join(lines)
+    return (
+        "\n\n=== THỜI GIAN HIỆN TẠI ==="
+        f"\nHôm nay: {_WEEKDAY_VI[today.weekday()]}, {today.strftime('%d/%m/%Y')} "
+        f"({today.isoformat()}) — Giờ: {now.strftime('%H:%M')}."
+        "\n\nQUY TẮC NGÀY GIỜ — TUYỆT ĐỐI KHÔNG TỰ CỘNG TRỪ NGÀY THÁNG:"
+        "\n  Khi gọi tool đặt lịch, CHÉP NGUYÊN CỤM user nói vào date_from/time_from:"
+        "\n    user nói 'thứ hai tuần sau'  → date_from='thứ hai tuần sau'"
+        "\n    user nói 'chiều mai'          → date_from='chiều mai'"
+        "\n    user nói '20/08 lúc 10h sáng' → date_from='20/08', time_from='10h sáng'"
+        "\n  Tool tự quy đổi ra ngày chuẩn. Bạn tính tay là sai lệch vài ngày mà không hay."
+        "\n  Tool trả error='unclear_date' → HỎI LẠI user, KHÔNG đoán."
+        "\n  Khi báo lịch cho user, LUÔN kèm thứ trong tuần (VD 'Thứ 2 (17/08)')."
+    )
 
 
 def _infer_param_schema(desc: str) -> dict:
