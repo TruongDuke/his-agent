@@ -48,6 +48,45 @@ def _load_tool_modules() -> dict[str, Any]:
     return modules
 
 
+_WEEKDAY_VI = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ nhật"]
+
+
+def _date_context() -> str:
+    """Bảng quy chiếu ngày sẵn, để LLM tra chứ không phải tự tính.
+
+    Trước đây chỉ đưa "Hôm nay: Friday, 14/08/2026" rồi để LLM tự suy. Nó tính sai:
+    bệnh nhân xin "thứ Hai tuần sau" (17/08) thì agent đặt vào 18/08 — Thứ 3 — mà vẫn
+    báo là đúng yêu cầu. Cộng trừ ngày tháng là thứ LLM hay sai, nên liệt kê sẵn.
+    """
+    from datetime import date, timedelta
+    now = datetime.now()
+    today = now.date()
+
+    lines = [
+        "\n\n=== THỜI GIAN HIỆN TẠI ===",
+        f"Hôm nay: {_WEEKDAY_VI[today.weekday()]}, {today.strftime('%d/%m/%Y')} "
+        f"— Giờ: {now.strftime('%H:%M')}.",
+        "",
+        "BẢNG QUY CHIẾU NGÀY — TRA BẢNG NÀY, TUYỆT ĐỐI KHÔNG TỰ CỘNG TRỪ NGÀY THÁNG:",
+        f"  hôm nay      = {today.isoformat()} ({_WEEKDAY_VI[today.weekday()]})",
+    ]
+    for offset, label in ((1, "ngày mai"), (2, "ngày kia")):
+        d = today + timedelta(days=offset)
+        lines.append(f"  {label:12s} = {d.isoformat()} ({_WEEKDAY_VI[d.weekday()]})")
+
+    # "Thứ X tuần sau" = thứ X của tuần kế tiếp, tính từ thứ 2 tuần sau.
+    next_monday = today + timedelta(days=7 - today.weekday())
+    for i in range(7):
+        d = next_monday + timedelta(days=i)
+        lines.append(f"  {_WEEKDAY_VI[i]} tuần sau = {d.isoformat()}")
+
+    lines.append("")
+    lines.append("Khi user nói ngày kiểu 'thứ hai tuần sau', 'chiều mai' → lấy đúng ngày ở bảng "
+                 "trên rồi truyền vào tool. Nếu ngày không có trong bảng thì HỎI LẠI user, "
+                 "không đoán.")
+    return "\n".join(lines)
+
+
 def _infer_param_schema(desc: str) -> dict:
     """Suy ra JSON Schema từ prefix của description.
 
@@ -504,12 +543,7 @@ def chat_stream(message: str, history: list[dict], role: str = "patient",
     if extra_system:
         system += f"\n\n{extra_system}"
 
-    _now = datetime.now()
-    system += (
-        f"\n\n=== THỜI GIAN HIỆN TẠI ==="
-        f"\nHôm nay: {_now.strftime('%A, %d/%m/%Y')} — Giờ: {_now.strftime('%H:%M')}."
-        f"\nDùng thông tin này khi người dùng hỏi về ngày/giờ, ngày mai, tuần tới, v.v."
-    )
+    system += _date_context()
 
     role_tools = _get_tools_for_role(role)
 
@@ -708,12 +742,7 @@ def chat(message: str, history: list[dict], role: str = "patient",
     if extra_system:
         system += f"\n\n{extra_system}"
 
-    _now = datetime.now()
-    system += (
-        f"\n\n=== THỜI GIAN HIỆN TẠI ==="
-        f"\nHôm nay: {_now.strftime('%A, %d/%m/%Y')} — Giờ: {_now.strftime('%H:%M')}."
-        f"\nDùng thông tin này khi người dùng hỏi về ngày/giờ, ngày mai, tuần tới, v.v."
-    )
+    system += _date_context()
 
     role_tools = _get_tools_for_role(role)
     history = history + [{"role": "user", "content": _build_user_content(message, image_base64, image_mime)}]
