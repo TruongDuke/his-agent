@@ -47,24 +47,52 @@ async def api_patients(q: str = "", count: int = Query(default=30, alias="_count
     if not url:
         raise HTTPException(503, "AIDBOX_URL not configured")
 
-    params: dict = {"_count": str(count), "_sort": "-_lastUpdated"}
+    base: dict = {"_count": str(count), "_sort": "-_lastUpdated"}
+
+    # Thứ tự thử: số điện thoại → mã định danh (BHYT/CCCD) → tên.
+    # Trước đây chỉ có 2 nhánh điện thoại/tên, nên gõ số thẻ BHYT hay CCCD vào ô tìm
+    # kiếm luôn ra rỗng, dù hỏi cùng câu đó qua khung chat thì agent tra được
+    # (fhir_search_patient có nhánh identifier). Hai đường phải cho cùng kết quả.
+    attempts: list[dict] = []
     if q:
         q = q.strip()
-        if q.lstrip("+").isdigit() or (q.startswith("0") and len(q) >= 9):
-            params["telecom"] = q
-        else:
+        # Bỏ dấu cách vì số thẻ hay được gõ cách quãng theo nhóm. KHÔNG bỏ dấu gạch
+        # ngang: mã bệnh nhân bên HIS ngoài có dạng "BV2-000451", gạch nằm trong mã.
+        compact = q.replace(" ", "")
+        digits = compact.replace("-", "")
+        is_phone = digits.lstrip("+").isdigit() and digits.startswith(("0", "+")) and len(digits) >= 9
+        # CỐ Ý không loại trừ is_phone: CCCD là 12 số mở đầu bằng 0, nhìn y hệt số điện
+        # thoại. Không có cách phân biệt bằng hình dạng, nên thử điện thoại trước rồi
+        # thử tiếp mã định danh — nhánh nào ra kết quả thì dừng.
+        looks_like_id = (any(c.isdigit() for c in compact)
+                         and all(c.isalnum() or c == "-" for c in compact)
+                         and len(compact) >= 6)
+
+        if is_phone:
+            attempts.append({**base, "telecom": digits})
+        if looks_like_id:
+            # Số thẻ BHYT mở đầu bằng 2 chữ cái mã đối tượng nên không bao giờ toàn số;
+            # CCCD thì 12 số thuần; mã bên HIS ngoài thì có gạch ngang.
+            for system in ("urn:vn:bhyt", "urn:vn:cccd", "urn:his-agent:external-his"):
+                attempts.append({**base, "identifier": f"{system}|{compact}"})
+        if not is_phone and not looks_like_id:
             tokens = q.split()
-            if len(tokens) == 1:
-                params["family"] = tokens[0]
-            else:
-                params["family"] = tokens[0]
-                params["given"]  = " ".join(tokens[1:])
+            by_name = {**base, "family": tokens[0]}
+            if len(tokens) > 1:
+                by_name["given"] = " ".join(tokens[1:])
+            attempts.append(by_name)
+    if not attempts:
+        attempts.append(base)
 
     async with httpx.AsyncClient(timeout=15, auth=auth) as client:
-        r = await client.get(f"{url}/fhir/Patient", params=params)
-        if r.status_code >= 400:
-            raise HTTPException(r.status_code, r.text[:300])
-        bundle = r.json()
+        bundle = {}
+        for params in attempts:
+            r = await client.get(f"{url}/fhir/Patient", params=params)
+            if r.status_code >= 400:
+                raise HTTPException(r.status_code, r.text[:300])
+            bundle = r.json()
+            if _entries(bundle, "Patient"):
+                break  # nhánh nào ra kết quả thì dừng, không tra thừa
 
     patients = _entries(bundle, "Patient")
     rows = []
