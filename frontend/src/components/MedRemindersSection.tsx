@@ -118,7 +118,6 @@ export default function MedRemindersSection({ patientId }: { patientId: string }
               <Text type="secondary" style={{ fontSize: 12 }}>Giờ nhắc: </Text>
               <Select
                 mode="tags"
-                size="small"
                 style={{ width: '100%', marginTop: 4 }}
                 placeholder="Thêm giờ (HH:MM)"
                 value={it.times}
@@ -126,14 +125,19 @@ export default function MedRemindersSection({ patientId }: { patientId: string }
                 tokenSeparators={[',', ' ']}
               />
             </div>
-            <div style={{ marginTop: 6 }}>
+            {/* flex + wrap thay cho float: trên điện thoại nút "Gửi thử" xuống hàng
+                thay vì đè lên khoảng ngày. */}
+            <div style={{
+              marginTop: 6, display: 'flex', flexWrap: 'wrap',
+              alignItems: 'center', justifyContent: 'space-between', gap: 4,
+            }}>
               <Text type="secondary" style={{ fontSize: 12 }}>
                 {it.start_date} → {it.end_date || 'không giới hạn'}
               </Text>
               <Button
                 size="small" type="link" icon={<SendOutlined />}
                 onClick={() => sendTest(it.id)} disabled={!doc.email}
-                style={{ float: 'right' }}
+                style={{ padding: 0 }}
               >
                 Gửi thử
               </Button>

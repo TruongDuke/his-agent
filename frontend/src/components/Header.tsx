@@ -24,14 +24,21 @@ export default function Header({ session, onLogout }: { session: Session; onLogo
         <Tag color={isDoctor ? 'geekblue' : 'cyan'} style={{ marginInlineEnd: 0 }}>
           {isDoctor ? 'Bác sĩ' : session.guest ? 'Khách' : 'Bệnh nhân'}
         </Tag>
-        {session.name && <Text style={{ color: '#fff' }}>{session.name}</Text>}
+        {/* Trên điện thoại header chỉ đủ chỗ cho icon — tên và nhãn nút ẩn qua .hide-xs */}
+        {session.name && <Text className="hide-xs" style={{ color: '#fff' }}>{session.name}</Text>}
         {canViewProfile && (
-          <Button type="text" icon={<IdcardOutlined />} style={{ color: '#fff' }} onClick={() => setProfileOpen(true)}>
-            Hồ sơ của tôi
+          <Button
+            type="text"
+            icon={<IdcardOutlined />}
+            style={{ color: '#fff' }}
+            title="Hồ sơ của tôi"
+            onClick={() => setProfileOpen(true)}
+          >
+            <span className="hide-xs">Hồ sơ của tôi</span>
           </Button>
         )}
-        <Button type="text" icon={<LogoutOutlined />} style={{ color: '#fff' }} onClick={onLogout}>
-          Thoát
+        <Button type="text" icon={<LogoutOutlined />} style={{ color: '#fff' }} title="Thoát" onClick={onLogout}>
+          <span className="hide-xs">Thoát</span>
         </Button>
       </div>
       {canViewProfile && (

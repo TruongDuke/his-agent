@@ -47,8 +47,10 @@ export default function MyProfileDrawer({
     { title: 'Ngày', dataIndex: 'date', width: 110 },
   ]
 
+  // rootClassName "profile-drawer": CSS ép width 100% khi ≤768px, vì 520px cứng
+  // rộng hơn bề ngang điện thoại.
   return (
-    <Drawer title="Hồ sơ của tôi" open={open} onClose={onClose} width={520}>
+    <Drawer title="Hồ sơ của tôi" open={open} onClose={onClose} width={520} rootClassName="profile-drawer">
       {loading ? (
         <div style={{ textAlign: 'center', padding: 40 }}><Spin /></div>
       ) : detail ? (
@@ -61,6 +63,7 @@ export default function MyProfileDrawer({
             <Descriptions.Item label="Email">{detail.email || '—'}</Descriptions.Item>
           </Descriptions>
           <Tabs
+            size="small"
             style={{ marginTop: 16 }}
             items={[
               {
@@ -68,7 +71,7 @@ export default function MyProfileDrawer({
                 children: (
                   <>
                     <Text strong>Xét nghiệm</Text>
-                    <Table size="small" columns={obsCols} dataSource={(detail.labs || []).map((x: any, i: number) => ({ ...x, key: i }))} pagination={false} locale={{ emptyText: 'Chưa có' }} style={{ marginBottom: 16 }} />
+                    <Table size="small" columns={obsCols} dataSource={(detail.labs || []).map((x: any, i: number) => ({ ...x, key: i }))} pagination={false} locale={{ emptyText: 'Chưa có' }} scroll={{ x: 'max-content' }} style={{ marginBottom: 16 }} />
                     <Text strong>Diễn tiến CBC & sàng lọc SXHD</Text>
                     <div style={{ marginTop: 8 }}><CbcSection patientId={patientId} /></div>
                   </>
