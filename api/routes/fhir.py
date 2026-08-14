@@ -6,7 +6,7 @@ from datetime import date as _date
 from pydantic import BaseModel
 from fastapi import APIRouter, HTTPException, Query
 
-from api.deps import _aidbox, _entries, _patient_name, _pract_name
+from api.deps import _aidbox, _entries, _external_his_id, _patient_name, _pract_name
 
 router = APIRouter()
 
@@ -79,6 +79,7 @@ async def api_patients(q: str = "", count: int = Query(default=30, alias="_count
             "gender":     "Nam" if p.get("gender") == "male" else "Nữ" if p.get("gender") == "female" else "",
             "birth_date": p.get("birthDate", ""),
             "phone":      phone,
+            "external_his_id": _external_his_id(p),
         })
     return {"total": bundle.get("total", len(rows)), "patients": rows}
 
@@ -424,6 +425,7 @@ async def api_patient_detail(patient_id: str):
         "birth_date": birth,
         "phone":      phone,
         "email":      email,
+        "external_his_id": _external_his_id(pt),
         "vitals":     vitals[:6],
         "labs":       labs[:8],
         "appointments": appts,

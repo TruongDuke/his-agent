@@ -21,6 +21,19 @@ def _pract_name(p: dict) -> str:
     return f"BS. {name}" if name else ""
 
 
+def _external_his_id(p: dict) -> str:
+    """Mã bệnh nhân bên HIS ngoài, rỗng nếu là bệnh nhân của viện mình.
+
+    Hồ sơ do bệnh viện khác đẩy sang được gắn identifier này lúc ánh xạ
+    (api/his_mapping.py). Bác sĩ cần thấy được nguồn gốc: dữ liệu ngoài viện nên
+    đối chiếu lại trước khi ra quyết định, không mặc nhiên tin như dữ liệu tự làm.
+    """
+    for i in p.get("identifier") or []:
+        if (i.get("system") or "") == "urn:his-agent:external-his":
+            return i.get("value") or ""
+    return ""
+
+
 def _entries(bundle: dict, rtype: str) -> list[dict]:
     return [
         e["resource"] for e in (bundle.get("entry") or [])

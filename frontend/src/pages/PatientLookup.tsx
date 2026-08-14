@@ -131,6 +131,9 @@ export default function PatientLookup({ session, onAskAI }: { session: Session; 
                   title={
                     <>
                       {p.name}{' '}
+                      {/* Hồ sơ do HIS bệnh viện khác đồng bộ sang — bác sĩ cần thấy nguồn gốc
+                          để biết dữ liệu này không do viện mình tạo ra. */}
+                      {p.external_his_id && <Tag color="purple">Ngoài viện</Tag>}
                       {p.plt_display && p.plt_display !== '—' && (
                         <Tag color={p.plt_status === 'critical' ? 'red' : p.plt_status === 'warning' ? 'orange' : 'green'}>
                           PLT {p.plt_display}
@@ -153,7 +156,16 @@ export default function PatientLookup({ session, onAskAI }: { session: Session; 
             <Card><div style={{ textAlign: 'center', padding: 40 }}><Spin /></div></Card>
           ) : detail ? (
             <Card
-              title={detail.name}
+              title={
+                <>
+                  {detail.name}{' '}
+                  {detail.external_his_id && (
+                    <Tag color="purple" title={`Mã bệnh nhân bên HIS gửi sang: ${detail.external_his_id}`}>
+                      Ngoài viện · {detail.external_his_id}
+                    </Tag>
+                  )}
+                </>
+              }
               extra={
                 <Space wrap>
                   {onAskAI && (

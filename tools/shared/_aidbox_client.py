@@ -80,6 +80,12 @@ def patient_summary(p: dict) -> dict:
     identifiers = p.get("identifier") or []
     bhyt = next((i.get("value") for i in identifiers if "bhyt" in (i.get("system") or "")), None)
     cccd = next((i.get("value") for i in identifiers if "cccd" in (i.get("system") or "")), None)
+    # Hồ sơ do HIS bệnh viện khác đẩy sang (xem api/his_mapping.py). Phải phân biệt được
+    # với bệnh nhân của viện mình: dữ liệu ngoài viện cần đối chiếu lại trước khi ra
+    # quyết định lâm sàng, không mặc nhiên tin như dữ liệu tự mình làm ra.
+    external = next(
+        (i.get("value") for i in identifiers
+         if (i.get("system") or "") == "urn:his-agent:external-his"), None)
     meta = p.get("meta") or {}
     last_updated = (meta.get("lastUpdated") or "")[:16].replace("T", " ")
     return {
@@ -91,5 +97,8 @@ def patient_summary(p: dict) -> dict:
         "bhyt": bhyt,
         "cccd": cccd,
         "phone": next((t.get("value") for t in (p.get("telecom") or []) if t.get("system") == "phone"), None),
+        # Có giá trị = hồ sơ từ bệnh viện khác đẩy sang; None = bệnh nhân của viện mình.
+        "external_source": (f"Hồ sơ do HIS bệnh viện khác đồng bộ sang (mã bên đó: {external})"
+                            if external else None),
         "_source": f"FHIR R5 · Aidbox · Patient/{p.get('id')} · cập nhật {last_updated}" if last_updated else f"FHIR R5 · Aidbox · Patient/{p.get('id')}",
     }
