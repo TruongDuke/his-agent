@@ -248,8 +248,23 @@ def run(args: dict) -> dict:
         except Exception:
             pass
 
+    # Nhãn tiếng Việt đi kèm mã: LLM hay bê nguyên "SEMI_URGENT" ra cho bệnh nhân đọc,
+    # thành câu nửa Việt nửa Anh. Đưa sẵn chữ tiếng Việt để nó có cái mà dùng.
+    _URGENCY_VI = {
+        "EMERGENCY":   "Cấp cứu — cần đến ngay",
+        "URGENT":      "Khẩn — nên khám trong hôm nay",
+        "SEMI_URGENT": "Ưu tiên vừa — nên khám trong 2–3 ngày tới",
+        "ROUTINE":     "Thường quy — đặt lịch bình thường",
+    }
+
     return {
         "urgency_level": current_level,
+        "urgency_vi": _URGENCY_VI.get(current_level, "Thường quy"),
+        "_hien_thi": (
+            f"Nói với bệnh nhân bằng TIẾNG VIỆT: '{_URGENCY_VI.get(current_level, 'Thường quy')}'. "
+            f"TUYỆT ĐỐI KHÔNG hiển thị mã '{current_level}' hay tên khoa viết tắt '{dept}' — "
+            "đó là mã nội bộ, bệnh nhân không hiểu."
+        ),
         "action": action_key,
         "department": dept,
         "matched_symptoms": best_map["matched_symptoms"] if best_map else [],
