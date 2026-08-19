@@ -40,7 +40,12 @@ export default function Appointments({ onChange, doctorId }: { onChange?: () => 
     try {
       const r = await fetch(`/api/${kind}-appointment/${id}`, { method: 'POST' })
       if (!r.ok) throw new Error()
-      message.success(kind === 'confirm' ? 'Đã xác nhận & gửi email cho bệnh nhân' : 'Đã từ chối, giải phóng slot')
+      // Báo đúng việc đã xảy ra: email có gửi được hay không do backend quyết định
+      // (bệnh nhân đặt lịch không kèm email thì không báo được).
+      const d = await r.json().catch(() => ({}))
+      if (kind === 'confirm') message.success('Đã xác nhận & gửi email cho bệnh nhân')
+      else if (d.email_sent) message.success('Đã từ chối, giải phóng slot & gửi email báo bệnh nhân')
+      else message.warning('Đã từ chối và giải phóng slot — nhưng CHƯA báo được cho bệnh nhân qua email')
       load()
       onChange?.()
     } catch {

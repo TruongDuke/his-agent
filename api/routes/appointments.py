@@ -146,7 +146,17 @@ async def api_confirm_appointment(appointment_id: str):
 @router.post("/api/reject-appointment/{appointment_id}")
 async def api_reject_appointment(appointment_id: str, reason: str = "Bác sĩ từ chối lịch hẹn"):
     from tools.fhir.fhir_reject_appointment import run as reject_run
-    result = reject_run({"appointment_id": appointment_id, "reason": reason})
+    result = reject_run({
+        "appointment_id": appointment_id,
+        "reason": reason,
+        # Thiếu khối này thì tool không có credential, bệnh nhân không nhận được
+        # email báo hủy — đúng lỗi cũ của luồng từ chối.
+        "_settings": {
+            "gmail_user":         os.getenv("GMAIL_USER", ""),
+            "gmail_app_password": os.getenv("GMAIL_APP_PASSWORD", ""),
+            "gmail_from_name":    os.getenv("GMAIL_FROM_NAME", "Bệnh viện Đa khoa Hà Nội"),
+        },
+    })
     if "error" in result:
         raise HTTPException(400, result["error"])
     return result
