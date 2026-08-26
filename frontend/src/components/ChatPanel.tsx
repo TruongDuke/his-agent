@@ -167,6 +167,10 @@ export default function ChatPanel({
   // người dùng đọc lại trước khi gửi.
   async function toggleMic() {
     if (busy || sttBusy) return
+    if (callState !== 'off') {
+      message.info('Đang trong cuộc gọi — cứ nói, không cần bấm micro.')
+      return
+    }
     if (recording) {
       const rec = recorder.current
       recorder.current = null
@@ -209,6 +213,12 @@ export default function ChatPanel({
 
   /** Bật/tắt chế độ gọi: nghe liên tục, tự gửi khi nói xong, tự đọc câu trả lời. */
   async function toggleCall() {
+    // Chặn mở cuộc gọi khi micro tay đang bật hoặc đang gửi tin — hai luồng micro
+    // cùng lúc sẽ tranh nhau thiết bị.
+    if (!call.current && (recording || sttBusy || busy)) {
+      message.info('Đợi xử lý xong rồi hãy gọi.')
+      return
+    }
     if (call.current) {
       stopSpeak.current?.()
       call.current.stop()

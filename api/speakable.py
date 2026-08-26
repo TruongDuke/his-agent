@@ -82,7 +82,9 @@ def to_speech(md: str) -> str:
 
 # Kết câu tiếng Việt. Tách để đọc từng câu, phát câu đầu ngay thay vì chờ sinh hết —
 # đo được: 1 câu ~0.6-1s, cả đoạn 300 ký tự mất 5.5s.
-_SENT_END = re.compile(r"(?<=[.!?…:])\s+|\n+")
+# KHÔNG cắt ở dấu hai chấm: "Sàng lọc sốt xuất huyết:" tách riêng thành một mẩu cụt,
+# đọc lên nghe khựng. Để nó dính vào vế sau thành một câu trọn nghĩa.
+_SENT_END = re.compile(r"(?<=[.!?…])\s+|\n+")
 
 
 def split_sentences(text: str, max_len: int = 180) -> list[str]:
