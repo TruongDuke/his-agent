@@ -11,7 +11,7 @@ from fastapi.staticfiles import StaticFiles
 
 from api.routes import (
     chat, scheduling, fhir, appointments, ui, auth, a2a, doctor_config,
-    med_reminders, his,
+    med_reminders, his, voice,
 )
 
 app = FastAPI(title="HIS Agent API", version="1.0.0")
@@ -52,6 +52,7 @@ app.include_router(appointments.router)
 app.include_router(doctor_config.router)
 app.include_router(med_reminders.router)
 app.include_router(his.router)
+app.include_router(voice.router)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # UI React (Vite build) — phục vụ assets nếu đã build (frontend/dist)

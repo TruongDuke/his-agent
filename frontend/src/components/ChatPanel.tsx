@@ -1,13 +1,14 @@
 import { useRef, useState, useEffect } from 'react'
-import { Button, Avatar, Input } from 'antd'
+import { Button, Avatar, Input, message, Tooltip } from 'antd'
 import {
   SendOutlined, RobotOutlined, UserOutlined, PaperClipOutlined, CloseCircleFilled, PlusOutlined,
-  SettingOutlined,
+  SettingOutlined, AudioOutlined, AudioMutedOutlined, SoundOutlined,
 } from '@ant-design/icons'
 import { marked } from 'marked'
 import DengueForm from './DengueForm'
 import CbcConfigModal from './CbcConfigModal'
 import { streamChat } from '../api'
+import { startRecording, transcribe, speak, type Recorder } from '../voice'
 import type { Session, Source } from '../api'
 
 function isDengueChecklist(text: string) {
@@ -75,6 +76,10 @@ export default function ChatPanel({
   const [busy, setBusy] = useState(false)
   const [img, setImg] = useState<{ data: string; mime: string; url: string } | null>(null)
   const [cfgOpen, setCfgOpen] = useState(false)
+  const [recording, setRecording] = useState(false)
+  const [sttBusy, setSttBusy] = useState(false)
+  const recorder = useRef<Recorder | null>(null)
+  const playing = useRef<HTMLAudioElement | null>(null)
   const sessionId = useRef(initialSessionId || '')
   const scrollRef = useRef<HTMLDivElement>(null)
   const fileRef = useRef<HTMLInputElement>(null)
@@ -148,6 +153,51 @@ export default function ChatPanel({
     }
     reader.readAsDataURL(f)
     e.target.value = ''
+  }
+
+  // Ghi âm → chữ. CỐ Ý đổ vào ô nhập thay vì gửi thẳng: nhận dạng giọng nói có thể
+  // nghe nhầm ("đặt lịch" thành "lại lịch"), mà đây là bối cảnh y tế nên phải cho
+  // người dùng đọc lại trước khi gửi.
+  async function toggleMic() {
+    if (busy || sttBusy) return
+    if (recording) {
+      const rec = recorder.current
+      recorder.current = null
+      setRecording(false)
+      if (!rec) return
+      setSttBusy(true)
+      try {
+        const { text, empty } = await transcribe(await rec.stop())
+        if (empty) message.info('Không nghe thấy gì — thử nói to và rõ hơn.')
+        else setInput((prev) => (prev ? prev + ' ' : '') + text)
+      } catch (e: any) {
+        message.error('Không nhận dạng được giọng nói: ' + e.message)
+      } finally {
+        setSttBusy(false)
+      }
+    } else {
+      try {
+        recorder.current = await startRecording()
+        setRecording(true)
+      } catch {
+        message.error('Không truy cập được micro — kiểm tra quyền trong trình duyệt.')
+      }
+    }
+  }
+
+  async function readAloud(text: string) {
+    if (playing.current) {           // đang đọc thì bấm lần nữa là tắt
+      playing.current.pause()
+      playing.current = null
+      return
+    }
+    try {
+      const a = await speak(text)
+      playing.current = a
+      a.onended = () => { playing.current = null }
+    } catch (e: any) {
+      message.error('Không đọc được: ' + e.message)
+    }
   }
 
   async function send(override?: string) {
@@ -263,10 +313,21 @@ export default function ChatPanel({
                 ) : m.role === 'assistant' && isDengueChecklist(m.content) ? (
                   <DengueForm onSubmit={(t) => send(t)} />
                 ) : m.role === 'assistant' ? (
-                  <div
-                    className="md"
-                    dangerouslySetInnerHTML={{ __html: renderAssistant(m.content, m.sources) }}
-                  />
+                  <>
+                    <div
+                      className="md"
+                      dangerouslySetInnerHTML={{ __html: renderAssistant(m.content, m.sources) }}
+                    />
+                    <Button
+                      type="text"
+                      size="small"
+                      icon={<SoundOutlined />}
+                      onClick={() => readAloud(m.content)}
+                      style={{ marginTop: 4, color: '#888' }}
+                    >
+                      Nghe
+                    </Button>
+                  </>
                 ) : (
                   m.content
                 )}
@@ -310,6 +371,15 @@ export default function ChatPanel({
               }}
             />
           </div>
+          <Tooltip title={recording ? 'Bấm để dừng và chuyển thành chữ' : 'Nói thay vì gõ'}>
+            <Button
+              size="large"
+              danger={recording}
+              loading={sttBusy}
+              icon={recording ? <AudioMutedOutlined /> : <AudioOutlined />}
+              onClick={toggleMic}
+            />
+          </Tooltip>
           <Button type="primary" size="large" icon={<SendOutlined />} loading={busy} onClick={() => send()} />
         </div>
       </div>
