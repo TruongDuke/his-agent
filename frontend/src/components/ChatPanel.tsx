@@ -10,7 +10,7 @@ import DengueForm from './DengueForm'
 import CbcConfigModal from './CbcConfigModal'
 import { streamChat } from '../api'
 import {
-  startRecording, transcribe, speak, startConversation, splitForSpeech, speakStream,
+  startRecording, transcribe, startConversation, splitForSpeech, speakStream,
   type Recorder, type VoiceSession,
 } from '../voice'
 import type { Session, Source } from '../api'
@@ -83,10 +83,12 @@ export default function ChatPanel({
   const [recording, setRecording] = useState(false)
   const [sttBusy, setSttBusy] = useState(false)
   const recorder = useRef<Recorder | null>(null)
-  const playing = useRef<HTMLAudioElement | null>(null)
   const [callState, setCallState] = useState<'off' | 'listening' | 'thinking' | 'speaking'>('off')
   const call = useRef<VoiceSession | null>(null)
   const stopSpeak = useRef<(() => void) | null>(null)
+  const [speakingId, _setSpeakingId] = useState<number | null>(null)
+  const speakingIdRef = useRef<number | null>(null)
+  const setSpeakingId = (v: number | null) => { speakingIdRef.current = v; _setSpeakingId(v) }
   const sessionId = useRef(initialSessionId || '')
   const scrollRef = useRef<HTMLDivElement>(null)
   const fileRef = useRef<HTMLInputElement>(null)
@@ -196,17 +198,32 @@ export default function ChatPanel({
     }
   }
 
-  async function readAloud(text: string) {
-    if (playing.current) {           // đang đọc thì bấm lần nữa là tắt
-      playing.current.pause()
-      playing.current = null
-      return
+  /**
+   * Đọc một câu trả lời. Dùng chung đường với chế độ gọi: bóc markdown, cắt câu,
+   * phát nối tiếp — nghe tiếng sau ~1 giây thay vì chờ sinh hết cả đoạn (5-6 giây).
+   *
+   * Chốt cờ speakingId NGAY khi bấm, không đợi await: trước đây chỉ kiểm sau khi
+   * TTS sinh xong nên trong lúc chờ, bấm thêm lần nữa (hoặc bấm ở câu trả lời khác)
+   * là mở thêm một luồng phát — bao nhiêu lần bấm là bấy nhiêu giọng chồng nhau.
+   */
+  async function readAloud(text: string, id: number) {
+    if (stopSpeak.current) {          // đang đọc thì bấm nữa là tắt
+      stopSpeak.current()
+      stopSpeak.current = null
+      const same = speakingId === id
+      setSpeakingId(null)
+      if (same) return                // bấm lại đúng câu đó → chỉ tắt
     }
+    setSpeakingId(id)
     try {
-      const a = await speak(text)
-      playing.current = a
-      a.onended = () => { playing.current = null }
+      const sentences = await splitForSpeech(text)
+      if (speakingIdRef.current !== id) return   // đã bấm sang câu khác trong lúc chờ
+      stopSpeak.current = speakStream(sentences, () => {
+        stopSpeak.current = null
+        setSpeakingId(null)
+      })
     } catch (e: any) {
+      setSpeakingId(null)
       message.error('Không đọc được: ' + e.message)
     }
   }
@@ -389,10 +406,10 @@ export default function ChatPanel({
                       type="text"
                       size="small"
                       icon={<SoundOutlined />}
-                      onClick={() => readAloud(m.content)}
-                      style={{ marginTop: 4, color: '#888' }}
+                      onClick={() => readAloud(m.content, i)}
+                      style={{ marginTop: 4, color: speakingId === i ? '#005d5d' : '#888' }}
                     >
-                      Nghe
+                      {speakingId === i ? 'Dừng' : 'Nghe'}
                     </Button>
                   </>
                 ) : (

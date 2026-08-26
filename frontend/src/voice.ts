@@ -238,7 +238,7 @@ export async function splitForSpeech(text: string): Promise<string[]> {
  * chỉ chờ đúng câu đầu (~1 giây) thay vì chờ cả đoạn (5-6 giây).
  * Trả về hàm dừng để cắt ngang khi người dùng lên tiếng.
  */
-export function speakStream(sentences: string[], onDone?: () => void) {
+export function speakStream(sentences: string[], onDone?: () => void, rate = 1.15) {
   let cancelled = false
   let current: HTMLAudioElement | null = null
 
@@ -261,6 +261,7 @@ export function speakStream(sentences: string[], onDone?: () => void) {
       if (!blob || cancelled) continue
       await new Promise<void>((resolve) => {
         const a = new Audio(URL.createObjectURL(blob))
+        a.playbackRate = rate     // giọng gốc đọc hơi thong thả, nhanh nhẹ cho gọn
         current = a
         a.onended = () => resolve()
         a.onerror = () => resolve()
