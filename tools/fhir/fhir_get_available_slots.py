@@ -12,12 +12,14 @@ DESCRIPTION = (
 )
 ARGS_SCHEMA = {
     "department": (
-        "string — mã khoa (PHẢI dùng đúng code, KHÔNG tự đoán): "
+        "string — MÃ khoa, ưu tiên dùng mã: "
         "CARDIO (Tim Mạch), ENDO (Nội Tiết), ENT (Tai Mũi Họng), "
         "NEURO (Thần Kinh), GASTRO (Tiêu Hóa), RHEUMA (Cơ Xương Khớp), "
         "DERMA (Da Liễu), OBGYN (Sản Phụ Khoa), PEDIAT (Nhi), "
         "OPHTHAL (Mắt), UROLOGY (Thận Tiết Niệu), GENERAL (Nội Tổng Quát), "
-        "SURGERY (Ngoại), DENTAL (Răng Hàm Mặt), PULMO (Hô Hấp), ORTHO (Chấn Thương Chỉnh Hình)"
+        "SURGERY (Ngoại), DENTAL (Răng Hàm Mặt), PULMO (Hô Hấp), "
+        "ORTHO (Chấn Thương Chỉnh Hình), EMERG (Cấp cứu), INFECT (Truyền Nhiễm). "
+        "Tool cũng nhận tên khoa tiếng Việt, nhưng chỉ tên CÓ THẬT — đừng tự nghĩ ra tên."
     ),
     "date_from": "string (tùy chọn) — YYYY-MM-DD. Mặc định hôm nay",
     "date_to":   "string (tùy chọn) — YYYY-MM-DD. Mặc định +7 ngày",
@@ -40,34 +42,20 @@ def _fmt_date_vi(iso_date: str) -> str:
 def run(args: dict) -> dict:
     import sys, os
     sys.path.insert(0, os.path.dirname(__file__))
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "shared"))
     from _aidbox_client import fhir_get, extract_entries
+    from _departments import resolve_or_error
     from datetime import date, timedelta
 
-    dept = str(args.get("department") or "").strip().upper()
-    if not dept:
+    if not str(args.get("department") or "").strip():
         return {"error": "department is required"}
 
-    # Alias map — handles common LLM mistakes
-    _ALIAS = {
-        "PEDIATRICS": "PEDIAT", "PEDIATRIC": "PEDIAT", "NHI": "PEDIAT",
-        "CARDIOLOGY": "CARDIO", "TIMM": "CARDIO",
-        "ENDOCRINOLOGY": "ENDO", "ENDOCRINE": "ENDO",
-        "OTOLARYNGOLOGY": "ENT", "TMH": "ENT",
-        "NEUROLOGY": "NEURO", "NEUROSCIENCE": "NEURO",
-        "GASTROENTEROLOGY": "GASTRO", "GI": "GASTRO",
-        "RHEUMATOLOGY": "RHEUMA", "ORTHOPEDICS": "RHEUMA",
-        "DERMATOLOGY": "DERMA",
-        "OBSTETRICS": "OBGYN", "GYNECOLOGY": "OBGYN", "OB": "OBGYN",
-        "OPHTHALMOLOGY": "OPHTHAL", "OPHTHALMOLOGY": "OPHTHAL",
-        "NEPHROLOGY": "UROLOGY", "UROL": "UROLOGY",
-        "INTERNAL": "GENERAL", "NOITONQUAT": "GENERAL",
-        "SURGICAL": "SURGERY", "NGOAI": "SURGERY",
-        "DENTISTRY": "DENTAL", "DENTAL_ORAL": "DENTAL",
-        "PULMONOLOGY": "PULMO", "RESPIRATORY": "PULMO",
-        "ORTHOPEDIC": "ORTHO", "TRAUMATOLOGY": "ORTHO",
-        "EMERGENCY": "EMERG", "ER": "EMERG",
-    }
-    dept = _ALIAS.get(dept, dept)
+    # Chuẩn hóa mã/tên khoa qua bảng dùng chung (tools/shared/_departments.py).
+    # Trước đây mỗi tool tự giữ bảng alias riêng, chỉ tool này có, và map sai
+    # "ORTHOPEDICS" -> RHEUMA.
+    dept, dept_display, err = resolve_or_error(args.get("department"))
+    if err:
+        return err
 
     today = date.today()
     d_from = str(args.get("date_from") or "").strip() or today.isoformat()
@@ -82,9 +70,11 @@ def run(args: dict) -> dict:
     if not schedules:
         return {
             "department": dept,
+            "department_name": dept_display,
             "count": 0,
             "slots": [],
-            "message": f"Không tìm thấy lịch khám cho khoa '{dept}'. Có thể chưa setup hoặc khoa không hoạt động.",
+            "message": (f"{dept_display} ({dept}) chưa có lịch khám nào trong hệ thống. "
+                        "Gợi ý bệnh nhân chọn khoa khác hoặc đến quầy tiếp nhận."),
         }
 
     # Step 2: Query free slots for each schedule (usually 1 schedule/dept)
@@ -130,7 +120,7 @@ def run(args: dict) -> dict:
                 "time": start_iso[11:16],                      # "08:30"
                 "end_time": (s.get("end") or "")[11:16],
                 "practitioner": pract_name,
-                "department": dept_name or dept,
+                "department": dept_name or dept_display or dept,
             })
 
     # Sort by date+time
@@ -140,6 +130,7 @@ def run(args: dict) -> dict:
         "today": today.isoformat(),
         "today_vi": _fmt_date_vi(today.isoformat()),
         "department": dept,
+        "department_name": dept_display,
         "date_from": d_from,
         "date_to": d_to,
         "count": len(all_slots),

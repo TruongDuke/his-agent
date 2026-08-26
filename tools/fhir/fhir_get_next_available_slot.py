@@ -9,7 +9,10 @@ DESCRIPTION = (
     "không cần user chọn. Dùng khi urgency_level=URGENT và cần đặt lịch nhanh nhất có thể."
 )
 ARGS_SCHEMA = {
-    "department":      "string — mã khoa (PEDIAT/CARDIO/ENDO/ENT/NEURO/GASTRO/RHEUMA/DERMA/OBGYN/OPHTHAL/UROLOGY/GENERAL/SURGERY/DENTAL/PULMO/ORTHO)",
+    "department":      ("string — MÃ khoa, ưu tiên dùng mã: PEDIAT/CARDIO/ENDO/ENT/NEURO/GASTRO/"
+                        "RHEUMA/DERMA/OBGYN/OPHTHAL/UROLOGY/GENERAL/SURGERY/DENTAL/PULMO/ORTHO/"
+                        "EMERG/INFECT. Tool cũng nhận tên khoa tiếng Việt, nhưng chỉ tên CÓ THẬT "
+                        "— đừng tự nghĩ ra tên."),
     "date_from":       (
         "string (tùy chọn) — ngày user muốn khám. CHÉP NGUYÊN CỤM USER NÓI, đừng tự quy "
         "ra ngày: 'thứ hai tuần sau', 'chiều mai', 'ngày kia', '20/08'. Tool tự quy đổi. "
@@ -47,12 +50,18 @@ def _resolve(raw_date: str, raw_time: str) -> tuple[str, str, bool]:
 def run(args: dict) -> dict:
     import sys, os
     sys.path.insert(0, os.path.dirname(__file__))
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "shared"))
     from _aidbox_client import fhir_get, extract_entries
+    from _departments import resolve_or_error
     from datetime import date, timedelta
 
-    dept = str(args.get("department") or "").strip().upper()
-    if not dept:
+    if not str(args.get("department") or "").strip():
         return {"error": "department is required"}
+    # Nhận cả mã lẫn tên khoa: LLM hay truyền tên vì đó là thứ nó vừa nói với
+    # bệnh nhân. Sai/mơ hồ thì trả lỗi có hướng dẫn để nó gọi lại đúng.
+    dept, dept_display, err = resolve_or_error(args.get("department"))
+    if err:
+        return err
     filter_pract_id = str(args.get("practitioner_id") or "").strip()
 
     today = date.today()
@@ -77,7 +86,15 @@ def run(args: dict) -> dict:
     sched_bundle = fhir_get("Schedule", {"service-type": f"urn:vn:department|{dept}"})
     schedules = extract_entries(sched_bundle)
     if not schedules:
-        return {"error": f"Không tìm thấy lịch khám cho khoa '{dept}'"}
+        # Khoa có thật nhưng chưa cấu hình lịch khám (VD EMERG) — nói rõ để LLM
+        # không tưởng là mình gọi sai tham số rồi thử lại vô ích.
+        return {
+            "error": "no_schedule_configured",
+            "department": dept,
+            "department_name": dept_display,
+            "message": (f"{dept_display} ({dept}) chưa có lịch khám nào trong hệ thống. "
+                        "Gợi ý bệnh nhân chọn khoa khác hoặc đến quầy tiếp nhận."),
+        }
 
     time_from = t_iso
 
@@ -136,7 +153,7 @@ def run(args: dict) -> dict:
                 "date_vi":     f"{_WEEKDAY_VI[d.weekday()]} ({d.strftime('%d/%m/%Y')})",
                 "time":        start_iso[11:16],
                 "end_time":    (s.get("end") or "")[11:16],
-                "department":  dept_name or dept,
+                "department":  dept_name or dept_display or dept,
                 "practitioner": pract_name,
                 "start_iso":   start_iso,
             }
@@ -152,7 +169,8 @@ def run(args: dict) -> dict:
         return {
             "found": False,
             "department": dept,
-            "message": f"Không còn slot trống trong 7 ngày tới cho khoa {dept}.",
+            "department_name": dept_display,
+            "message": f"Không còn slot trống trong 7 ngày tới cho {dept_display}.",
         }
 
     # Chọn slot + dựng câu xác nhận. Khi không đáp ứng đúng giờ user xin thì PHẢI nói ra,

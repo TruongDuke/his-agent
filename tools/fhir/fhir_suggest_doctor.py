@@ -12,18 +12,23 @@ DESCRIPTION = (
     "chuyên khoa của họ. Dùng trước fhir_get_available_slots để BN chọn bác sĩ."
 )
 ARGS_SCHEMA = {
-    "department": "string — mã khoa (VD: CARDIO, ENDO, ENT, NEURO, DERMA, ...)",
+    "department": ("string — MÃ khoa (VD: CARDIO, ENDO, ENT, NEURO, DERMA, ORTHO, ...). "
+                   "Tool cũng nhận tên khoa tiếng Việt có thật — đừng tự nghĩ ra tên."),
 }
 
 
 def run(args: dict) -> dict:
     import sys, os
     sys.path.insert(0, os.path.dirname(__file__))
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "shared"))
     from _aidbox_client import fhir_get, extract_entries
+    from _departments import resolve_or_error
 
-    dept = str(args.get("department") or "").strip().upper()
-    if not dept:
+    if not str(args.get("department") or "").strip():
         return {"error": "department is required"}
+    dept, dept_display, err = resolve_or_error(args.get("department"))
+    if err:
+        return err
 
     # Step 1: Find schedules matching dept
     sched_bundle = fhir_get("Schedule", {"service-type": f"urn:vn:department|{dept}"})
@@ -34,9 +39,10 @@ def run(args: dict) -> dict:
     if not schedules:
         return {
             "department": dept,
+            "department_name": dept_display,
             "count": 0,
             "doctors": [],
-            "message": f"Khoa '{dept}' chưa có bác sĩ nào có lịch khám.",
+            "message": f"{dept_display} chưa có bác sĩ nào có lịch khám.",
         }
 
     # Step 2: For each schedule, get practitioner info + count free slots
@@ -78,11 +84,13 @@ def run(args: dict) -> dict:
 
     return {
         "department": dept,
+        "department_name": dept_display,
         "count": len(doctors),
         "doctors": doctors,
+        # Dùng tên khoa, không dùng mã — message này đi thẳng ra cho bệnh nhân đọc.
         "message": (
-            f"Có {len(doctors)} bác sĩ ở khoa {dept}. "
+            f"Có {len(doctors)} bác sĩ ở {dept_display}. "
             f"Bác sĩ có nhiều lịch trống nhất: {doctors[0]['name']} ({doctors[0]['available_slots_7days']} slot)"
-            if doctors else f"Không có bác sĩ ở khoa {dept}."
+            if doctors else f"Không có bác sĩ ở {dept_display}."
         ),
     }

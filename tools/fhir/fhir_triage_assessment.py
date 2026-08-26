@@ -69,6 +69,7 @@ def run(args: dict) -> dict:
     import sys, os
     sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "shared"))
     from _aidbox_client import fhir_get, extract_entries
+    from _departments import DEPARTMENTS
 
     symptoms_raw   = str(args.get("symptoms") or "").strip()
     onset          = str(args.get("onset") or "gradual").strip().lower()
@@ -262,11 +263,17 @@ def run(args: dict) -> dict:
         "urgency_vi": _URGENCY_VI.get(current_level, "Thường quy"),
         "_hien_thi": (
             f"Nói với bệnh nhân bằng TIẾNG VIỆT: '{_URGENCY_VI.get(current_level, 'Thường quy')}'. "
-            f"TUYỆT ĐỐI KHÔNG hiển thị mã '{current_level}' hay tên khoa viết tắt '{dept}' — "
-            "đó là mã nội bộ, bệnh nhân không hiểu."
+            f"TUYỆT ĐỐI KHÔNG hiển thị mã '{current_level}' hay mã khoa '{dept}' — đó là mã nội bộ, "
+            f"bệnh nhân không hiểu. Khi nói tên khoa với bệnh nhân, dùng ĐÚNG NGUYÊN VĂN "
+            f"department_name = '{DEPARTMENTS.get(dept, dept)}', KHÔNG tự đặt tên khác. "
+            f"Khi gọi tool đặt lịch thì truyền department='{dept}' (mã), không truyền tên."
         ),
         "action": action_key,
         "department": dept,
+        # Không có field này thì LLM bị cấm hiện mã mà lại không có tên để hiện,
+        # nên nó bịa tên khoa ("Khoa Chấn Thương – Xương Khớp" = ORTHO ghép RHEUMA)
+        # rồi truyền chính cái tên bịa đó vào fhir_get_next_available_slot → lỗi.
+        "department_name": DEPARTMENTS.get(dept, dept),
         "matched_symptoms": best_map["matched_symptoms"] if best_map else [],
         "risk_boosters_applied": applied_boosters,
         "preferred_doctor_note": preferred_doctor,

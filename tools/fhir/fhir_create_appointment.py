@@ -12,7 +12,9 @@ DESCRIPTION = (
 )
 ARGS_SCHEMA = {
     "patient_id":    "string — UUID bệnh nhân (từ fhir_search_patient hoặc fhir_register_new_patient)",
-    "department":    "string — mã khoa: PEDIAT/CARDIO/ENDO/ENT/NEURO/GASTRO/RHEUMA/DERMA/OBGYN/OPHTHAL/UROLOGY/GENERAL/SURGERY/DENTAL/PULMO/ORTHO",
+    "department":    ("string — MÃ khoa: PEDIAT/CARDIO/ENDO/ENT/NEURO/GASTRO/RHEUMA/DERMA/OBGYN/"
+                      "OPHTHAL/UROLOGY/GENERAL/SURGERY/DENTAL/PULMO/ORTHO/EMERG/INFECT. "
+                      "Tool cũng nhận tên khoa tiếng Việt có thật — đừng tự nghĩ ra tên."),
     "date":          "string — ngày khám YYYY-MM-DD (VD '2026-04-28')",
     "time":          "string — giờ bắt đầu HH:MM (VD '09:00')",
     "reason":        "string (tùy chọn) — lý do khám. Mặc định 'Khám theo yêu cầu'",
@@ -41,7 +43,7 @@ def _resolve_slot_by_time(client, url: str, dept: str, date_str: str, time_str: 
 
     sched_entries = (r.json().get("entry") or [])
     if not sched_entries:
-        return None, f"Khoa '{dept}' chưa có lịch khám trong hệ thống. Gọi fhir_get_next_available_slot để kiểm tra khoa khác."
+        return None, f"Khoa {dept} chưa có lịch khám trong hệ thống. Gọi fhir_get_next_available_slot để kiểm tra khoa khác."
 
     want_prefix = f"{date_str}T{time_str}"  # "2026-04-27T08:30" ngay gio nguoi dung muon
     for se in sched_entries:
@@ -75,11 +77,19 @@ def run(args: dict) -> dict:
     import sys, os
     sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "shared"))
     from _aidbox_client import _config
+    from _departments import resolve_or_error
     import httpx
 
     pid = str(args.get("patient_id") or "").strip()
     sid = str(args.get("slot_id") or "").strip()
-    dept = str(args.get("department") or "").strip().upper()
+    dept = str(args.get("department") or "").strip()
+    # department là tùy chọn (đường slot_id không cần), nên chỉ chuẩn hóa khi có.
+    # Tool này TẠO lịch thật nên càng không được để tên khoa sai lọt qua.
+    dept_display = ""
+    if dept:
+        dept, dept_display, dept_err = resolve_or_error(args.get("department"))
+        if dept_err:
+            return dept_err
     date_str = str(args.get("date") or "").strip()
     time_str = str(args.get("time") or "").strip()
     reason = str(args.get("reason") or "Khám theo yêu cầu").strip()
