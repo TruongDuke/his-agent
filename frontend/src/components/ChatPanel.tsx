@@ -83,7 +83,12 @@ export default function ChatPanel({
   const [recording, setRecording] = useState(false)
   const [sttBusy, setSttBusy] = useState(false)
   const recorder = useRef<Recorder | null>(null)
-  const [callState, setCallState] = useState<'off' | 'listening' | 'thinking' | 'speaking'>('off')
+  const [callState, _setCallState] = useState<'off' | 'listening' | 'thinking' | 'speaking'>('off')
+  const callStateRef = useRef<'off' | 'listening' | 'thinking' | 'speaking'>('off')
+  const setCallState = (v: 'off' | 'listening' | 'thinking' | 'speaking') => {
+    callStateRef.current = v
+    _setCallState(v)
+  }
   const call = useRef<VoiceSession | null>(null)
   const stopSpeak = useRef<(() => void) | null>(null)
   const [speakingId, _setSpeakingId] = useState<number | null>(null)
@@ -218,10 +223,11 @@ export default function ChatPanel({
     try {
       const sentences = await splitForSpeech(text)
       if (speakingIdRef.current !== id) return   // đã bấm sang câu khác trong lúc chờ
-      stopSpeak.current = speakStream(sentences, () => {
-        stopSpeak.current = null
-        setSpeakingId(null)
-      })
+      stopSpeak.current = speakStream(
+        sentences,
+        () => { stopSpeak.current = null; setSpeakingId(null) },
+        (msg) => message.error(msg),
+      )
     } catch (e: any) {
       setSpeakingId(null)
       message.error('Không đọc được: ' + e.message)
@@ -254,15 +260,29 @@ export default function ChatPanel({
           const { text, empty } = await transcribe(wav)
           if (empty || !text.trim()) { setCallState('listening'); return }
           const reply = await sendAndGetReply(text)
-          if (!reply.trim()) { setCallState('listening'); return }
+          // Nói rõ hỏng ở khâu nào thay vì im lặng quay về nghe tiếp — im lặng làm
+          // không phân biệt được "agent không trả lời" với "trả lời rồi mà không phát".
+          if (!reply.trim()) {
+            message.warning('Agent không trả về nội dung để đọc.')
+            setCallState('listening'); return
+          }
           setCallState('speaking')
           call.current?.setSpeaking(true)
           const sentences = await splitForSpeech(reply)
-          stopSpeak.current = speakStream(sentences, () => {
+          if (!sentences.length) {
+            message.warning('Không cắt được câu nào để đọc.')
             call.current?.setSpeaking(false)
-            stopSpeak.current = null
-            setCallState('listening')
-          })
+            setCallState('listening'); return
+          }
+          stopSpeak.current = speakStream(
+            sentences,
+            () => {
+              call.current?.setSpeaking(false)
+              stopSpeak.current = null
+              setCallState('listening')
+            },
+            (msg) => message.error(msg),
+          )
         },
       })
       call.current = session
@@ -298,7 +318,9 @@ export default function ChatPanel({
       image_base64: attached?.data || '',
       image_mime: attached?.mime || 'image/jpeg',
       // Đang gọi → agent trả lời ngắn để đọc lên nghe được (xem VOICE_EXTRA ở backend)
-      voice_mode: callState !== 'off',
+      // Đọc qua ref: callState trong closure bị đóng băng ở lần render lúc bấm Gọi
+      // (khi đó vẫn là 'off'), nên đọc thẳng state sẽ luôn ra false.
+      voice_mode: callStateRef.current !== 'off',
     }
 
     // Gom song song với việc đổ ra màn hình: chế độ gọi cần nguyên văn câu trả lời

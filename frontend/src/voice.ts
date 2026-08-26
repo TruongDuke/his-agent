@@ -271,7 +271,12 @@ export async function splitForSpeech(text: string): Promise<string[]> {
  * chỉ chờ đúng câu đầu (~1 giây) thay vì chờ cả đoạn (5-6 giây).
  * Trả về hàm dừng để cắt ngang khi người dùng lên tiếng.
  */
-export function speakStream(sentences: string[], onDone?: () => void, rate = 1.15) {
+export function speakStream(
+  sentences: string[],
+  onDone?: () => void,
+  onError?: (msg: string) => void,
+  rate = 1.15,
+) {
   let cancelled = false
   let current: HTMLAudioElement | null = null
 
@@ -282,8 +287,15 @@ export function speakStream(sentences: string[], onDone?: () => void, rate = 1.1
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text: s, clean: false }),
       })
-      return r.ok ? await r.blob() : null
-    } catch { return null }
+      if (!r.ok) {
+        onError?.(`TTS lỗi ${r.status}: ${(await r.text()).slice(0, 80)}`)
+        return null
+      }
+      return await r.blob()
+    } catch (e: any) {
+      onError?.('Không gọi được TTS: ' + (e?.message || e))
+      return null
+    }
   }
 
   ;(async () => {
@@ -297,8 +309,13 @@ export function speakStream(sentences: string[], onDone?: () => void, rate = 1.1
         a.playbackRate = rate     // giọng gốc đọc hơi thong thả, nhanh nhẹ cho gọn
         current = a
         a.onended = () => resolve()
-        a.onerror = () => resolve()
-        a.play().catch(() => resolve())
+        a.onerror = () => { onError?.('Không phát được đoạn tiếng'); resolve() }
+        // Trình duyệt chặn tự phát thì play() văng lỗi — trước đây nuốt luôn nên
+        // im ru mà không ai biết vì sao.
+        a.play().catch((e) => {
+          onError?.('Trình duyệt chặn phát tiếng: ' + (e?.name || e))
+          resolve()
+        })
       })
     }
     current = null
