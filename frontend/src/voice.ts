@@ -125,6 +125,14 @@ const SILENCE_MS = 900      // im bao lâu thì coi là nói xong
 const MIN_SPEECH_MS = 300   // ngắn hơn thì coi là tiếng động, bỏ
 const RMS_SPEECH = 0.015    // ngưỡng coi là có tiếng nói
 
+// Trong lúc agent đang đọc, micro vẫn thu được chính tiếng loa. Nếu dùng ngưỡng
+// thường thì agent tự cắt lời mình sau 1-2 giây. Nên lúc đó đòi tiếng TO HƠN HẲN và
+// phải kéo dài, mới coi là người dùng thực sự chen vào.
+const RMS_BARGE = 0.06
+const BARGE_MIN_MS = 400
+// Nghỉ một nhịp sau khi agent dứt lời, tránh thu phải đuôi tiếng vọng.
+const COOLDOWN_MS = 350
+
 export interface VoiceSession {
   stop: () => void
   /** Báo cho vòng nghe biết agent đang phát tiếng, để nhận ra khi bị cắt lời. */
@@ -159,6 +167,8 @@ export async function startConversation(h: VoiceHandlers): Promise<VoiceSession>
   let handling = false          // đang xử lý một lượt
   let stopped = false
   let busySpeaking = false      // agent đang phát tiếng
+  let bargeMs = 0               // đã nghe tiếng chen vào bao lâu
+  let cooldownMs = 0            // nghỉ sau khi agent dứt lời
 
   const frameMs = (4096 / ctx.sampleRate) * 1000
 
@@ -168,11 +178,30 @@ export async function startConversation(h: VoiceHandlers): Promise<VoiceSession>
     let sum = 0
     for (let i = 0; i < buf.length; i++) sum += buf[i] * buf[i]
     const rms = Math.sqrt(sum / buf.length)
-    const loud = rms > RMS_SPEECH
 
+    // Agent đang đọc: KHÔNG thu gì cả, chỉ rình xem người dùng có chen vào thật không.
+    // Trước đây chỉ cần một khung tiếng to là cắt — mà tiếng loa vọng vào cũng đủ to,
+    // nên agent tự ngắt lời mình ngay sau 1-2 giây.
+    if (busySpeaking) {
+      if (rms > RMS_BARGE) {
+        bargeMs += frameMs
+        if (bargeMs >= BARGE_MIN_MS) {
+          bargeMs = 0
+          busySpeaking = false
+          speaking = false
+          chunks = []
+          h.onBargeIn?.()
+        }
+      } else {
+        bargeMs = 0
+      }
+      return
+    }
+
+    if (cooldownMs > 0) { cooldownMs -= frameMs; return }
+
+    const loud = rms > RMS_SPEECH
     if (loud) {
-      // Người dùng lên tiếng trong lúc agent đang đọc → cắt lời
-      if (busySpeaking && h.onBargeIn) h.onBargeIn()
       if (!speaking) { speaking = true; chunks = []; speechMs = 0; h.onListening() }
       silenceMs = 0
       speechMs += frameMs
@@ -204,7 +233,11 @@ export async function startConversation(h: VoiceHandlers): Promise<VoiceSession>
   node.connect(ctx.destination)
 
   return {
-    setSpeaking: (v: boolean) => { busySpeaking = v },
+    setSpeaking: (v: boolean) => {
+      busySpeaking = v
+      bargeMs = 0
+      if (!v) cooldownMs = COOLDOWN_MS   // vừa dứt lời → nghỉ một nhịp
+    },
     stop: () => {
       stopped = true
       node.disconnect(); source.disconnect()
