@@ -113,3 +113,166 @@ export async function speak(text: string): Promise<HTMLAudioElement> {
   await audio.play()
   return audio
 }
+
+
+/* ────────────── HỘI THOẠI LIÊN TỤC ──────────────
+ * ASR chỉ nhận trọn câu, không nhận luồng — nên phải tự biết lúc nào người dùng nói
+ * xong rồi mới gửi đi. Dò bằng mức năng lượng của khung âm thanh: có tiếng thì thu,
+ * im quá lâu thì chốt một lượt.
+ */
+
+const SILENCE_MS = 900      // im bao lâu thì coi là nói xong
+const MIN_SPEECH_MS = 300   // ngắn hơn thì coi là tiếng động, bỏ
+const RMS_SPEECH = 0.015    // ngưỡng coi là có tiếng nói
+
+export interface VoiceSession {
+  stop: () => void
+  /** Báo cho vòng nghe biết agent đang phát tiếng, để nhận ra khi bị cắt lời. */
+  setSpeaking: (v: boolean) => void
+}
+
+export interface VoiceHandlers {
+  onListening: () => void
+  onThinking: () => void
+  onUtterance: (wav: Blob) => Promise<void>
+  onBargeIn?: () => void
+  onError: (msg: string) => void
+}
+
+/**
+ * Mở micro và chạy vòng: nghe → thấy nói xong → gọi onUtterance → nghe tiếp.
+ * Trong lúc onUtterance chạy (nhận dạng + hỏi agent + đọc trả lời) vẫn tiếp tục
+ * nghe, để người dùng cắt lời được.
+ */
+export async function startConversation(h: VoiceHandlers): Promise<VoiceSession> {
+  const stream = await navigator.mediaDevices.getUserMedia({
+    audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true },
+  })
+  const ctx = new AudioContext()
+  const source = ctx.createMediaStreamSource(stream)
+  const node = ctx.createScriptProcessor(4096, 1, 1)
+
+  let chunks: Float32Array[] = []
+  let speaking = false          // người dùng đang nói
+  let speechMs = 0
+  let silenceMs = 0
+  let handling = false          // đang xử lý một lượt
+  let stopped = false
+  let busySpeaking = false      // agent đang phát tiếng
+
+  const frameMs = (4096 / ctx.sampleRate) * 1000
+
+  node.onaudioprocess = async (e) => {
+    if (stopped) return
+    const buf = e.inputBuffer.getChannelData(0)
+    let sum = 0
+    for (let i = 0; i < buf.length; i++) sum += buf[i] * buf[i]
+    const rms = Math.sqrt(sum / buf.length)
+    const loud = rms > RMS_SPEECH
+
+    if (loud) {
+      // Người dùng lên tiếng trong lúc agent đang đọc → cắt lời
+      if (busySpeaking && h.onBargeIn) h.onBargeIn()
+      if (!speaking) { speaking = true; chunks = []; speechMs = 0; h.onListening() }
+      silenceMs = 0
+      speechMs += frameMs
+      chunks.push(new Float32Array(buf))
+    } else if (speaking) {
+      silenceMs += frameMs
+      chunks.push(new Float32Array(buf))   // giữ đuôi để khỏi cụt chữ cuối
+      if (silenceMs >= SILENCE_MS) {
+        speaking = false
+        const captured = chunks
+        const ms = speechMs
+        chunks = []
+        if (ms >= MIN_SPEECH_MS && !handling) {
+          handling = true
+          h.onThinking()
+          try {
+            await h.onUtterance(mergeToWav(captured, ctx.sampleRate))
+          } catch (err: any) {
+            h.onError(err?.message || 'Lỗi xử lý giọng nói')
+          } finally {
+            handling = false
+          }
+        }
+      }
+    }
+  }
+
+  source.connect(node)
+  node.connect(ctx.destination)
+
+  return {
+    setSpeaking: (v: boolean) => { busySpeaking = v },
+    stop: () => {
+      stopped = true
+      node.disconnect(); source.disconnect()
+      stream.getTracks().forEach((t) => t.stop())
+      ctx.close().catch(() => {})
+    },
+  }
+}
+
+function mergeToWav(chunks: Float32Array[], rate: number): Blob {
+  const total = chunks.reduce((n, c) => n + c.length, 0)
+  const merged = new Float32Array(total)
+  let off = 0
+  for (const c of chunks) { merged.set(c, off); off += c.length }
+  return encodeWav(downsample(merged, rate, TARGET_RATE), TARGET_RATE)
+}
+
+/** Bóc markdown + cắt câu ở backend, để đọc nối tiếp cho đỡ chờ. */
+export async function splitForSpeech(text: string): Promise<string[]> {
+  const r = await fetch('/api/voice/split', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text }),
+  })
+  if (!r.ok) return [text]
+  return (await r.json()).sentences || [text]
+}
+
+/**
+ * Đọc lần lượt từng câu. Sinh câu kế trong lúc đang phát câu trước nên người nghe
+ * chỉ chờ đúng câu đầu (~1 giây) thay vì chờ cả đoạn (5-6 giây).
+ * Trả về hàm dừng để cắt ngang khi người dùng lên tiếng.
+ */
+export function speakStream(sentences: string[], onDone?: () => void) {
+  let cancelled = false
+  let current: HTMLAudioElement | null = null
+
+  const fetchOne = async (s: string): Promise<Blob | null> => {
+    try {
+      const r = await fetch('/api/voice/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: s, clean: false }),
+      })
+      return r.ok ? await r.blob() : null
+    } catch { return null }
+  }
+
+  ;(async () => {
+    let next = sentences.length ? fetchOne(sentences[0]) : null
+    for (let i = 0; i < sentences.length && !cancelled; i++) {
+      const blob = await next
+      next = i + 1 < sentences.length ? fetchOne(sentences[i + 1]) : null  // sinh trước câu sau
+      if (!blob || cancelled) continue
+      await new Promise<void>((resolve) => {
+        const a = new Audio(URL.createObjectURL(blob))
+        current = a
+        a.onended = () => resolve()
+        a.onerror = () => resolve()
+        a.play().catch(() => resolve())
+      })
+    }
+    current = null
+    if (!cancelled) onDone?.()
+  })()
+
+  return () => {
+    cancelled = true
+    if (current) { current.pause(); current = null }
+  }
+}

@@ -3,12 +3,16 @@ import { Button, Avatar, Input, message, Tooltip } from 'antd'
 import {
   SendOutlined, RobotOutlined, UserOutlined, PaperClipOutlined, CloseCircleFilled, PlusOutlined,
   SettingOutlined, AudioOutlined, AudioMutedOutlined, SoundOutlined,
+  PhoneOutlined, PhoneFilled,
 } from '@ant-design/icons'
 import { marked } from 'marked'
 import DengueForm from './DengueForm'
 import CbcConfigModal from './CbcConfigModal'
 import { streamChat } from '../api'
-import { startRecording, transcribe, speak, type Recorder } from '../voice'
+import {
+  startRecording, transcribe, speak, startConversation, splitForSpeech, speakStream,
+  type Recorder, type VoiceSession,
+} from '../voice'
 import type { Session, Source } from '../api'
 
 function isDengueChecklist(text: string) {
@@ -80,6 +84,9 @@ export default function ChatPanel({
   const [sttBusy, setSttBusy] = useState(false)
   const recorder = useRef<Recorder | null>(null)
   const playing = useRef<HTMLAudioElement | null>(null)
+  const [callState, setCallState] = useState<'off' | 'listening' | 'thinking' | 'speaking'>('off')
+  const call = useRef<VoiceSession | null>(null)
+  const stopSpeak = useRef<(() => void) | null>(null)
   const sessionId = useRef(initialSessionId || '')
   const scrollRef = useRef<HTMLDivElement>(null)
   const fileRef = useRef<HTMLInputElement>(null)
@@ -200,9 +207,48 @@ export default function ChatPanel({
     }
   }
 
-  async function send(override?: string) {
+  /** Bật/tắt chế độ gọi: nghe liên tục, tự gửi khi nói xong, tự đọc câu trả lời. */
+  async function toggleCall() {
+    if (call.current) {
+      stopSpeak.current?.()
+      call.current.stop()
+      call.current = null
+      setCallState('off')
+      return
+    }
+    try {
+      const session = await startConversation({
+        onListening: () => setCallState('listening'),
+        onThinking: () => setCallState('thinking'),
+        // Người dùng lên tiếng giữa lúc agent đang đọc → cắt lời ngay
+        onBargeIn: () => { stopSpeak.current?.(); stopSpeak.current = null },
+        onError: (m) => message.error(m),
+        onUtterance: async (wav) => {
+          const { text, empty } = await transcribe(wav)
+          if (empty || !text.trim()) { setCallState('listening'); return }
+          const reply = await sendAndGetReply(text)
+          if (!reply.trim()) { setCallState('listening'); return }
+          setCallState('speaking')
+          call.current?.setSpeaking(true)
+          const sentences = await splitForSpeech(reply)
+          stopSpeak.current = speakStream(sentences, () => {
+            call.current?.setSpeaking(false)
+            stopSpeak.current = null
+            setCallState('listening')
+          })
+        },
+      })
+      call.current = session
+      setCallState('listening')
+      message.info('Đang nghe — cứ nói, ngừng khoảng 1 giây là mình trả lời.')
+    } catch {
+      message.error('Không truy cập được micro — kiểm tra quyền trong trình duyệt.')
+    }
+  }
+
+  async function send(override?: string): Promise<string> {
     const text = (override ?? input).trim()
-    if ((!text && !img) || busy) return
+    if ((!text && !img) || busy) return ''
     if (!override) setInput('')
     const attached = override ? null : img
     if (!override) setImg(null)
@@ -224,13 +270,18 @@ export default function ChatPanel({
       patient_id: !isDoctor ? session.id : '',
       image_base64: attached?.data || '',
       image_mime: attached?.mime || 'image/jpeg',
+      // Đang gọi → agent trả lời ngắn để đọc lên nghe được (xem VOICE_EXTRA ở backend)
+      voice_mode: callState !== 'off',
     }
 
+    // Gom song song với việc đổ ra màn hình: chế độ gọi cần nguyên văn câu trả lời
+    // để đưa sang TTS, mà state của React thì không đọc lại ngay được.
+    let full = ''
     try {
       await streamChat(body, session.token, {
         onStatus: (t) => patch((m) => { if (!m.content) m.status = t }),
         onToolCall: (label) => patch((m) => { if (!m.content) m.status = label }),
-        onText: (delta) => patch((m) => { m.content += delta; m.status = undefined }),
+        onText: (delta) => { full += delta; patch((m) => { m.content += delta; m.status = undefined }) },
         onSources: (items) => patch((m) => { m.sources = items }),
         onError: (msg) => patch((m) => { m.content = '⚠ Lỗi: ' + msg; m.status = undefined }),
         onSession: (id) => { sessionId.current = id },
@@ -241,6 +292,12 @@ export default function ChatPanel({
       patch((m) => { m.status = undefined })
       setBusy(false)
     }
+    return full
+  }
+
+  /** Dùng cho chế độ gọi — gửi câu vừa nghe được và lấy lại câu trả lời để đọc. */
+  async function sendAndGetReply(text: string): Promise<string> {
+    return send(text)
   }
 
   const isDoctor = session.role === 'doctor'
@@ -338,6 +395,17 @@ export default function ChatPanel({
       </div>
 
       <div className="chat-footer">
+        {callState !== 'off' && (
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 8, padding: '6px 12px',
+            background: '#e6f4f1', borderRadius: 6, marginBottom: 8, fontSize: 13, color: '#005d5d',
+          }}>
+            <span className="dots"><i /><i /><i /></span>
+            {callState === 'listening' && 'Đang nghe — cứ nói, ngừng khoảng 1 giây là mình trả lời'}
+            {callState === 'thinking' && 'Đang xử lý...'}
+            {callState === 'speaking' && 'Đang trả lời — bạn cứ nói để ngắt lời'}
+          </div>
+        )}
         <div className="chat-input-wrap">
           {/* Đính kèm ảnh phiếu xét nghiệm chỉ dành cho bác sĩ (phân tích CBC) */}
           {isDoctor && (
@@ -371,6 +439,15 @@ export default function ChatPanel({
               }}
             />
           </div>
+          <Tooltip title={callState === 'off' ? 'Gọi — nói chuyện liên tục với trợ lý' : 'Kết thúc cuộc gọi'}>
+            <Button
+              size="large"
+              type={callState === 'off' ? 'default' : 'primary'}
+              danger={callState !== 'off'}
+              icon={callState === 'off' ? <PhoneOutlined /> : <PhoneFilled />}
+              onClick={toggleCall}
+            />
+          </Tooltip>
           <Tooltip title={recording ? 'Bấm để dừng và chuyển thành chữ' : 'Nói thay vì gõ'}>
             <Button
               size="large"

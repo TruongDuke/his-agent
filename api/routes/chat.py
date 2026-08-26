@@ -28,6 +28,18 @@ from api.sessions import (
 router = APIRouter()
 
 
+VOICE_EXTRA = """
+=== ĐANG NÓI CHUYỆN BẰNG GIỌNG NÓI ===
+Câu trả lời của bạn sẽ được ĐỌC THÀNH TIẾNG, không hiện chữ. Vì vậy:
+- Trả lời TỐI ĐA 2-3 câu ngắn. Người nghe không tua lại được như đọc chữ.
+- KHÔNG dùng markdown, gạch đầu dòng, bảng, emoji, tiêu đề — đọc lên thành rác.
+- KHÔNG đọc số dài lê thê, mã lịch hẹn, ID. Cần thì nói "mình đã gửi chi tiết lên màn hình".
+- Hỏi MỘT câu mỗi lượt, đừng hỏi dồn 3-4 thứ cùng lúc.
+- Danh sách dài (slot trống, thuốc) → nói 2 lựa chọn tiêu biểu rồi hỏi người dùng chọn.
+Vẫn giữ nguyên mọi quy tắc an toàn: cảnh báo cấp cứu, không tự chẩn đoán, không bịa số liệu.
+"""
+
+
 def _doctor_cbc_extra(body: ChatRequest) -> str:
     """Block chỉ dẫn trình bày báo cáo CBC theo cấu hình của bác sĩ."""
     if body.role == "doctor" and body.doctor_id:
@@ -108,6 +120,8 @@ async def chat_endpoint(body: ChatRequest, x_session_token: str = Header(default
         except Exception:
             pass
 
+    if body.voice_mode:
+        extra_system = f"{extra_system}\n\n{VOICE_EXTRA}" if extra_system else VOICE_EXTRA
     cbc_extra = _doctor_cbc_extra(body)
     if cbc_extra:
         extra_system = f"{extra_system}\n\n{cbc_extra}" if extra_system else cbc_extra
@@ -147,6 +161,8 @@ async def chat_stream_endpoint(body: ChatRequest, x_session_token: str = Header(
     history = list(_load_session(session_id))  # mutable copy
     patient_id, patient_name = _resolve_patient(body, x_session_token)
     extra_system = _doctor_cbc_extra(body)
+    if body.voice_mode:
+        extra_system = f"{extra_system}\n\n{VOICE_EXTRA}" if extra_system else VOICE_EXTRA
     loop = asyncio.get_event_loop()
     queue: asyncio.Queue = asyncio.Queue() # quầy trung chuyển
 

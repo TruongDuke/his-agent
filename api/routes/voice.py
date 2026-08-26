@@ -16,6 +16,8 @@ from fastapi import APIRouter, File, HTTPException, UploadFile, Form
 from fastapi.responses import Response
 from pydantic import BaseModel, Field
 
+from api.speakable import split_sentences, to_speech
+
 router = APIRouter(prefix="/api/voice", tags=["voice"])
 
 ASR_URL = os.getenv("ASR_URL", "http://172.17.0.1:8200").rstrip("/")
@@ -28,6 +30,13 @@ _MAX_TTS_CHARS = 1000                 # câu trả lời dài hơn thì cắt, t
 class TtsBody(BaseModel):
     text: str = Field(min_length=1)
     response_format: str = "mp3"       # mp3 phát thẳng được bằng thẻ <audio>
+    # Câu trả lời lấy thẳng từ khung chat thì còn markdown/emoji, phải bóc trước khi
+    # đọc. Đặt false khi text đã sạch (frontend gửi từng câu đã bóc sẵn).
+    clean: bool = True
+
+
+class SplitBody(BaseModel):
+    text: str = Field(min_length=1)
 
 
 @router.get("/health")
@@ -77,7 +86,9 @@ async def speech_to_text(file: UploadFile = File(...), language: str = Form("vi"
 @router.post("/tts")
 async def text_to_speech(body: TtsBody):
     """Chữ → giọng nói."""
-    text = body.text.strip()[:_MAX_TTS_CHARS]
+    text = (to_speech(body.text) if body.clean else body.text).strip()[:_MAX_TTS_CHARS]
+    if not text:
+        raise HTTPException(400, "Không còn chữ nào để đọc sau khi bóc định dạng")
     try:
         async with httpx.AsyncClient(timeout=120) as client:
             r = await client.post(
@@ -94,3 +105,15 @@ async def text_to_speech(body: TtsBody):
     # Giữ lại header mô tả audio để phía phát biết sample rate khi dùng pcm
     passthrough = {k: v for k, v in r.headers.items() if k.lower().startswith("x-audio")}
     return Response(content=r.content, media_type=media, headers=passthrough)
+
+
+@router.post("/split")
+async def split_for_speech(body: SplitBody):
+    """Bóc markdown rồi cắt thành từng câu.
+
+    Đọc cả câu trả lời một lần phải chờ rất lâu — đo được 306 ký tự mất 5.5 giây,
+    trong khi một câu chỉ 0.6–1 giây. Frontend lấy danh sách này, đọc câu đầu ngay
+    rồi vừa phát vừa sinh câu sau, nên người nghe thấy agent đáp gần như tức thì.
+    """
+    clean = to_speech(body.text)
+    return {"clean": clean, "sentences": split_sentences(clean)}

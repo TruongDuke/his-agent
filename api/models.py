@@ -13,6 +13,9 @@ class ChatRequest(BaseModel):
     patient_name: str = ""
     image_base64: str = ""
     image_mime: str = "image/jpeg"
+    # Đang nói chuyện bằng giọng nói: câu trả lời sẽ bị đọc thành tiếng nên phải ngắn.
+    # Đo được TTS mất ~18ms/ký tự — trả lời 800 ký tự là đọc gần 15 giây, không ai chờ.
+    voice_mode: bool = False
 
 
 class ChatResponse(BaseModel):
